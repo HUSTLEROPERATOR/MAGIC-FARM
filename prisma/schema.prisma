@@ -16,10 +16,12 @@ datasource db {
 
 model User {
   id               String    @id @default(cuid())
-  firstName        String
-  lastName         String
+  name             String?   // NextAuth standard field
+  firstName        String?   // Custom field, filled during onboarding
+  lastName         String?   // Custom field, filled during onboarding
   email            String    @unique
   emailVerified    DateTime?
+  image            String?   // NextAuth standard field for avatar
   alias            String?   @unique // Public display name for leaderboards
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -33,7 +35,6 @@ model User {
   auditLogs         AuditLog[]        @relation("ActorUser")
   sessions          Session[]
   accounts          Account[]
-  verificationTokens VerificationToken[]
 
   @@index([email])
   @@index([alias])
@@ -72,12 +73,9 @@ model Session {
 }
 
 model VerificationToken {
-  id         String   @id @default(cuid())
   identifier String
   token      String   @unique
   expires    DateTime
-  userId     String?
-  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([identifier, token])
   @@map("verification_tokens")

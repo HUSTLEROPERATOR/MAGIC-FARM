@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #1a0b2e;
+  --foreground: #ffffff;
+}
+
+@layer base {
+  body {
+    @apply bg-magic-dark text-white;
+  }
+}
+
+@layer components {
+  .btn-magic {
+    @apply relative inline-flex items-center justify-center px-8 py-3 
+           font-semibold text-white rounded-full overflow-hidden
+           bg-gradient-to-r from-magic-purple to-magic-mystic
+           transition-all duration-300 ease-out
+           hover:shadow-[0_0_30px_rgba(157,78,221,0.6)]
+           hover:scale-105 active:scale-95;
+  }
+
+  .btn-magic::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-magic-mystic to-magic-purple
+           opacity-0 transition-opacity duration-300;
+  }
+
+  .btn-magic:hover::before {
+    @apply opacity-100;
+  }
+
+  .btn-magic span {
+    @apply relative z-10;
+  }
+
+  .card-magic {
+    @apply relative p-6 rounded-2xl overflow-hidden
+           bg-gradient-to-br from-white/10 to-white/5
+           backdrop-blur-sm border border-white/10
+           transition-all duration-300
+           hover:border-magic-gold/30 hover:shadow-lg hover:shadow-magic-purple/10;
+  }
+
+  .input-magic {
+    @apply w-full px-4 py-3 rounded-xl
+           bg-white/5 border border-white/10
+           text-white placeholder-white/40
+           focus:outline-none focus:border-magic-mystic focus:ring-2 focus:ring-magic-mystic/20
+           transition-all duration-200;
+  }
+
+  .glow-text {
+    @apply text-magic-gold;
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-magic-gold via-magic-mystic to-magic-gold
+           bg-clip-text text-transparent;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(157, 78, 221, 0.3);
+    }
+    50% { 
+      box-shadow: 0 0 40px rgba(157, 78, 221, 0.6);
+    }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .bg-stars {
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(2px 2px at 40px 70px, rgba(212, 175, 55, 0.3), transparent),
+      radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.2), transparent),
+      radial-gradient(2px 2px at 130px 80px, rgba(157, 78, 221, 0.3), transparent),
+      radial-gradient(1px 1px at 160px 120px, rgba(255, 255, 255, 0.2), transparent);
+    background-size: 200px 150px;
+    animation: twinkle 5s ease-in-out infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+}
