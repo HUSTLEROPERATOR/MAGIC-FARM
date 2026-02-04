@@ -1,0 +1,423 @@
+// Prisma Schema for Magic Farm Event Application
+// Supports secure authentication, event management, games, and collaboration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER MANAGEMENT & AUTHENTICATION
+// ============================================================================
+
+model User {
+  id               String    @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String    @unique
+  emailVerified    DateTime?
+  alias            String?   @unique // Public display name for leaderboards
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime? // Soft delete timestamp
+  
+  // Relations
+  consents          Consent[]
+  tableMemberships  TableMembership[]
+  submissions       Submission[]
+  clueBoardMessages ClueBoardMessage[]
+  auditLogs         AuditLog[]        @relation("ActorUser")
+  sessions          Session[]
+  accounts          Account[]
+  verificationTokens VerificationToken[]
+
+  @@index([email])
+  @@index([alias])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================================
+// CONSENT & PRIVACY MANAGEMENT
+// ============================================================================
+
+model Consent {
+  id                  String    @id @default(cuid())
+  userId              String
+  
+  // Privacy Policy Consent (mandatory)
+  privacyAcceptedAt   DateTime?
+  privacyVersion      String?   // Version of policy accepted
+  
+  // Marketing Consent (optional)
+  marketingOptInAt    DateTime?
+  marketingVersion    String?
+  marketingOptOutAt   DateTime? // Track opt-out separately
+  
+  // Consent Evidence
+  evidenceHash        String?   // Hash of IP + User Agent + Timestamp
+  ipAddressHash       String?   // Hashed IP address
+  userAgent           String?   @db.Text
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([privacyAcceptedAt])
+  @@index([marketingOptInAt])
+  @@map("consents")
+}
+
+// ============================================================================
+// EVENT NIGHT MANAGEMENT
+// ============================================================================
+
+model EventNight {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  startsAt    DateTime
+  endsAt      DateTime
+  status      EventStatus @default(DRAFT)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  tables    Table[]
+  rounds    Round[]
+  alliances Alliance[]
+
+  @@index([status])
+  @@index([startsAt])
+  @@map("event_nights")
+}
+
+enum EventStatus {
+  DRAFT
+  LIVE
+  ENDED
+}
+
+// ============================================================================
+// TABLE COLLABORATION
+// ============================================================================
+
+model Table {
+  id            String   @id @default(cuid())
+  eventNightId  String
+  name          String   // e.g., "Table 1", "Team Mystics"
+  joinCodeHash  String   // Hashed join code for security
+  joinCodeSalt  String   // Salt for the hash
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  eventNight        EventNight         @relation(fields: [eventNightId], references: [id], onDelete: Cascade)
+  memberships       TableMembership[]
+  submissions       Submission[]
+  clueBoardMessages ClueBoardMessage[]
+  alliancesAsTableA Alliance[]         @relation("TableA")
+  alliancesAsTableB Alliance[]         @relation("TableB")
+
+  @@index([eventNightId])
+  @@index([joinCodeHash])
+  @@map("tables")
+}
+
+model TableMembership {
+  id        String   @id @default(cuid())
+  tableId   String
+  userId    String
+  joinedAt  DateTime @default(now())
+  leftAt    DateTime?
+  
+  // Relations
+  table Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tableId, userId])
+  @@index([userId])
+  @@index([tableId])
+  @@map("table_memberships")
+}
+
+// ============================================================================
+// GAME ROUNDS & PUZZLES
+// ============================================================================
+
+model Round {
+  id           String      @id @default(cuid())
+  eventNightId String
+  title        String
+  description  String?     @db.Text
+  type         RoundType
+  startsAt     DateTime?
+  endsAt       DateTime?
+  status       RoundStatus @default(PENDING)
+  
+  // Configuration JSON for specific round type settings
+  configJson   Json?       // e.g., { "requireCrossTable": true, "maxAttempts": 3 }
+  
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  // Relations
+  eventNight EventNight @relation(fields: [eventNightId], references: [id], onDelete: Cascade)
+  puzzles    Puzzle[]
+
+  @@index([eventNightId])
+  @@index([status])
+  @@map("rounds")
+}
+
+enum RoundType {
+  SINGLE_TABLE    // Each table solves independently
+  MULTI_TABLE     // Requires cross-table collaboration
+  INDIVIDUAL      // Individual players
+}
+
+enum RoundStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Puzzle {
+  id          String   @id @default(cuid())
+  roundId     String
+  title       String
+  prompt      String   @db.Text
+  
+  // Answer is hashed for security (never store plaintext)
+  answerHash  String
+  answerSalt  String
+  
+  // Scoring configuration
+  scoringJson Json?    // e.g., { "basePoints": 100, "timeBonus": true, "hintPenalty": 10 }
+  
+  // Order for display
+  order       Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  round       Round        @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+  hints       Hint[]
+
+  @@index([roundId])
+  @@map("puzzles")
+}
+
+// ============================================================================
+// HINTS & CLUES
+// ============================================================================
+
+model Hint {
+  id            String   @id @default(cuid())
+  puzzleId      String
+  text          String   @db.Text
+  penaltyPoints Int      @default(0) // Points deducted for using this hint
+  order         Int      // Display order (progressive hints)
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+
+  @@index([puzzleId])
+  @@map("hints")
+}
+
+// ============================================================================
+// SUBMISSIONS & SCORING
+// ============================================================================
+
+model Submission {
+  id             String   @id @default(cuid())
+  puzzleId       String
+  userId         String
+  tableId        String?  // Nullable for individual rounds
+  
+  submittedAt    DateTime @default(now())
+  answerText     String?  @db.Text // Store hashed or not at all for privacy
+  isCorrect      Boolean
+  
+  // Scoring factors
+  attemptsCount  Int      @default(1)
+  timeToSolveMs  BigInt?  // Time from puzzle start to correct answer
+  hintsUsed      Int      @default(0)
+  pointsAwarded  Int      @default(0)
+  
+  // Anti-cheat flags
+  flaggedReason  String?
+  
+  // Relations
+  puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  table  Table? @relation(fields: [tableId], references: [id], onDelete: SetNull)
+
+  @@index([puzzleId])
+  @@index([userId])
+  @@index([tableId])
+  @@index([isCorrect])
+  @@map("submissions")
+}
+
+// ============================================================================
+// CLUE BOARD (In-Table Communication)
+// ============================================================================
+
+model ClueBoardMessage {
+  id        String    @id @default(cuid())
+  tableId   String
+  userId    String
+  body      String    @db.Text
+  
+  createdAt DateTime  @default(now())
+  hiddenAt  DateTime? // For moderation
+  hiddenBy  String?   // Admin user ID who hid the message
+  
+  // Relations
+  table Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tableId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("clue_board_messages")
+}
+
+// ============================================================================
+// CROSS-TABLE ALLIANCES
+// ============================================================================
+
+model Alliance {
+  id            String         @id @default(cuid())
+  eventNightId  String
+  tableAId      String
+  tableBId      String
+  
+  status        AllianceStatus @default(PENDING)
+  handshakeCode String?        // One-time code for establishing alliance
+  
+  createdAt     DateTime       @default(now())
+  acceptedAt    DateTime?
+  
+  // Relations
+  eventNight EventNight @relation(fields: [eventNightId], references: [id], onDelete: Cascade)
+  tableA     Table      @relation("TableA", fields: [tableAId], references: [id], onDelete: Cascade)
+  tableB     Table      @relation("TableB", fields: [tableBId], references: [id], onDelete: Cascade)
+
+  @@unique([tableAId, tableBId])
+  @@index([eventNightId])
+  @@map("alliances")
+}
+
+enum AllianceStatus {
+  PENDING
+  ACTIVE
+  DISSOLVED
+}
+
+// ============================================================================
+// AUDIT LOGGING
+// ============================================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?  // Nullable for system actions
+  action      String   // e.g., "USER_LOGIN", "CONSENT_UPDATED", "ANSWER_SUBMITTED"
+  metaJson    Json?    // Additional metadata
+  ipHash      String?  // Hashed IP
+  userAgent   String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  actorUser User? @relation("ActorUser", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================================================
+// LIBRARY CONTENT (Educational Magic Effects)
+// ============================================================================
+
+model LibraryEntry {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  category    String   // e.g., "Card Magic", "Illusions", "Mentalism"
+  content     String   @db.Text // Educational content (not copyrighted)
+  imageUrl    String?
+  externalUrl String?  // Link to Wikipedia, etc.
+  
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublished])
+  @@map("library_entries")
+}
