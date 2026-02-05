@@ -1,18 +1,7 @@
 import '@/lib/auth/types';
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter, Cinzel } from 'next/font/google';
 import { Providers } from '@/components/providers';
-
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
-
-const cinzel = Cinzel({ 
-  subsets: ['latin'],
-  variable: '--font-cinzel',
-});
 
 export const metadata: Metadata = {
   title: 'Magic Farm - Where Magic Meets Competition',
@@ -26,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="it" className={`${inter.variable} ${cinzel.variable}`}>
+    <html lang="it">
       <body className="bg-magic-dark text-white min-h-screen antialiased">
         <Providers>{children}</Providers>
       </body>
