@@ -6,8 +6,11 @@ import { redirect } from 'next/navigation';
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
 
-  // If user is logged in, redirect to dashboard or setup
+  // If user is logged in, redirect through the onboarding flow
   if (session?.user) {
+    if (!session.user.onboardingComplete) {
+      redirect('/onboarding');
+    }
     if (!session.user.alias) {
       redirect('/setup-alias');
     }

@@ -20,6 +20,27 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      // Check rate limit before requesting magic link
+      const checkResponse = await fetch('/api/auth/request-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (checkResponse.status === 429) {
+        setError('Troppi tentativi. Attendi qualche minuto prima di riprovare.');
+        setIsLoading(false);
+        return;
+      }
+
+      if (!checkResponse.ok) {
+        const data = await checkResponse.json();
+        setError(data.error || 'Si è verificato un errore. Riprova.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Rate limit passed, proceed with sign in
       const result = await signIn('email', {
         email,
         redirect: true,
@@ -29,7 +50,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Si è verificato un errore. Riprova.');
       }
-    } catch (err) {
+    } catch {
       setError('Si è verificato un errore. Riprova.');
     } finally {
       setIsLoading(false);

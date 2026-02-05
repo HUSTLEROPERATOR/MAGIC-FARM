@@ -24,7 +24,7 @@ export async function createAuditLog({
       data: {
         action,
         actorUserId: actorUserId || null,
-        metaJson: metadata || {},
+        metaJson: metadata ? JSON.parse(JSON.stringify(metadata)) : undefined,
         ipHash: ipAddress ? hashIP(ipAddress) : null,
         userAgent: userAgent || null,
       },
@@ -68,6 +68,17 @@ export const AUDIT_ACTIONS = {
   ADMIN_USER_BANNED: 'ADMIN_USER_BANNED',
   ADMIN_CONSENT_EXPORT: 'ADMIN_CONSENT_EXPORT',
   
+  // Onboarding & Alias
+  ONBOARDING_COMPLETED: 'ONBOARDING_COMPLETED',
+  CONSENT_UPDATED: 'CONSENT_UPDATED',
+  ALIAS_ATTEMPT: 'ALIAS_ATTEMPT',
+  ALIAS_SET_SUCCESS: 'ALIAS_SET_SUCCESS',
+  ALIAS_SET_CONFLICT: 'ALIAS_SET_CONFLICT',
+  ALIAS_SET_FAILURE: 'ALIAS_SET_FAILURE',
+
+  // Magic Link
+  AUTH_MAGIC_LINK_REQUESTED: 'AUTH_MAGIC_LINK_REQUESTED',
+
   // Privacy
   USER_DATA_EXPORT: 'USER_DATA_EXPORT',
   USER_DELETE_REQUEST: 'USER_DELETE_REQUEST',

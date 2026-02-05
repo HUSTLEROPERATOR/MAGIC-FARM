@@ -3,10 +3,12 @@ import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/db/prisma';
 import { sendVerificationRequest } from '@/lib/email/auth-email';
+import { createAuditLog, AUDIT_ACTIONS } from '@/lib/audit/logger';
+import { hashIP } from '@/lib/security/crypto';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions['adapter'],
-  
+
   providers: [
     EmailProvider({
       server: {
@@ -23,7 +25,7 @@ export const authOptions: NextAuthOptions = {
   ],
 
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
@@ -35,13 +37,47 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async session({ session, user }) {
-      // Add user id and alias to the session
+    async jwt({ token, user, trigger, session }) {
+      // On initial sign-in, populate token from DB user
+      if (user) {
+        token.id = user.id;
+        token.alias = user.alias ?? null;
+        token.firstName = user.firstName ?? null;
+        token.lastName = user.lastName ?? null;
+
+        // Check if user has completed onboarding by looking at consent
+        const consent = await prisma.consent.findFirst({
+          where: {
+            userId: user.id,
+            privacyAcceptedAt: { not: null },
+          },
+        });
+        token.onboardingComplete = !!(
+          user.firstName &&
+          user.lastName &&
+          consent?.privacyAcceptedAt
+        );
+      }
+
+      // Allow session updates to refresh token data
+      if (trigger === 'update' && session) {
+        if (session.alias !== undefined) token.alias = session.alias;
+        if (session.firstName !== undefined) token.firstName = session.firstName;
+        if (session.lastName !== undefined) token.lastName = session.lastName;
+        if (session.onboardingComplete !== undefined)
+          token.onboardingComplete = session.onboardingComplete;
+      }
+
+      return token;
+    },
+
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
-        session.user.alias = (user as any).alias;
-        session.user.firstName = (user as any).firstName;
-        session.user.lastName = (user as any).lastName;
+        session.user.id = token.id;
+        session.user.alias = token.alias;
+        session.user.firstName = token.firstName;
+        session.user.lastName = token.lastName;
+        session.user.onboardingComplete = token.onboardingComplete;
       }
       return session;
     },
@@ -50,7 +86,11 @@ export const authOptions: NextAuthOptions = {
       // Allow relative URLs
       if (url.startsWith('/')) return `${baseUrl}${url}`;
       // Allow URLs on the same origin
-      if (new URL(url).origin === baseUrl) return url;
+      try {
+        if (new URL(url).origin === baseUrl) return url;
+      } catch {
+        // Invalid URL, fall through to baseUrl
+      }
       return baseUrl;
     },
   },
@@ -58,8 +98,17 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signIn({ user, isNewUser }) {
       if (isNewUser) {
-        // Log new user registration
-        console.log(`[AUTH] New user registered: ${user.email}`);
+        await createAuditLog({
+          action: AUDIT_ACTIONS.USER_REGISTER,
+          actorUserId: user.id,
+          metadata: { emailHash: hashIP(user.email ?? '') },
+        });
+      } else {
+        await createAuditLog({
+          action: AUDIT_ACTIONS.USER_LOGIN,
+          actorUserId: user.id,
+          metadata: { emailHash: hashIP(user.email ?? '') },
+        });
       }
     },
   },

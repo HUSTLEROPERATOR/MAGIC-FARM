@@ -7,6 +7,7 @@ declare module 'next-auth' {
       alias?: string | null;
       firstName?: string | null;
       lastName?: string | null;
+      onboardingComplete: boolean;
     } & DefaultSession['user'];
   }
 
@@ -21,5 +22,8 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     alias?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    onboardingComplete: boolean;
   }
 }

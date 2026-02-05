@@ -6,16 +6,41 @@ export default withAuth(
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
 
-    // If user is authenticated
     if (token) {
-      // If user has no alias and is not on setup-alias page, redirect to setup
-      const userAlias = (token as any).alias;
-      
-      if (!userAlias && !pathname.startsWith('/setup-alias') && !pathname.startsWith('/api')) {
-        // Allow access to setup-alias
-        if (pathname.startsWith('/dashboard') || pathname.startsWith('/profile') || pathname.startsWith('/library') || pathname.startsWith('/leaderboard')) {
+      const onboardingComplete = !!token.onboardingComplete;
+      const hasAlias = !!token.alias;
+
+      // Allow access to onboarding-related pages without redirect loops
+      const isOnboardingPage = pathname === '/onboarding';
+      const isSetupAliasPage = pathname === '/setup-alias';
+      const isPrivacyPage = pathname === '/privacy';
+      const isTermsPage = pathname === '/terms';
+      const isApiRoute = pathname.startsWith('/api');
+
+      // Skip redirect logic for API routes, static/public pages, and flow pages
+      if (isApiRoute || isPrivacyPage || isTermsPage) {
+        return NextResponse.next();
+      }
+
+      // Step 1: User must complete onboarding first
+      if (!onboardingComplete) {
+        if (!isOnboardingPage) {
+          return NextResponse.redirect(new URL('/onboarding', req.url));
+        }
+        return NextResponse.next();
+      }
+
+      // Step 2: User must set alias after onboarding
+      if (!hasAlias) {
+        if (!isSetupAliasPage) {
           return NextResponse.redirect(new URL('/setup-alias', req.url));
         }
+        return NextResponse.next();
+      }
+
+      // Step 3: Fully onboarded users should not revisit onboarding/setup pages
+      if (isOnboardingPage || isSetupAliasPage) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
       }
     }
 
@@ -27,13 +52,15 @@ export default withAuth(
         const { pathname } = req.nextUrl;
 
         // Public routes that don't require authentication
-        const publicPaths = ['/', '/login', '/verify-request', '/api/auth'];
-        
-        if (publicPaths.some((path) => pathname.startsWith(path) || pathname === path)) {
-          return true;
-        }
+        // Exact match for "/" to prevent the startsWith("/") bug
+        if (pathname === '/') return true;
+        if (pathname === '/login') return true;
+        if (pathname === '/verify-request') return true;
+        if (pathname === '/privacy') return true;
+        if (pathname === '/terms') return true;
+        if (pathname.startsWith('/api/auth')) return true;
 
-        // For protected routes, require authentication
+        // Everything else requires authentication
         return !!token;
       },
     },
@@ -50,8 +77,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - public folder static assets
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|api/auth).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
   ],
 };

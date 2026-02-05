@@ -31,7 +31,11 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  // Check if user has alias, redirect to setup if not
+  // Enforce onboarding flow
+  if (!session.user.onboardingComplete) {
+    redirect('/onboarding');
+  }
+
   if (!session.user.alias) {
     redirect('/setup-alias');
   }

@@ -142,18 +142,22 @@ export function calculateRankings(entries: LeaderboardEntry[]): LeaderboardEntry
 
   // Assign ranks (handle ties)
   let currentRank = 1;
-  return sorted.map((entry, index) => {
+  const ranked: LeaderboardEntry[] = [];
+  for (let index = 0; index < sorted.length; index++) {
+    const entry = sorted[index];
     if (index > 0) {
-      const prevEntry = sorted[index - 1];
+      const prevRanked = ranked[index - 1];
       if (
-        entry.totalPoints === prevEntry.totalPoints &&
-        entry.averageTime === prevEntry.averageTime
+        entry.totalPoints === prevRanked.totalPoints &&
+        entry.averageTime === prevRanked.averageTime
       ) {
         // Same rank for ties
-        return { ...entry, rank: prevEntry.rank };
+        ranked.push({ ...entry, rank: prevRanked.rank });
+        continue;
       }
       currentRank = index + 1;
     }
-    return { ...entry, rank: currentRank };
-  });
+    ranked.push({ ...entry, rank: currentRank });
+  }
+  return ranked;
 }
