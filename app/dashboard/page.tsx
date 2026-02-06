@@ -24,6 +24,31 @@ async function getActiveEvents() {
   return events;
 }
 
+async function getUserStats(userId: string) {
+  const submissions = await prisma.submission.findMany({
+    where: { userId, isCorrect: true },
+    select: {
+      pointsAwarded: true,
+      puzzle: {
+        select: {
+          round: {
+            select: { eventNightId: true },
+          },
+        },
+      },
+    },
+  });
+
+  const totalPoints = submissions.reduce((sum, s) => sum + s.pointsAwarded, 0);
+  const eventIds = new Set(submissions.map((s) => s.puzzle.round.eventNightId));
+
+  return {
+    eventsParticipated: eventIds.size,
+    totalPoints,
+    puzzlesSolved: submissions.length,
+  };
+}
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
@@ -40,7 +65,10 @@ export default async function DashboardPage() {
     redirect('/setup-alias');
   }
 
-  const events = await getActiveEvents();
+  const [events, stats] = await Promise.all([
+    getActiveEvents(),
+    getUserStats(session.user.id),
+  ]);
 
   return (
     <main className="relative min-h-screen overflow-hidden">
@@ -96,9 +124,10 @@ export default async function DashboardPage() {
             {events.length > 0 ? (
               <div className="space-y-3">
                 {events.map((event) => (
-                  <div
+                  <Link
                     key={event.id}
-                    className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-magic-purple/30 transition-colors"
+                    href={`/dashboard/events/${event.id}`}
+                    className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-magic-purple/30 transition-colors group"
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-3 h-3 rounded-full ${
@@ -107,13 +136,13 @@ export default async function DashboardPage() {
                           : 'bg-yellow-500'
                       }`} />
                       <div>
-                        <h3 className="font-semibold text-white">{event.name}</h3>
+                        <h3 className="font-semibold text-white group-hover:text-magic-gold transition-colors">{event.name}</h3>
                         <p className="text-white/50 text-sm">
                           {formatEventDate(event.startsAt)}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         event.status === 'LIVE'
                           ? 'bg-green-500/20 text-green-400'
@@ -121,8 +150,9 @@ export default async function DashboardPage() {
                       }`}>
                         {event.status === 'LIVE' ? '🔴 LIVE' : '⏳ In arrivo'}
                       </span>
+                      <span className="text-white/30 text-sm group-hover:text-magic-mystic transition-colors">→</span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -132,6 +162,12 @@ export default async function DashboardPage() {
                 <p className="text-white/30 text-sm mt-1">Torna presto per nuove serate magiche!</p>
               </div>
             )}
+
+            <div className="mt-4 pt-3 border-t border-white/5 text-right">
+              <Link href="/dashboard/events" className="text-magic-mystic text-sm hover:text-magic-gold transition-colors">
+                Vedi tutti gli eventi →
+              </Link>
+            </div>
           </div>
 
           {/* Library Card */}
@@ -188,15 +224,15 @@ export default async function DashboardPage() {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-white/50 text-sm">Eventi partecipati</span>
-                <span className="text-magic-gold font-bold">0</span>
+                <span className="text-magic-gold font-bold">{stats.eventsParticipated}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-white/50 text-sm">Punti totali</span>
-                <span className="text-magic-gold font-bold">0</span>
+                <span className="text-magic-gold font-bold">{stats.totalPoints}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-white/50 text-sm">Posizione globale</span>
-                <span className="text-magic-gold font-bold">-</span>
+                <span className="text-white/50 text-sm">Enigmi risolti</span>
+                <span className="text-magic-gold font-bold">{stats.puzzlesSolved}</span>
               </div>
             </div>
           </div>
