@@ -35,6 +35,8 @@ model User {
   auditLogs         AuditLog[]        @relation("ActorUser")
   sessions          Session[]
   accounts          Account[]
+  leaderboard       LeaderboardEntry?
+  badgeAwards       BadgeAward[]
 
   @@index([email])
   @@index([alias])
@@ -127,6 +129,15 @@ model EventNight {
   endsAt      DateTime
   status      EventStatus @default(DRAFT)
   
+  // Rituali di apertura e chiusura (Estensione 1)
+  openingNarrative  String?  @db.Text   // Testo narrativo di apertura serata
+  closingNarrative  String?  @db.Text   // Testo narrativo di chiusura
+  nextEventTeaser   String?  @db.Text   // Anticipazione serata successiva
+  theme             String?             // Tema della serata (es. "La Notte dei Misteri")
+  
+  // Spettatore (Estensione 7)
+  spectatorEnabled  Boolean  @default(true) // Permetti modalità spettatore
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -134,6 +145,8 @@ model EventNight {
   tables    Table[]
   rounds    Round[]
   alliances Alliance[]
+  badges    Badge[]
+  metrics   EventMetrics?
 
   @@index([status])
   @@index([startsAt])
@@ -246,6 +259,11 @@ model Puzzle {
   // Scoring configuration
   scoringJson Json?    // e.g., { "basePoints": 100, "timeBonus": true, "hintPenalty": 10 }
   
+  // Puzzle Type & Context (Estensioni 2, 3)
+  puzzleType    PuzzleType  @default(DIGITAL)  // Tipo di enigma
+  physicalHint  String?     @db.Text           // Riferimento a oggetto/luogo fisico
+  environmentNote String?   @db.Text           // Note per puzzle di osservazione
+  
   // Order for display
   order       Int      @default(0)
   
@@ -259,6 +277,14 @@ model Puzzle {
 
   @@index([roundId])
   @@map("puzzles")
+}
+
+enum PuzzleType {
+  DIGITAL       // Enigma digitale standard
+  PHYSICAL      // Richiede oggetto fisico al tavolo
+  OBSERVATION   // Basato su osservazione ambiente/sala
+  LISTENING     // Basato su ascolto
+  HYBRID        // Combinazione digitale + fisico
 }
 
 // ============================================================================
@@ -304,6 +330,9 @@ model Submission {
   
   // Anti-cheat flags
   flaggedReason  String?
+  
+  // Spettatore (Estensione 7)
+  isSpectator    Boolean  @default(false) // True se submit fuori classifica
   
   // Relations
   puzzle Puzzle @relation(fields: [puzzleId], references: [id], onDelete: Cascade)
@@ -354,8 +383,16 @@ model Alliance {
   status        AllianceStatus @default(PENDING)
   handshakeCode String?        // One-time code for establishing alliance
   
+  // Effetti concreti dell'alleanza (Estensione 4)
+  effectType    AllianceEffect @default(NONE)  // Tipo di effetto
+  sharedHints   Boolean        @default(false)  // Condivisione hint tra tavoli
+  bonusPoints   Int            @default(0)      // Bonus/penalità punti
+  commonGoal    String?        @db.Text         // Obiettivo comune
+  commonGoalMet Boolean        @default(false)  // Obiettivo raggiunto?
+  
   createdAt     DateTime       @default(now())
   acceptedAt    DateTime?
+  dissolvedAt   DateTime?
   
   // Relations
   eventNight EventNight @relation(fields: [eventNightId], references: [id], onDelete: Cascade)
@@ -371,6 +408,14 @@ enum AllianceStatus {
   PENDING
   ACTIVE
   DISSOLVED
+}
+
+enum AllianceEffect {
+  NONE            // Nessun effetto speciale
+  HINT_SHARING    // Condivisione suggerimenti
+  POINT_BONUS     // Bonus punti per entrambi
+  POINT_PENALTY   // Penalità se alleanza fallisce
+  COMMON_GOAL     // Obiettivo comune da raggiungere insieme
 }
 
 // ============================================================================
@@ -409,6 +454,12 @@ model LibraryEntry {
   imageUrl    String?
   externalUrl String?  // Link to Wikipedia, etc.
   
+  // Grimorio (Estensione 6)
+  entryType       LibraryEntryType @default(ARTICLE)  // Tipo di contenuto
+  linkedEventId   String?           // Collegato a una serata specifica
+  linkedPuzzleId  String?           // Spiegazione di un enigma passato
+  requiresEventId String?           // Sbloccabile solo dopo partecipazione
+  
   order       Int      @default(0)
   isPublished Boolean  @default(true)
   
@@ -417,5 +468,122 @@ model LibraryEntry {
 
   @@index([category])
   @@index([isPublished])
+  @@index([entryType])
   @@map("library_entries")
+}
+
+enum LibraryEntryType {
+  ARTICLE        // Articolo generico
+  PUZZLE_EXPLAIN // Spiegazione di un enigma passato
+  HISTORY        // Frammento di storia legato alla serata
+  CURIOSITY      // Curiosità sull'illusionismo
+  TECHNIQUE      // Tecnica magica
+  LOCKED         // Contenuto sbloccabile dopo partecipazione
+}
+
+// ============================================================================
+// LEADERBOARD
+// ============================================================================
+
+model LeaderboardEntry {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  points    Int      @default(0)
+  events    Int      @default(0)
+  riddles   Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([points])
+  @@map("leaderboard_entries")
+}
+
+// ============================================================================
+// BADGE & RICOMPENSE (Estensione 5)
+// ============================================================================
+
+model Badge {
+  id          String    @id @default(cuid())
+  name        String    // es: "Primo Enigma", "Maestro dell'Osservazione"
+  description String    @db.Text
+  icon        String    // Emoji o URL icona
+  category    BadgeCategory @default(ACHIEVEMENT)
+  
+  // Condizioni automatiche (opzionali)
+  triggerType   String?  // es: "puzzles_solved", "events_attended", "alliance_formed"
+  triggerValue  Int?     // Soglia per sblocco automatico
+  
+  // Legato a evento specifico (titolo di serata)
+  eventNightId  String?
+  
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  eventNight  EventNight? @relation(fields: [eventNightId], references: [id], onDelete: SetNull)
+  awards      BadgeAward[]
+
+  @@index([category])
+  @@map("badges")
+}
+
+model BadgeAward {
+  id        String   @id @default(cuid())
+  badgeId   String
+  userId    String
+  reason    String?  @db.Text  // Motivo dell'assegnazione
+  awardedAt DateTime @default(now())
+  
+  // Relations
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([badgeId, userId])
+  @@index([userId])
+  @@map("badge_awards")
+}
+
+enum BadgeCategory {
+  ACHIEVEMENT     // Traguardo (es: 10 enigmi risolti)
+  EVENT_TITLE     // Titolo di serata (es: MVP della serata)
+  SPECIAL         // Badge speciale/evento
+  COLLABORATION   // Legato ad alleanze/collaborazione
+  STREAK          // Serie consecutiva di partecipazioni
+}
+
+// ============================================================================
+// METRICHE DI SERATA (Estensione 8 — uso interno)
+// ============================================================================
+
+model EventMetrics {
+  id              String   @id @default(cuid())
+  eventNightId    String   @unique
+  
+  // Dati aggregati (anonimizzati)
+  totalParticipants    Int    @default(0)
+  totalSpectators      Int    @default(0)
+  totalSubmissions     Int    @default(0)
+  totalCorrect         Int    @default(0)
+  avgSolveTimeMs       BigInt @default(0)  // Tempo medio risoluzione
+  medianSolveTimeMs    BigInt @default(0)
+  totalHintsUsed       Int    @default(0)
+  avgHintsPerPuzzle    Float  @default(0)
+  totalAlliances       Int    @default(0)
+  totalMessages        Int    @default(0)
+  
+  // Difficoltà percepita
+  hardestPuzzleId      String?  // Puzzle con meno risoluzioni
+  easiestPuzzleId      String?  // Puzzle con più risoluzioni
+  
+  // Dettaglio per puzzle (JSON)
+  puzzleMetricsJson    Json?    // Array di metriche per singolo puzzle
+  
+  computedAt    DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  eventNight EventNight @relation(fields: [eventNightId], references: [id], onDelete: Cascade)
+
+  @@map("event_metrics")
 }
