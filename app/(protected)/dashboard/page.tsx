@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
 import Link from 'next/link';
 import { SignOutButton } from '@/components/sign-out-button';
+import { JoinEventForm } from './join-event-form';
 
 async function getUserStats(userId: string) {
   const submissions = await prisma.submission.findMany({
@@ -29,15 +30,41 @@ async function getUserStats(userId: string) {
   };
 }
 
+async function getActiveEvent(userId: string) {
+  const event = await prisma.eventNight.findFirst({
+    where: { status: 'LIVE' },
+    select: { id: true, name: true, joinCode: true },
+  });
+  if (!event) return null;
+
+  const membership = await prisma.tableMembership.findFirst({
+    where: {
+      userId,
+      leftAt: null,
+      table: { eventNightId: event.id },
+    },
+    include: { table: { select: { name: true } } },
+  });
+
+  return {
+    id: event.id,
+    name: event.name,
+    joinCode: event.joinCode,
+    isJoined: !!membership,
+    tableName: membership?.table.name || null,
+  };
+}
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   const user = session!.user;
   const stats = await getUserStats(user.id);
+  const activeEvent = await getActiveEvent(user.id);
 
   return (
     <div className="min-h-screen bg-magic-dark p-6 md:p-10">
-      {/* Header */}
       <div className="max-w-5xl mx-auto">
+        {/* Header */}
         <div className="flex items-center justify-between mb-10">
           <div>
             <h1 className="font-cinzel text-3xl md:text-4xl text-magic-gold">
@@ -45,8 +72,38 @@ export default async function DashboardPage() {
             </h1>
             <p className="text-white/50 mt-1">La tua area personale</p>
           </div>
-          <SignOutButton />
+          <div className="flex items-center gap-3">
+            {user.role === 'ADMIN' && (
+              <Link href="/admin" className="px-3 py-1.5 bg-red-500/20 text-red-300 text-xs rounded hover:bg-red-500/30 transition-colors">
+                Admin
+              </Link>
+            )}
+            <SignOutButton />
+          </div>
         </div>
+
+        {/* Active Event Banner */}
+        {activeEvent && (
+          <div className="card-magic border-green-500/30 mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+              <span className="text-green-400 text-sm font-medium">Serata in corso</span>
+            </div>
+            <h2 className="text-magic-gold font-cinzel text-xl mb-3">{activeEvent.name}</h2>
+            {activeEvent.isJoined ? (
+              <div className="flex items-center justify-between">
+                <p className="text-white/60 text-sm">
+                  Sei al tavolo: <span className="text-magic-mystic">{activeEvent.tableName}</span>
+                </p>
+                <Link href="/game" className="btn-magic text-sm">
+                  Vai al Gioco →
+                </Link>
+              </div>
+            ) : (
+              <JoinEventForm joinCode={activeEvent.joinCode || ''} />
+            )}
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">

@@ -23,10 +23,11 @@ model User {
   emailVerified    DateTime?
   image            String?   // NextAuth standard field for avatar
   alias            String?   @unique // Public display name for leaderboards
+  role             UserRole  @default(USER)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   deletedAt        DateTime? // Soft delete timestamp
-  
+
   // Relations
   consents          Consent[]
   tableMemberships  TableMembership[]
@@ -42,6 +43,11 @@ model User {
   @@index([alias])
   @@index([deletedAt])
   @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }
 
 model Account {
@@ -90,24 +96,28 @@ model VerificationToken {
 model Consent {
   id                  String    @id @default(cuid())
   userId              String
-  
+
   // Privacy Policy Consent (mandatory)
   privacyAcceptedAt   DateTime?
   privacyVersion      String?   // Version of policy accepted
-  
+
+  // Terms of Service Consent (mandatory)
+  termsAcceptedAt     DateTime?
+  termsVersion        String?   // Version of terms accepted
+
   // Marketing Consent (optional)
   marketingOptInAt    DateTime?
   marketingVersion    String?
   marketingOptOutAt   DateTime? // Track opt-out separately
-  
+
   // Consent Evidence
   evidenceHash        String?   // Hash of IP + User Agent + Timestamp
   ipAddressHash       String?   // Hashed IP address
   userAgent           String?   @db.Text
-  
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
-  
+
   // Relations
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -128,19 +138,23 @@ model EventNight {
   startsAt    DateTime
   endsAt      DateTime
   status      EventStatus @default(DRAFT)
-  
+  joinCode    String?  @unique // 6-char code for players to join this event
+
+  // Pointer to the currently active round (null if none)
+  currentRoundId String?
+
   // Rituali di apertura e chiusura (Estensione 1)
   openingNarrative  String?  @db.Text   // Testo narrativo di apertura serata
   closingNarrative  String?  @db.Text   // Testo narrativo di chiusura
   nextEventTeaser   String?  @db.Text   // Anticipazione serata successiva
   theme             String?             // Tema della serata (es. "La Notte dei Misteri")
-  
+
   // Spettatore (Estensione 7)
   spectatorEnabled  Boolean  @default(true) // Permetti modalità spettatore
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   // Relations
   tables    Table[]
   rounds    Round[]

@@ -30,6 +30,9 @@
     "tailwind-merge": "^2.4.0",
     "zod": "^3.23.0"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/crypto-js": "^4.2.2",

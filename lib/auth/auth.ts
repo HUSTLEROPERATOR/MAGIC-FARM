@@ -37,6 +37,18 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
+    async signIn({ user }) {
+      // Block soft-deleted users from signing in
+      if (user?.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { deletedAt: true },
+        });
+        if (dbUser?.deletedAt) return false;
+      }
+      return true;
+    },
+
     async jwt({ token, user, trigger, session }) {
       // On initial sign-in, populate token from DB user
       if (user) {
@@ -44,6 +56,7 @@ export const authOptions: NextAuthOptions = {
         token.alias = user.alias ?? null;
         token.firstName = user.firstName ?? null;
         token.lastName = user.lastName ?? null;
+        token.role = (user.role as 'USER' | 'ADMIN') ?? 'USER';
 
         // Check if user has completed onboarding by looking at consent
         const consent = await prisma.consent.findFirst({
@@ -57,6 +70,11 @@ export const authOptions: NextAuthOptions = {
           user.lastName &&
           consent?.privacyAcceptedAt
         );
+        // Check if required consents (privacy + terms) are accepted
+        token.consentsComplete = !!(
+          consent?.privacyAcceptedAt &&
+          consent?.termsAcceptedAt
+        );
       }
 
       // Allow session updates to refresh token data
@@ -66,6 +84,10 @@ export const authOptions: NextAuthOptions = {
         if (session.lastName !== undefined) token.lastName = session.lastName;
         if (session.onboardingComplete !== undefined)
           token.onboardingComplete = session.onboardingComplete;
+        if (session.consentsComplete !== undefined)
+          token.consentsComplete = session.consentsComplete;
+        if (session.role !== undefined)
+          token.role = session.role;
       }
 
       return token;
@@ -77,7 +99,9 @@ export const authOptions: NextAuthOptions = {
         session.user.alias = token.alias;
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
+        session.user.role = token.role;
         session.user.onboardingComplete = token.onboardingComplete;
+        session.user.consentsComplete = token.consentsComplete;
       }
       return session;
     },

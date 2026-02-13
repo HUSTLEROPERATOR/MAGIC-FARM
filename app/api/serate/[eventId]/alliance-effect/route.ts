@@ -85,7 +85,7 @@ export async function POST(
         data: {
           tableId,
           userId,
-          content: `🤝 Suggerimento condiviso dall'alleato: il vostro alleato al tavolo "${membership.table.name}" ha ${userSubmission.hintsUsed} suggerimenti per l'enigma. Consultate la vostra alleanza!`,
+          body: `Suggerimento condiviso dall'alleato: il vostro alleato al tavolo "${membership.table.name}" ha ${userSubmission.hintsUsed} suggerimenti per l'enigma. Consultate la vostra alleanza!`,
         },
       });
     }
