@@ -51,9 +51,9 @@ async function main() {
         data: {
           userId: user.id,
           privacyAcceptedAt: new Date(),
-          privacyVersion: '1.0',
+          privacyVersion: '2.0',
           termsAcceptedAt: new Date(),
-          termsVersion: '1.0',
+          termsVersion: '2.0',
         },
       });
     }
@@ -79,6 +79,7 @@ async function main() {
         status: 'LIVE',
         joinCode: 'MAGIC1',
         theme: 'Mistero e Illusione',
+        hostName: 'Lorenzo Mameli',
         openingNarrative: 'Benvenuti alla Notte dei Misteri. Stasera, ogni tavolo dovrà dimostrare il proprio valore...',
       },
     });

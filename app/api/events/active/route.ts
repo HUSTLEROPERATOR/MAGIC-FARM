@@ -39,6 +39,7 @@ export async function GET() {
       endsAt: event.endsAt,
       joinCode: event.joinCode,
       currentRoundId: event.currentRoundId,
+      organizationId: event.organizationId,
       theme: event.theme,
       rounds: event.rounds,
       tables: event.tables.map((t) => ({

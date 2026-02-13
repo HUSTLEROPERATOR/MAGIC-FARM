@@ -67,9 +67,9 @@ export async function POST(request: NextRequest) {
 
   const consentData = {
     privacyAcceptedAt: now,
-    privacyVersion: '1.0',
+    privacyVersion: '2.0',
     termsAcceptedAt: now,
-    termsVersion: '1.0',
+    termsVersion: '2.0',
     marketingOptInAt: parsed.data.marketingOptIn ? now : null,
     marketingVersion: parsed.data.marketingOptIn ? '1.0' : null,
     evidenceHash,
@@ -97,8 +97,8 @@ export async function POST(request: NextRequest) {
     action: AUDIT_ACTIONS.CONSENT_UPDATED,
     actorUserId: userId,
     metadata: {
-      privacyVersion: '1.0',
-      termsVersion: '1.0',
+      privacyVersion: '2.0',
+      termsVersion: '2.0',
       marketingOptIn: !!parsed.data.marketingOptIn,
     },
     ipAddress: ip,

@@ -70,7 +70,7 @@ export default function ConsentsPage() {
                 <a href="/privacy" target="_blank" className="text-magic-mystic underline">
                   Privacy Policy
                 </a>{' '}
-                (v1.0).
+                (v2.0).
               </p>
             </div>
           </label>
@@ -91,7 +91,7 @@ export default function ConsentsPage() {
                 <a href="/terms" target="_blank" className="text-magic-mystic underline">
                   Termini di Servizio
                 </a>{' '}
-                (v1.0).
+                (v2.0).
               </p>
             </div>
           </label>

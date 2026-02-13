@@ -15,48 +15,88 @@ export default function TermsPage() {
         </Link>
 
         <div className="card-magic prose prose-invert max-w-none">
-          <h1 className="font-cinzel text-3xl font-bold glow-text mb-2">Regolamento Evento</h1>
-          <p className="text-white/40 text-sm mb-8">Ultimo aggiornamento: Febbraio 2026</p>
-
-          <h2 className="text-xl font-semibold text-white mt-8 mb-3">1. Partecipazione</h2>
-          <p className="text-white/70 leading-relaxed">
-            La partecipazione agli eventi Magic Farm è aperta a tutti gli utenti registrati
-            che hanno completato l&apos;onboarding e accettato la Privacy Policy.
+          <h1 className="font-cinzel text-3xl font-bold glow-text mb-2">Termini di Servizio</h1>
+          <p className="text-white/40 text-sm mb-8">
+            Versione 2.0 &mdash; Ultimo aggiornamento: 13 febbraio 2026
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8 mb-3">2. Tavoli e Collaborazione</h2>
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">1. Oggetto del Servizio</h2>
           <p className="text-white/70 leading-relaxed">
-            I partecipanti vengono assegnati a tavoli. La collaborazione all&apos;interno del tavolo
-            è incoraggiata. Le alleanze tra tavoli seguono le regole specifiche di ogni round.
+            I presenti Termini di Servizio regolano l&apos;utilizzo della piattaforma di gioco interattivo
+            gestita da <strong className="text-white">RVF SNC di Contu</strong> (di seguito &ldquo;il Gestore&rdquo;).
+            La piattaforma consente la partecipazione a serate evento basate su enigmi e sfide di gruppo.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8 mb-3">3. Punteggio</h2>
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">2. Regole di Utilizzo</h2>
+          <ul className="text-white/70 space-y-1 list-disc list-inside">
+            <li>La registrazione richiede un indirizzo email valido e l&apos;accettazione della Privacy Policy.</li>
+            <li>Ogni utente può possedere un solo account.</li>
+            <li>L&apos;alias scelto deve essere appropriato e non offensivo.</li>
+            <li>L&apos;accesso al gioco avviene tramite codice evento fornito durante la serata.</li>
+          </ul>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">3. Comportamento e Fair Play</h2>
           <p className="text-white/70 leading-relaxed">
-            Il punteggio si basa su: correttezza della risposta (100 punti base),
-            velocità di risoluzione (fino a 50 punti bonus), suggerimenti utilizzati
-            (penalità di 10 punti ciascuno) e tentativi effettuati (penalità di 5 punti
-            dopo il primo).
+            I partecipanti si impegnano a mantenere un comportamento corretto e rispettoso.
+            In particolare è vietato:
+          </p>
+          <ul className="text-white/70 space-y-1 list-disc list-inside">
+            <li>Utilizzare strumenti automatici, bot o script per rispondere agli enigmi</li>
+            <li>Condividere risposte con tavoli non alleati</li>
+            <li>Manipolare il sistema di punteggio o sfruttare vulnerabilità tecniche</li>
+            <li>Pubblicare contenuti offensivi, diffamatori o inappropriati nella Clue Board</li>
+            <li>Creare account multipli per ottenere vantaggi</li>
+          </ul>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">4. Divieto di Abuso</h2>
+          <p className="text-white/70 leading-relaxed">
+            Il sistema include misure automatiche anti-cheat e di rate limiting. Qualsiasi tentativo
+            di abuso, interferenza o accesso non autorizzato alla piattaforma è severamente vietato
+            e potrà comportare le conseguenze previste al punto 7.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8 mb-3">4. Fair Play</h2>
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">5. Proprietà dei Contenuti</h2>
           <p className="text-white/70 leading-relaxed">
-            È vietato l&apos;uso di strumenti automatici, la condivisione di risposte tra tavoli
-            non alleati, e qualsiasi forma di manipolazione del gioco. Il sistema anti-cheat
-            monitora automaticamente le attività sospette.
+            Tutti i contenuti del gioco (enigmi, testi narrativi, grafica, struttura delle serate)
+            sono di proprietà esclusiva del Gestore e sono protetti dalle leggi sul diritto d&apos;autore.
+            È vietata la riproduzione, distribuzione o pubblicazione dei contenuti senza autorizzazione scritta.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8 mb-3">5. Classifiche</h2>
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">6. Limitazioni di Responsabilità</h2>
+          <ul className="text-white/70 space-y-1 list-disc list-inside">
+            <li>Il servizio è fornito &ldquo;così com&apos;è&rdquo; senza garanzie di disponibilità continua.</li>
+            <li>Il Gestore non è responsabile per interruzioni tecniche, malfunzionamenti temporanei
+                o perdita di dati di gioco dovuta a cause di forza maggiore.</li>
+            <li>Le classifiche e i punteggi hanno valore esclusivamente ludico e non commerciale.</li>
+          </ul>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">7. Sospensione e Chiusura Account</h2>
           <p className="text-white/70 leading-relaxed">
-            Le classifiche sono calcolate in tempo reale. In caso di parità di punteggio,
-            il tempo medio di risoluzione determina la posizione. L&apos;alias pubblico scelto
-            durante la registrazione viene visualizzato nelle classifiche.
+            Il Gestore si riserva il diritto di sospendere temporaneamente o chiudere definitivamente
+            l&apos;account di un utente in caso di:
+          </p>
+          <ul className="text-white/70 space-y-1 list-disc list-inside">
+            <li>Violazione dei presenti Termini di Servizio</li>
+            <li>Comportamento scorretto o abusivo reiterato</li>
+            <li>Tentativi di manipolazione del sistema</li>
+          </ul>
+          <p className="text-white/70 leading-relaxed mt-2">
+            La sospensione verrà comunicata all&apos;utente con indicazione della motivazione.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8 mb-3">6. Condotta</h2>
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">8. Modifiche ai Termini</h2>
           <p className="text-white/70 leading-relaxed">
-            I messaggi nella Clue Board devono essere rispettosi. I moderatori possono
-            nascondere messaggi inappropriati. Violazioni ripetute possono portare alla
-            sospensione dall&apos;evento.
+            Il Gestore può aggiornare i presenti Termini in qualsiasi momento.
+            In caso di modifiche sostanziali, l&apos;utente sarà invitato a prenderne visione.
+            La versione corrente e la data di aggiornamento sono indicate in cima a questo documento.
+          </p>
+
+          <h2 className="text-xl font-semibold text-white mt-8 mb-3">9. Contatti</h2>
+          <p className="text-white/70 leading-relaxed">
+            Per qualsiasi domanda relativa ai presenti Termini, scrivi a{' '}
+            <a href="mailto:privacy@vecchiafattoriacagliari.com" className="text-magic-mystic underline">
+              privacy@vecchiafattoriacagliari.com
+            </a>.
           </p>
         </div>
       </div>
