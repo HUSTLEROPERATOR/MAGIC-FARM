@@ -398,6 +398,8 @@ model Submission {
   @@index([userId])
   @@index([tableId])
   @@index([isCorrect])
+  @@index([userId, puzzleId])
+  @@index([userId, puzzleId, isCorrect])
   @@map("submissions")
 }
 
@@ -480,6 +482,7 @@ enum AllianceEffect {
 model AuditLog {
   id          String   @id @default(cuid())
   actorUserId String?  // Nullable for system actions
+  actorRole   String?  // Role at the time of action (USER, ADMIN)
   action      String   // e.g., "USER_LOGIN", "CONSENT_UPDATED", "ANSWER_SUBMITTED"
   metaJson    Json?    // Additional metadata
   ipHash      String?  // Hashed IP

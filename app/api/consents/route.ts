@@ -13,6 +13,13 @@ const consentSchema = z.object({
     errorMap: () => ({ message: 'Devi accettare i termini di servizio.' }),
   }),
   marketingOptIn: z.boolean().optional(),
+  // Granular GDPR consents
+  consentPlatform: z.literal(true, {
+    errorMap: () => ({ message: 'Il consenso piattaforma è obbligatorio per giocare.' }),
+  }),
+  consentControllerMarketing: z.boolean().optional(),
+  consentShareWithHost: z.boolean().optional(),
+  consentHostMarketing: z.boolean().optional(),
 });
 
 /**
@@ -36,6 +43,10 @@ export async function GET() {
           termsVersion: consent.termsVersion,
           marketingOptIn: !!consent.marketingOptInAt,
           marketingVersion: consent.marketingVersion,
+          consentPlatform: consent.consentPlatform,
+          consentControllerMarketing: consent.consentControllerMarketing,
+          consentShareWithHost: consent.consentShareWithHost,
+          consentHostMarketing: consent.consentHostMarketing,
         }
       : null,
   });
@@ -72,6 +83,11 @@ export async function POST(request: NextRequest) {
     termsVersion: '2.0',
     marketingOptInAt: parsed.data.marketingOptIn ? now : null,
     marketingVersion: parsed.data.marketingOptIn ? '1.0' : null,
+    consentPlatform: true, // always true at this point (validated by schema)
+    consentControllerMarketing: !!parsed.data.consentControllerMarketing,
+    consentShareWithHost: !!parsed.data.consentShareWithHost,
+    // Host marketing only meaningful if share-with-host is enabled
+    consentHostMarketing: parsed.data.consentShareWithHost ? !!parsed.data.consentHostMarketing : false,
     evidenceHash,
     ipAddressHash: ipHash,
     userAgent,
@@ -96,10 +112,15 @@ export async function POST(request: NextRequest) {
   await createAuditLog({
     action: AUDIT_ACTIONS.CONSENT_UPDATED,
     actorUserId: userId,
+    actorRole: session!.user.role,
     metadata: {
       privacyVersion: '2.0',
       termsVersion: '2.0',
       marketingOptIn: !!parsed.data.marketingOptIn,
+      consentPlatform: true,
+      consentControllerMarketing: !!parsed.data.consentControllerMarketing,
+      consentShareWithHost: !!parsed.data.consentShareWithHost,
+      consentHostMarketing: parsed.data.consentShareWithHost ? !!parsed.data.consentHostMarketing : false,
     },
     ipAddress: ip,
     userAgent,

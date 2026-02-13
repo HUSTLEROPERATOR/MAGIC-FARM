@@ -1,31 +1,54 @@
 import prisma from '@/lib/db/prisma';
 import { hashIP } from '@/lib/security/crypto';
+import crypto from 'crypto';
 
 interface AuditLogData {
   action: string;
   actorUserId?: string;
+  actorRole?: string;
   metadata?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
+  /** Optional caller-provided requestId; auto-generated if omitted */
+  requestId?: string;
 }
 
 /**
- * Create an audit log entry
+ * Create an audit log entry.
+ *
+ * Automatically injects:
+ * - requestId   — unique per-request identifier for correlation
+ * - ipHash      — SHA-256 of the raw IP (raw IP is NEVER stored)
+ *
+ * Raw IP addresses are never persisted in the audit log.
  */
 export async function createAuditLog({
   action,
   actorUserId,
+  actorRole,
   metadata,
   ipAddress,
   userAgent,
+  requestId,
 }: AuditLogData): Promise<void> {
   try {
+    const reqId = requestId || crypto.randomUUID();
+    const ipHashValue = ipAddress ? hashIP(ipAddress) : null;
+
+    // Inject requestId and ipHash into metadata for every entry
+    const enrichedMeta = {
+      ...(metadata || {}),
+      requestId: reqId,
+      ...(ipHashValue ? { ipHash: ipHashValue } : {}),
+    };
+
     await prisma.auditLog.create({
       data: {
         action,
         actorUserId: actorUserId || null,
-        metaJson: metadata ? JSON.parse(JSON.stringify(metadata)) : undefined,
-        ipHash: ipAddress ? hashIP(ipAddress) : null,
+        actorRole: actorRole || null,
+        metaJson: JSON.parse(JSON.stringify(enrichedMeta)),
+        ipHash: ipHashValue,
         userAgent: userAgent || null,
       },
     });
@@ -78,6 +101,21 @@ export const AUDIT_ACTIONS = {
 
   // Magic Link
   AUTH_MAGIC_LINK_REQUESTED: 'AUTH_MAGIC_LINK_REQUESTED',
+
+  // Host operations
+  HOST_EXPORT_ATTEMPT: 'HOST_EXPORT_ATTEMPT',
+  HOST_INVITE_SENT: 'HOST_INVITE_SENT',
+  HOST_INVITE_RATE_LIMIT: 'HOST_INVITE_RATE_LIMIT',
+  HOST_INVITE_DUPLICATE: 'HOST_INVITE_DUPLICATE',
+  HOST_INVITE_TURNSTILE_FAIL: 'HOST_INVITE_TURNSTILE_FAIL',
+  HOST_EXPORT_RATE_LIMIT: 'HOST_EXPORT_RATE_LIMIT',
+
+  // Consent
+  CONSENT_REVOKED: 'CONSENT_REVOKED',
+
+  // Anti-cheat
+  SUBMISSION_COOLDOWN_BLOCKED: 'SUBMISSION_COOLDOWN_BLOCKED',
+  SUBMISSION_IP_PATTERN_BLOCKED: 'SUBMISSION_IP_PATTERN_BLOCKED',
 
   // Privacy
   USER_DATA_EXPORT: 'USER_DATA_EXPORT',

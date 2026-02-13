@@ -23,6 +23,7 @@ interface UserLeaderboardEntry {
   username: string;
   totalPoints: number;
   totalSolved: number;
+  hostSharingEnabled?: boolean;
 }
 
 type Scope = 'event' | 'local' | 'global';
@@ -259,7 +260,12 @@ function UserLeaderboard({ entries }: { entries: UserLeaderboardEntry[] }) {
                   {medal}
                 </span>
                 <div>
-                  <p className="text-white font-semibold">{entry.username}</p>
+                  <p className="text-white font-semibold">
+                    {entry.username}
+                    {entry.hostSharingEnabled && (
+                      <span className="inline-block ml-1.5 text-xs" title="Disponibile per inviti dall'host">🤝</span>
+                    )}
+                  </p>
                   <p className="text-white/30 text-xs mt-1">{entry.totalSolved} enigmi risolti</p>
                 </div>
               </div>

@@ -26,6 +26,34 @@ const clueBoardLimiter = new RateLimiterMemory({
   duration: 60, // 20 messages per minute
 });
 
+const hostInviteLimiter = new RateLimiterMemory({
+  points: 5,
+  duration: 600, // 5 requests per 10 minutes
+});
+
+const hostExportLimiter = new RateLimiterMemory({
+  points: 10,
+  duration: 600, // 10 exports per 10 minutes
+});
+
+/**
+ * Per-puzzle submission cooldown: 1 attempt per 5 seconds per user+puzzle.
+ * Prevents rapid-fire brute-force on a single puzzle.
+ */
+const puzzleCooldownLimiter = new RateLimiterMemory({
+  points: 1,
+  duration: 5, // 1 attempt per 5 seconds per puzzle
+});
+
+/**
+ * IP-based submission limiter: 30 submissions per 5 minutes from same IP.
+ * Detects multi-account abuse from the same IP.
+ */
+const ipSubmitLimiter = new RateLimiterMemory({
+  points: 30,
+  duration: 300, // 30 per 5 minutes — generous for shared networks
+});
+
 /**
  * Rate limit login attempts
  */
@@ -87,10 +115,60 @@ export async function rateLimitClueBoard(identifier: string): Promise<boolean> {
 }
 
 /**
+ * Rate limit host invite requests (5 per 10 minutes)
+ */
+export async function rateLimitHostInvite(identifier: string): Promise<boolean> {
+  try {
+    await hostInviteLimiter.consume(identifier);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Rate limit host export/top-players requests (10 per 10 minutes)
+ */
+export async function rateLimitHostExport(identifier: string): Promise<boolean> {
+  try {
+    await hostExportLimiter.consume(identifier);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Per-puzzle submission cooldown: 1 attempt per 5 seconds per user+puzzle.
+ * Returns false if the user must wait.
+ */
+export async function rateLimitPuzzleCooldown(userId: string, puzzleId: string): Promise<boolean> {
+  try {
+    await puzzleCooldownLimiter.consume(`${userId}:${puzzleId}`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * IP-based submission limiter: 30 per 5 minutes from same IP hash.
+ * Returns false if too many submissions from this IP.
+ */
+export async function rateLimitIPSubmissions(ipHash: string): Promise<boolean> {
+  try {
+    await ipSubmitLimiter.consume(ipHash);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Get remaining points for a rate limiter
  */
 export async function getRemainingPoints(
-  limiterType: 'login' | 'submit' | 'gameJoin' | 'clueBoard',
+  limiterType: 'login' | 'submit' | 'gameJoin' | 'clueBoard' | 'hostInvite' | 'hostExport',
   identifier: string
 ): Promise<number> {
   const limiter = {
@@ -98,6 +176,8 @@ export async function getRemainingPoints(
     submit: submitLimiter,
     gameJoin: gameJoinLimiter,
     clueBoard: clueBoardLimiter,
+    hostInvite: hostInviteLimiter,
+    hostExport: hostExportLimiter,
   }[limiterType];
 
   try {

@@ -185,7 +185,9 @@ export class ScoringError extends Error {
 }
 
 /**
- * Check required consents for gameplay
+ * Check required consents for gameplay.
+ * Enforces: privacy accepted, terms accepted, AND consentPlatform = true.
+ * All checks are server-side only.
  */
 export async function checkGameplayConsents(userId: string): Promise<boolean> {
   const consent = await prisma.consent.findFirst({
@@ -193,6 +195,7 @@ export async function checkGameplayConsents(userId: string): Promise<boolean> {
       userId,
       privacyAcceptedAt: { not: null },
       termsAcceptedAt: { not: null },
+      consentPlatform: true,
     },
   });
   return !!consent;

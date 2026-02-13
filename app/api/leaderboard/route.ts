@@ -139,7 +139,16 @@ async function handleScopedLeaderboard(
   const userIds = aggregated.map((a) => a.userId);
   const users = await prisma.user.findMany({
     where: { id: { in: userIds }, deletedAt: null },
-    select: { id: true, alias: true, firstName: true },
+    select: {
+      id: true,
+      alias: true,
+      firstName: true,
+      consents: {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { consentShareWithHost: true },
+      },
+    },
   });
   const userMap = new Map(users.map((u) => [u.id, u]));
 
@@ -162,6 +171,7 @@ async function handleScopedLeaderboard(
         totalPoints,
         totalSolved: entry._count.id,
         rank: currentRank,
+        hostSharingEnabled: user?.consents?.[0]?.consentShareWithHost === true,
       };
     });
 

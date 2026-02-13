@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
 import Link from 'next/link';
 import { SignOutButton } from '@/components/sign-out-button';
+import { RevokeConsentButton } from '@/components/revoke-consent-button';
 
 export default async function ProfiloPage() {
   const session = await getServerSession(authOptions);
@@ -81,9 +82,41 @@ export default async function ProfiloPage() {
           </div>
         </div>
 
-        {/* Consent Status */}
+        {/* Privacy Summary */}
         <div className="card-magic mt-6">
-          <h3 className="text-magic-gold font-semibold mb-4">Consensi</h3>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xl">🛡️</span>
+            <h3 className="text-magic-gold font-semibold">Il tuo stato privacy</h3>
+          </div>
+
+          {/* Plain-language summary */}
+          <div className="rounded-lg bg-white/5 p-4 mb-5 space-y-2 text-sm leading-relaxed">
+            {consent?.consentPlatform ? (
+              <p className="text-green-400">✓ Puoi partecipare alle serate e accumulare punti.</p>
+            ) : (
+              <p className="text-red-400">✗ Devi accettare il consenso piattaforma per giocare.</p>
+            )}
+
+            {consent?.consentShareWithHost ? (
+              <p className="text-green-400">
+                ✓ Il tuo alias appare nella classifica host.{' '}
+                {consent?.consentHostMarketing
+                  ? "L'host può invitarti a eventi futuri (la tua email non viene mai mostrata)."
+                  : "L'host vede solo il tuo alias — nessun invito diretto."}
+              </p>
+            ) : (
+              <p className="text-white/60">— Il tuo alias non è visibile all&apos;host della serata.</p>
+            )}
+
+            {consent?.consentControllerMarketing ? (
+              <p className="text-green-400">✓ Puoi ricevere comunicazioni dalla piattaforma Magic Farm.</p>
+            ) : (
+              <p className="text-white/60">— Nessuna comunicazione marketing dalla piattaforma.</p>
+            )}
+          </div>
+
+          {/* Detailed toggle status */}
+          <h4 className="text-white/70 text-xs uppercase tracking-wider mb-3">Dettaglio consensi</h4>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-white/50 text-sm">Privacy Policy</span>
@@ -98,12 +131,62 @@ export default async function ProfiloPage() {
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-white/50 text-sm">Marketing</span>
-              <span className="text-sm text-white/60">
-                {consent?.marketingOptInAt ? 'Attivo' : 'Non attivo'}
+              <span className="text-white/50 text-sm">Piattaforma (gameplay)</span>
+              <span className={`text-sm ${consent?.consentPlatform ? 'text-green-400' : 'text-red-400'}`}>
+                {consent?.consentPlatform ? 'Attivo' : 'Non attivo'}
               </span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-sm">Marketing piattaforma</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${consent?.consentControllerMarketing ? 'text-blue-400' : 'text-white/40'}`}>
+                  {consent?.consentControllerMarketing ? 'Attivo' : 'Non attivo'}
+                </span>
+                {consent?.consentControllerMarketing && (
+                  <RevokeConsentButton
+                    field="consentControllerMarketing"
+                    label="Revoca"
+                    warning="Non riceverai più comunicazioni dalla piattaforma."
+                  />
+                )}
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-sm">Condivisione con Host</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${consent?.consentShareWithHost ? 'text-blue-400' : 'text-white/40'}`}>
+                  {consent?.consentShareWithHost ? 'Attivo 🤝' : 'Non attivo'}
+                </span>
+                {consent?.consentShareWithHost && (
+                  <RevokeConsentButton
+                    field="consentShareWithHost"
+                    label="Revoca"
+                    warning="Non apparirai più nella classifica host e non riceverai inviti. Effetto immediato."
+                  />
+                )}
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-sm">Marketing Host</span>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${consent?.consentHostMarketing ? 'text-blue-400' : 'text-white/40'}`}>
+                  {consent?.consentHostMarketing ? 'Attivo' : 'Non attivo'}
+                </span>
+                {consent?.consentHostMarketing && (
+                  <RevokeConsentButton
+                    field="consentHostMarketing"
+                    label="Revoca"
+                    warning="Non riceverai più inviti dall'host."
+                  />
+                )}
+              </div>
+            </div>
           </div>
+
+          <p className="text-white/30 text-xs mt-4">
+            La tua email non viene mai condivisa con l&apos;host. Eventuali inviti vengono inviati dalla piattaforma per tuo conto.
+          </p>
+
           <Link href="/consents" className="inline-block mt-4 text-magic-mystic text-sm hover:text-magic-gold transition-colors">
             Aggiorna consensi →
           </Link>

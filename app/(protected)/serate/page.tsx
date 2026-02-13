@@ -13,7 +13,16 @@ export default async function SeratePage() {
     },
     orderBy: { startsAt: 'asc' },
     take: 20,
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      startsAt: true,
+      endsAt: true,
+      status: true,
+      joinCode: true,
+      venueName: true,
+      hostName: true,
       tables: {
         select: {
           id: true,
@@ -66,6 +75,11 @@ export default async function SeratePage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="text-magic-gold font-semibold text-lg">{event.name}</h3>
+                        {(event.venueName || event.hostName) && (
+                          <p className="text-white/50 text-sm mt-0.5">
+                            {[event.venueName, event.hostName ? `Host: ${event.hostName}` : null].filter(Boolean).join(' · ')}
+                          </p>
+                        )}
                         {event.description && (
                           <p className="text-white/60 text-sm mt-1">{event.description}</p>
                         )}
@@ -110,6 +124,11 @@ export default async function SeratePage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-white font-semibold">{event.name}</h3>
+                      {(event.venueName || event.hostName) && (
+                        <p className="text-white/40 text-sm mt-0.5">
+                          {[event.venueName, event.hostName ? `Host: ${event.hostName}` : null].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
                       {event.description && (
                         <p className="text-white/50 text-sm mt-1">{event.description}</p>
                       )}
