@@ -7,13 +7,18 @@ const loginLimiter = new RateLimiterMemory({
 });
 
 const submitLimiter = new RateLimiterMemory({
-  points: parseInt(process.env.RATE_LIMIT_SUBMIT_MAX || '10'),
-  duration: parseInt(process.env.RATE_LIMIT_SUBMIT_WINDOW || '60'), // 1 minute
+  points: parseInt(process.env.RATE_LIMIT_SUBMIT_MAX || '5'),
+  duration: parseInt(process.env.RATE_LIMIT_SUBMIT_WINDOW || '30'), // 5 per 30 seconds
 });
 
 const gameJoinLimiter = new RateLimiterMemory({
   points: 3,
   duration: 300, // 5 minutes
+});
+
+const hintLimiter = new RateLimiterMemory({
+  points: 3,
+  duration: 300, // 3 hint requests per 5 minutes
 });
 
 const clueBoardLimiter = new RateLimiterMemory({
@@ -51,6 +56,18 @@ export async function rateLimitSubmission(identifier: string): Promise<boolean> 
 export async function rateLimitGameJoin(identifier: string): Promise<boolean> {
   try {
     await gameJoinLimiter.consume(identifier);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Rate limit hint requests
+ */
+export async function rateLimitHint(identifier: string): Promise<boolean> {
+  try {
+    await hintLimiter.consume(identifier);
     return true;
   } catch {
     return false;

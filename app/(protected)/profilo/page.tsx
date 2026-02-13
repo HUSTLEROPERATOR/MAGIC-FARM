@@ -1,6 +1,8 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
+import Link from 'next/link';
+import { SignOutButton } from '@/components/sign-out-button';
 
 export default async function ProfiloPage() {
   const session = await getServerSession(authOptions);
@@ -13,8 +15,14 @@ export default async function ProfiloPage() {
       firstName: true,
       lastName: true,
       alias: true,
+      role: true,
       createdAt: true,
     },
+  });
+
+  const consent = await prisma.consent.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
   });
 
   return (
@@ -35,6 +43,11 @@ export default async function ProfiloPage() {
               <p className="text-white/50 text-sm mt-1">
                 {dbUser.firstName} {dbUser.lastName}
               </p>
+            )}
+            {dbUser?.role === 'ADMIN' && (
+              <span className="inline-block mt-2 text-xs px-2 py-0.5 bg-red-500/20 text-red-300 rounded">
+                ADMIN
+              </span>
             )}
           </div>
 
@@ -68,10 +81,39 @@ export default async function ProfiloPage() {
           </div>
         </div>
 
-        <div className="mt-8">
+        {/* Consent Status */}
+        <div className="card-magic mt-6">
+          <h3 className="text-magic-gold font-semibold mb-4">Consensi</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-sm">Privacy Policy</span>
+              <span className={`text-sm ${consent?.privacyAcceptedAt ? 'text-green-400' : 'text-red-400'}`}>
+                {consent?.privacyAcceptedAt ? `Accettata (v${consent.privacyVersion})` : 'Non accettata'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-sm">Termini di Servizio</span>
+              <span className={`text-sm ${consent?.termsAcceptedAt ? 'text-green-400' : 'text-red-400'}`}>
+                {consent?.termsAcceptedAt ? `Accettati (v${consent.termsVersion})` : 'Non accettati'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-white/50 text-sm">Marketing</span>
+              <span className="text-sm text-white/60">
+                {consent?.marketingOptInAt ? 'Attivo' : 'Non attivo'}
+              </span>
+            </div>
+          </div>
+          <Link href="/consents" className="inline-block mt-4 text-magic-mystic text-sm hover:text-magic-gold transition-colors">
+            Aggiorna consensi →
+          </Link>
+        </div>
+
+        <div className="mt-8 flex items-center justify-between">
           <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
             ← Torna alla Dashboard
           </a>
+          <SignOutButton />
         </div>
       </div>
     </div>

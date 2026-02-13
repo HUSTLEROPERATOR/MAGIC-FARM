@@ -13,19 +13,21 @@
 
 MAGIC-FARM è una piattaforma di eventi per giochi di enigmi collaborativi a tema magico. Attualmente l'infrastruttura di base e l'autenticazione sono complete, ma le funzionalità principali di gameplay sono in fase di sviluppo.
 
-### ✅ Funzionalità Implementate
+### Funzionalita Implementate
 - Autenticazione via email (magic link)
 - Sistema di configurazione alias
-- Dashboard base
-- Infrastruttura di sicurezza e validazione
-- Onboarding obbligatorio con consenso privacy
-- Rate limiting e audit logging
-
-### 🚧 In Sviluppo
-- Sistema gestione eventi
-- Interfaccia invio enigmi
-- Sistema tavoli e collaborazione
-- Classifiche e punteggi
+- Dashboard con join event attivo
+- RBAC: ruoli USER e ADMIN
+- Consent management (privacy + termini obbligatori, marketing opzionale)
+- Game loop completo: join event, tavoli, round, enigmi, suggerimenti, punteggi
+- Scoring atomico con `prisma.$transaction`
+- Classifica per tavolo (evento) e classifica globale
+- Pannello admin: CRUD serate, round, enigmi, suggerimenti, tavoli
+- Anti-cheat detection (velocita sospetta, tentativi rapidi, pattern perfetti)
+- Rate limiting su submissions (5/30s), hints (3/5min), login (5/15min)
+- Soft-delete enforcement: utenti cancellati non possono accedere
+- Audit logging su tutte le azioni chiave
+- Libreria/Grimorio con contenuti sbloccabili
 
 ## 🚀 Quick Start
 
@@ -70,22 +72,57 @@ L'app valida le variabili d'ambiente all'avvio e fallisce immediatamente se manc
 
 ```bash
 # Genera client Prisma
-npm run db:generate
+pnpm db:generate
 
-# Push schema a DB (sviluppo)
-npm run db:push
+# Push schema a DB (sviluppo — no migration files)
+pnpm db:push
 
-# Oppure con migrazioni
-npm run db:migrate
+# Oppure crea migrazioni formali
+pnpm db:migrate
+
+# Popola il DB con dati di test
+pnpm db:seed
 ```
 
 ### Avvia il Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 Visita [http://localhost:3000](http://localhost:3000)
+
+### Testare il Vertical Slice
+
+Dopo `pnpm db:seed`, il DB contiene:
+
+| Risorsa | Valore |
+|---|---|
+| Admin email | `admin@magic-farm.test` |
+| Player email | `player@magic-farm.test` |
+| Event join code | `MAGIC1` |
+| Table join codes | `TBL001`, `TBL002`, `TBL003` |
+| Round 1 | ACTIVE (2 enigmi) |
+| Round 2 | PENDING (2 enigmi) |
+
+**Flusso di test:**
+
+1. Login con `player@magic-farm.test` (magic link — usa Mailtrap o simile)
+2. Completa onboarding (nome, cognome, privacy)
+3. Imposta alias
+4. Accetta consensi obbligatori su `/consents`
+5. Dalla dashboard, entra nella serata con codice `MAGIC1` (opzionalmente codice tavolo `TBL001`)
+6. Vai a `/game` — risolvi enigmi (risposte: `9`, `il fiammifero`)
+7. Richiedi suggerimenti e vedi la penalita punti
+8. Controlla classifica su `/leaderboard`
+
+**Come admin:**
+
+1. Login con `admin@magic-farm.test`
+2. Vai a `/admin` (link visibile in dashboard)
+3. Crea nuova serata, aggiungi round, enigmi, tavoli
+4. Attiva la serata (DRAFT -> LIVE)
+5. Attiva un round cliccando "Attiva"
 
 ## 📧 SMTP Testing
 
@@ -169,7 +206,34 @@ npm run db:seed      # Seed DB
 npm test             # Esegui test
 ```
 
-## 🤝 Contribuire
+## Troubleshooting
+
+**Email magic link non arriva:**
+- Verifica le variabili SMTP in `.env` (host, porta, user, password)
+- Usa Mailtrap/Mailhog per catturare le email in sviluppo
+- Controlla i log del server per errori di invio
+
+**Errore "Relation does not exist":**
+- Esegui `pnpm db:push` o `pnpm db:migrate` per sincronizzare lo schema
+- Verifica che `DATABASE_URL` sia corretto e il server PostgreSQL sia attivo
+
+**Errore "NEXTAUTH_SECRET" mancante:**
+- Genera un secret: `openssl rand -base64 32`
+- Aggiungilo a `.env` come `NEXTAUTH_SECRET=...`
+
+**Seed fallisce:**
+- Assicurati che lo schema sia stato pushato prima: `pnpm db:push && pnpm db:seed`
+- Se il seed e gia stato eseguito, e idempotente — puo essere rieseguito
+
+**Redirect loop su /consents:**
+- I consensi (privacy + termini) sono obbligatori per accedere a `/game` e `/serate`
+- Vai a `/consents` e accetta entrambi, oppure usa `/profilo` per verificare lo stato
+
+**Admin non vede il pannello:**
+- Solo utenti con `role: ADMIN` vedono il link "Admin" in dashboard
+- Nel seed, `admin@magic-farm.test` ha ruolo ADMIN
+
+## Contribuire
 
 Questo progetto è in fase di sviluppo attivo. Contributi benvenuti!
 

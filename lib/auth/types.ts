@@ -7,7 +7,9 @@ declare module 'next-auth' {
       alias?: string | null;
       firstName?: string | null;
       lastName?: string | null;
+      role: 'USER' | 'ADMIN';
       onboardingComplete: boolean;
+      consentsComplete: boolean;
     } & DefaultSession['user'];
   }
 
@@ -15,6 +17,7 @@ declare module 'next-auth' {
     alias?: string | null;
     firstName?: string | null;
     lastName?: string | null;
+    role?: 'USER' | 'ADMIN';
   }
 }
 
@@ -24,6 +27,8 @@ declare module 'next-auth/jwt' {
     alias?: string | null;
     firstName?: string | null;
     lastName?: string | null;
+    role: 'USER' | 'ADMIN';
     onboardingComplete: boolean;
+    consentsComplete: boolean;
   }
 }

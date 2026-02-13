@@ -1,6 +1,9 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
+// Routes that require completed consents before access
+const CONSENT_REQUIRED_PREFIXES = ['/serate', '/game'];
+
 export default withAuth(
   function middleware(req) {
     const { pathname } = req.nextUrl;
@@ -9,13 +12,16 @@ export default withAuth(
     if (token) {
       const onboardingComplete = !!token.onboardingComplete;
       const hasAlias = !!token.alias;
+      const consentsComplete = !!token.consentsComplete;
 
       // Allow access to onboarding-related pages without redirect loops
       const isOnboardingPage = pathname === '/onboarding';
       const isSetupAliasPage = pathname === '/setup-alias';
+      const isConsentsPage = pathname === '/consents';
       const isPrivacyPage = pathname === '/privacy';
       const isTermsPage = pathname === '/terms';
       const isApiRoute = pathname.startsWith('/api');
+      const isAdminRoute = pathname.startsWith('/admin');
 
       // Skip redirect logic for API routes, static/public pages, and flow pages
       if (isApiRoute || isPrivacyPage || isTermsPage) {
@@ -38,7 +44,18 @@ export default withAuth(
         return NextResponse.next();
       }
 
-      // Step 3: Fully onboarded users should not revisit onboarding/setup pages
+      // Step 3: Consent gate — game routes require accepted consents
+      const needsConsent = CONSENT_REQUIRED_PREFIXES.some((p) => pathname.startsWith(p));
+      if (needsConsent && !consentsComplete && !isConsentsPage) {
+        return NextResponse.redirect(new URL('/consents', req.url));
+      }
+
+      // Step 4: Admin routes require ADMIN role
+      if (isAdminRoute && token.role !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
+
+      // Step 5: Fully onboarded users should not revisit onboarding/setup pages
       if (isOnboardingPage || isSetupAliasPage) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
       }
@@ -52,7 +69,6 @@ export default withAuth(
         const { pathname } = req.nextUrl;
 
         // Public routes that don't require authentication
-        // Exact match for "/" to prevent the startsWith("/") bug
         if (pathname === '/') return true;
         if (pathname === '/login') return true;
         if (pathname === '/verify-request') return true;
@@ -72,13 +88,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder static assets
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)',
   ],
 };
