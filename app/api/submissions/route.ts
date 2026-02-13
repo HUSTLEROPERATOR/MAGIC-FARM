@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireAuth } from '@/lib/auth/rbac';
 import { hashIP } from '@/lib/security/crypto';
-import { rateLimitSubmission } from '@/lib/security/rate-limit';
+import { rateLimitSubmission, rateLimitPuzzleCooldown, rateLimitIPSubmissions } from '@/lib/security/rate-limit';
 import { createAuditLog, AUDIT_ACTIONS } from '@/lib/audit/logger';
 import { submitAnswer, ScoringError, checkGameplayConsents, checkUserActive } from '@/lib/game/scoring-service';
 
@@ -14,7 +14,7 @@ const submissionSchema = z.object({
 /**
  * POST /api/submissions — submit an answer for a puzzle.
  * Uses atomic ScoringService for all point mutations.
- * Enforces: auth, soft-delete, consents, rate-limit, LIVE state.
+ * Enforces: auth, soft-delete, consents, rate-limit, puzzle cooldown, IP pattern, LIVE state.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
     const userId = session!.user.id;
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const userAgent = request.headers.get('user-agent') || 'unknown';
+    const ipHash = hashIP(ip);
 
     // Soft-delete check
     const isActive = await checkUserActive(userId);
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limit: 5 attempts per 30 seconds per user
+    // Rate limit: 5 attempts per 30 seconds per user (global)
     const allowed = await rateLimitSubmission(`submit:${userId}`);
     if (!allowed) {
       return NextResponse.json(
@@ -55,6 +56,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: parsed.error.errors[0].message },
         { status: 400 }
+      );
+    }
+
+    // ── Per-puzzle cooldown: 1 attempt per 5 seconds per user+puzzle ──
+    const cooldownAllowed = await rateLimitPuzzleCooldown(userId, parsed.data.puzzleId);
+    if (!cooldownAllowed) {
+      await createAuditLog({
+        action: AUDIT_ACTIONS.SUBMISSION_COOLDOWN_BLOCKED,
+        actorUserId: userId,
+        metadata: { puzzleId: parsed.data.puzzleId, ipHash },
+        ipAddress: ip,
+        userAgent,
+      });
+      return NextResponse.json(
+        { error: 'Attendi qualche secondo tra un tentativo e l\'altro.' },
+        { status: 429 }
+      );
+    }
+
+    // ── IP-based pattern detection: 30 submissions per 5 min from same IP ──
+    const ipAllowed = await rateLimitIPSubmissions(ipHash);
+    if (!ipAllowed) {
+      await createAuditLog({
+        action: AUDIT_ACTIONS.SUBMISSION_IP_PATTERN_BLOCKED,
+        actorUserId: userId,
+        metadata: {
+          puzzleId: parsed.data.puzzleId,
+          ipHash,
+          reason: 'TOO_MANY_FROM_SAME_IP',
+        },
+        ipAddress: ip,
+        userAgent,
+      });
+      return NextResponse.json(
+        { error: 'Attività sospetta rilevata. Riprova più tardi.' },
+        { status: 429 }
       );
     }
 
@@ -76,6 +113,7 @@ export async function POST(request: NextRequest) {
         pointsAwarded: result.pointsAwarded,
         flagged: result.flaggedReason,
         submissionId: result.submissionId,
+        ipHash,
       },
       ipAddress: ip,
       userAgent,

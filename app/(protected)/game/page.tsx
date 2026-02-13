@@ -26,7 +26,7 @@ interface Puzzle {
 }
 
 interface TableState {
-  event: { id: string; name: string; currentRoundId: string | null };
+  event: { id: string; name: string; currentRoundId: string | null; hostName: string | null };
   table: {
     id: string;
     name: string;
@@ -102,6 +102,9 @@ export default function GamePage() {
           <div>
             <h1 className="font-cinzel text-2xl md:text-3xl text-magic-gold">{event.name}</h1>
             <p className="text-magic-mystic text-sm">{table.name}</p>
+            {event.hostName && (
+              <p className="text-white/40 text-xs mt-0.5">Host: {event.hostName}</p>
+            )}
           </div>
           <div className="text-right">
             <p className="text-magic-gold text-2xl font-bold">{table.score}</p>

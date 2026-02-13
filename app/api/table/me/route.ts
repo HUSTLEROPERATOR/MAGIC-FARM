@@ -108,6 +108,7 @@ export async function GET() {
       id: event.id,
       name: event.name,
       currentRoundId: event.currentRoundId,
+      hostName: event.hostName,
     },
     table: {
       id: membership.table.id,

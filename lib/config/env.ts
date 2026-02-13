@@ -9,6 +9,14 @@ const envSchema = z.object({
   SMTP_USER: z.string().min(1, 'SMTP_USER is required'),
   SMTP_PASSWORD: z.string().min(1, 'SMTP_PASSWORD is required'),
   SMTP_FROM: z.string().min(1, 'SMTP_FROM is required'),
+
+  // ── Anti-bot (Cloudflare Turnstile) — optional in dev ──
+  TURNSTILE_SECRET_KEY: z.string().optional(),
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
+
+  // ── Email domain policies — optional ──
+  BLOCKED_EMAIL_DOMAINS: z.string().optional(),   // comma-separated
+  ALLOWED_EMAIL_DOMAINS: z.string().optional(),   // comma-separated (allowlist mode)
 });
 
 export type Env = z.infer<typeof envSchema>;

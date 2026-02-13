@@ -110,6 +110,16 @@ model Consent {
   marketingVersion    String?
   marketingOptOutAt   DateTime? // Track opt-out separately
 
+  // ── Granular GDPR consents ──────────────────────────────────────
+  // Required to play — platform core processing (account, gameplay, scoring, leaderboard)
+  consentPlatform            Boolean   @default(false)
+  // Optional — marketing by data controller (Nicola Contu / platform owner)
+  consentControllerMarketing Boolean   @default(false)
+  // Optional — share contact data with event host/magician
+  consentShareWithHost       Boolean   @default(false)
+  // Optional — host marketing (meaningful only if consentShareWithHost = true)
+  consentHostMarketing       Boolean   @default(false)
+
   // Consent Evidence
   evidenceHash        String?   // Hash of IP + User Agent + Timestamp
   ipAddressHash       String?   // Hashed IP address
@@ -128,6 +138,25 @@ model Consent {
 }
 
 // ============================================================================
+// ORGANIZATION (Multi-locale support)
+// ============================================================================
+// Organizations represent physical venues / locales (e.g., bars, clubs).
+// Each EventNight belongs to one Organization.
+// This enables local (per-organization) vs global (cross-organization) leaderboards.
+// Future: add seasonal leaderboard support by adding a `season` field or model.
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  events EventNight[]
+
+  @@map("organizations")
+}
+
+// ============================================================================
 // EVENT NIGHT MANAGEMENT
 // ============================================================================
 
@@ -140,6 +169,10 @@ model EventNight {
   status      EventStatus @default(DRAFT)
   joinCode    String?  @unique // 6-char code for players to join this event
 
+  // Organization this event belongs to (nullable for backward compatibility)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
   // Pointer to the currently active round (null if none)
   currentRoundId String?
 
@@ -148,6 +181,13 @@ model EventNight {
   closingNarrative  String?  @db.Text   // Testo narrativo di chiusura
   nextEventTeaser   String?  @db.Text   // Anticipazione serata successiva
   theme             String?             // Tema della serata (es. "La Notte dei Misteri")
+
+  // Venue
+  venueName         String?              // Nome del locale, es. Vecchia Fattoria
+
+  // Host / presentatore
+  hostName          String?              // Display name per l'host della serata, es. Lorenzo Mameli
+  hostContact       String?              // Contatto host (uso futuro)
 
   // Spettatore (Estensione 7)
   spectatorEnabled  Boolean  @default(true) // Permetti modalità spettatore
@@ -164,6 +204,7 @@ model EventNight {
 
   @@index([status])
   @@index([startsAt])
+  @@index([organizationId])
   @@map("event_nights")
 }
 
@@ -357,6 +398,8 @@ model Submission {
   @@index([userId])
   @@index([tableId])
   @@index([isCorrect])
+  @@index([userId, puzzleId])
+  @@index([userId, puzzleId, isCorrect])
   @@map("submissions")
 }
 
@@ -439,6 +482,7 @@ enum AllianceEffect {
 model AuditLog {
   id          String   @id @default(cuid())
   actorUserId String?  // Nullable for system actions
+  actorRole   String?  // Role at the time of action (USER, ADMIN)
   action      String   // e.g., "USER_LOGIN", "CONSENT_UPDATED", "ANSWER_SUBMITTED"
   metaJson    Json?    // Additional metadata
   ipHash      String?  // Hashed IP

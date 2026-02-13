@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { calculateScore, detectSuspiciousActivity } from './scoring';
-import { verifyHash } from '@/lib/security/crypto';
+import { isAnswerCorrect } from './answer-normalizer';
 
 interface SubmitAnswerInput {
   userId: string;
@@ -66,9 +66,8 @@ export async function submitAnswer(input: SubmitAnswerInput): Promise<SubmitAnsw
     });
     const hintsUsed = lastSub?.hintsUsed || 0;
 
-    // 6. Verify answer
-    const normalizedAnswer = answer.toLowerCase().trim();
-    const isCorrect = verifyHash(normalizedAnswer, puzzle.answerHash, puzzle.answerSalt);
+    // 6. Verify answer (with normalization: articles, punctuation, casing, minor typos)
+    const isCorrect = isAnswerCorrect(answer, puzzle.answerHash, puzzle.answerSalt);
 
     // 7. Calculate time from round start
     const roundStartedAt = puzzle.round.startsAt || puzzle.round.createdAt;
@@ -186,7 +185,9 @@ export class ScoringError extends Error {
 }
 
 /**
- * Check required consents for gameplay
+ * Check required consents for gameplay.
+ * Enforces: privacy accepted, terms accepted, AND consentPlatform = true.
+ * All checks are server-side only.
  */
 export async function checkGameplayConsents(userId: string): Promise<boolean> {
   const consent = await prisma.consent.findFirst({
@@ -194,6 +195,7 @@ export async function checkGameplayConsents(userId: string): Promise<boolean> {
       userId,
       privacyAcceptedAt: { not: null },
       termsAcceptedAt: { not: null },
+      consentPlatform: true,
     },
   });
   return !!consent;

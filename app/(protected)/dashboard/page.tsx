@@ -33,7 +33,7 @@ async function getUserStats(userId: string) {
 async function getActiveEvent(userId: string) {
   const event = await prisma.eventNight.findFirst({
     where: { status: 'LIVE' },
-    select: { id: true, name: true, joinCode: true },
+    select: { id: true, name: true, joinCode: true, hostName: true, venueName: true },
   });
   if (!event) return null;
 
@@ -50,6 +50,8 @@ async function getActiveEvent(userId: string) {
     id: event.id,
     name: event.name,
     joinCode: event.joinCode,
+    hostName: event.hostName,
+    venueName: event.venueName,
     isJoined: !!membership,
     tableName: membership?.table.name || null,
   };
@@ -89,7 +91,13 @@ export default async function DashboardPage() {
               <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               <span className="text-green-400 text-sm font-medium">Serata in corso</span>
             </div>
-            <h2 className="text-magic-gold font-cinzel text-xl mb-3">{activeEvent.name}</h2>
+            <h2 className="text-magic-gold font-cinzel text-xl mb-1">{activeEvent.name}</h2>
+            {(activeEvent.venueName || activeEvent.hostName) && (
+              <p className="text-white/50 text-sm mb-3">
+                {[activeEvent.venueName, activeEvent.hostName ? `Host: ${activeEvent.hostName}` : null].filter(Boolean).join(' · ')}
+              </p>
+            )}
+            {!activeEvent.venueName && !activeEvent.hostName && <div className="mb-3" />}
             {activeEvent.isJoined ? (
               <div className="flex items-center justify-between">
                 <p className="text-white/60 text-sm">
