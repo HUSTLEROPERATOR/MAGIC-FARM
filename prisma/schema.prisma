@@ -110,6 +110,16 @@ model Consent {
   marketingVersion    String?
   marketingOptOutAt   DateTime? // Track opt-out separately
 
+  // ── Granular GDPR consents ──────────────────────────────────────
+  // Required to play — platform core processing (account, gameplay, scoring, leaderboard)
+  consentPlatform            Boolean   @default(false)
+  // Optional — marketing by data controller (Nicola Contu / platform owner)
+  consentControllerMarketing Boolean   @default(false)
+  // Optional — share contact data with event host/magician
+  consentShareWithHost       Boolean   @default(false)
+  // Optional — host marketing (meaningful only if consentShareWithHost = true)
+  consentHostMarketing       Boolean   @default(false)
+
   // Consent Evidence
   evidenceHash        String?   // Hash of IP + User Agent + Timestamp
   ipAddressHash       String?   // Hashed IP address
@@ -171,6 +181,9 @@ model EventNight {
   closingNarrative  String?  @db.Text   // Testo narrativo di chiusura
   nextEventTeaser   String?  @db.Text   // Anticipazione serata successiva
   theme             String?             // Tema della serata (es. "La Notte dei Misteri")
+
+  // Venue
+  venueName         String?              // Nome del locale, es. Vecchia Fattoria
 
   // Host / presentatore
   hostName          String?              // Display name per l'host della serata, es. Lorenzo Mameli

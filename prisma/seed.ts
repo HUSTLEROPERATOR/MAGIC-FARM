@@ -41,7 +41,7 @@ async function main() {
     },
   });
 
-  // Consents for both users (privacy + terms accepted)
+  // Consents for both users (privacy + terms accepted, platform consent required)
   for (const user of [adminUser, normalUser]) {
     const existingConsent = await prisma.consent.findFirst({
       where: { userId: user.id, privacyAcceptedAt: { not: null } },
@@ -54,12 +54,27 @@ async function main() {
           privacyVersion: '2.0',
           termsAcceptedAt: new Date(),
           termsVersion: '2.0',
+          consentPlatform: true,                // required to play
+          consentControllerMarketing: false,     // optional, default off
+          consentShareWithHost: false,           // optional, default off
+          consentHostMarketing: false,           // optional, default off
         },
       });
     }
   }
 
   console.log(`Created users: ${adminUser.email} (ADMIN), ${normalUser.email} (USER)`);
+
+  // --- Organization ---
+  const org = await prisma.organization.upsert({
+    where: { slug: 'vecchia-fattoria' },
+    update: {},
+    create: {
+      name: 'Vecchia Fattoria',
+      slug: 'vecchia-fattoria',
+    },
+  });
+  console.log(`Organization: ${org.name} (slug: ${org.slug})`);
 
   // --- EventNight ---
   const now = new Date();
@@ -80,6 +95,8 @@ async function main() {
         joinCode: 'MAGIC1',
         theme: 'Mistero e Illusione',
         hostName: 'Lorenzo Mameli',
+        venueName: 'Vecchia Fattoria',
+        organizationId: org.id,
         openingNarrative: 'Benvenuti alla Notte dei Misteri. Stasera, ogni tavolo dovrà dimostrare il proprio valore...',
       },
     });
