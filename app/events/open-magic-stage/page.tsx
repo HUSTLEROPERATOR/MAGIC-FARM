@@ -19,8 +19,8 @@ export default function OpenMagicStagePage() {
             <p>
               Il Palco Aperto Magico è uno spazio dedicato ai maghi emergenti e professionisti che desiderano 
               testare nuove routine, sperimentare effetti inediti e condividere la loro arte con un pubblico appassionato. 
-              Un format open-mic che celebra l'illusionismo in tutte le sue forme, creando connessioni autentiche tra 
-              performer e spettatori. Ogni serata è un'opportunità per crescere, imparare e far parte di una community 
+              Un format open-mic che celebra l&apos;illusionismo in tutte le sue forme, creando connessioni autentiche tra 
+              performer e spettatori. Ogni serata è un&apos;opportunità per crescere, imparare e far parte di una community 
               magica locale in continua espansione. Salire sul palco significa contribuire alla leaderboard globale 
               Magic-Farm e lasciare il segno nella storia della magia locale.
             </p>
@@ -32,7 +32,7 @@ export default function OpenMagicStagePage() {
       <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="card-magic">
-            <h2 className="font-cinzel text-3xl text-magic-gold mb-6">Cos'è</h2>
+            <h2 className="font-cinzel text-3xl text-magic-gold mb-6">Cos&apos;è</h2>
             <div className="space-y-4 text-white/80">
               <div className="flex items-start gap-4">
                 <span className="text-2xl">🎭</span>
@@ -83,7 +83,7 @@ export default function OpenMagicStagePage() {
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-magic-mystic text-xl mt-1">•</span>
-                <span><strong className="text-magic-gold">Creare community magica locale:</strong> Costruire una rete di appassionati e professionisti dell'illusionismo.</span>
+                <span><strong className="text-magic-gold">Creare community magica locale:</strong> Costruire una rete di appassionati e professionisti dell&apos;illusionismo.</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-magic-mystic text-xl mt-1">•</span>
@@ -106,7 +106,7 @@ export default function OpenMagicStagePage() {
               </div>
               <div className="p-4 bg-white/5 rounded-lg">
                 <h3 className="text-magic-mystic font-semibold mb-2">⚠️ Sicurezza</h3>
-                <p>Nessun numero pericoloso senza preventiva autorizzazione dell'organizzazione.</p>
+                <p>Nessun numero pericoloso senza preventiva autorizzazione dell&apos;organizzazione.</p>
               </div>
               <div className="p-4 bg-white/5 rounded-lg">
                 <h3 className="text-magic-mystic font-semibold mb-2">⏰ Rispetto dei Tempi</h3>
@@ -117,8 +117,8 @@ export default function OpenMagicStagePage() {
                 <p>Divieto assoluto di contenuti offensivi, discriminatori o inappropriati.</p>
               </div>
               <div className="p-4 bg-white/5 rounded-lg">
-                <h3 className="text-magic-mystic font-semibold mb-2">📸 Privacy e Diritti d'Immagine</h3>
-                <p>Accettazione del GDPR e liberatoria per l'uso dell'immagine durante l'evento.</p>
+                <h3 className="text-magic-mystic font-semibold mb-2">📸 Privacy e Diritti d&apos;Immagine</h3>
+                <p>Accettazione del GDPR e liberatoria per l&apos;uso dell&apos;immagine durante l&apos;evento.</p>
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function OpenMagicStagePage() {
           <div className="card-magic text-center bg-gradient-to-br from-magic-gold/10 to-magic-mystic/10 border-magic-gold/50">
             <h2 className="font-cinzel text-3xl text-magic-gold mb-4">Vuoi Assistere allo Show?</h2>
             <p className="text-white/80 mb-6">
-              Prenota il tuo tavolo alla Vecchia Fattoria e vivi un'esperienza magica indimenticabile
+              Prenota il tuo tavolo alla Vecchia Fattoria e vivi un&apos;esperienza magica indimenticabile
             </p>
             <a 
               href="https://pro.pns.sm/32l5slf" 
@@ -216,7 +216,7 @@ function ApplicationForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Errore durante l\'invio della candidatura');
+        setError(data.error || 'Errore durante l&apos;invio della candidatura');
       } else {
         setSuccess(true);
         setFormData({
@@ -262,7 +262,7 @@ function ApplicationForm() {
           onClick={() => setSuccess(false)}
           className="text-magic-mystic hover:text-magic-gold transition-colors text-sm"
         >
-          Invia un'altra candidatura
+          Invia un&apos;altra candidatura
         </button>
       </div>
     );
@@ -273,7 +273,7 @@ function ApplicationForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-white/80 mb-2 text-sm font-medium">
-            Nome d'Arte <span className="text-red-400">*</span>
+            Nome d&apos;Arte <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -381,7 +381,7 @@ function ApplicationForm() {
         <label htmlFor="acceptRules" className="text-white/80 text-sm cursor-pointer">
           Dichiaro di aver letto e accettato il regolamento del Palco Aperto Magico, 
           incluse le norme sulla sicurezza, il rispetto dei tempi, e acconsento al trattamento 
-          dei dati personali secondo il GDPR e all'utilizzo della mia immagine durante l'evento.
+          dei dati personali secondo il GDPR e all&apos;utilizzo della mia immagine durante l&apos;evento.
         </label>
       </div>
 
