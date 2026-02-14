@@ -168,7 +168,8 @@ function ApplicationCard({
     if (res.ok) {
       onUpdated();
     } else {
-      alert('Errore durante l\'aggiornamento');
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || 'Errore durante l\'aggiornamento dello stato. Riprova.');
     }
     setUpdating(false);
   }

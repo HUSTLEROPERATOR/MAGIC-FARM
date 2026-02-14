@@ -8,7 +8,7 @@ const applicationSchema = z.object({
   email: z.string().email('Email non valida'),
   phone: z.string().min(5, 'Il telefono è obbligatorio').max(50),
   description: z.string().min(10, 'La descrizione deve contenere almeno 10 caratteri').max(300, 'La descrizione non può superare i 300 caratteri'),
-  videoUrl: z.string().url('URL non valido').nullable().optional(),
+  videoUrl: z.string().url('URL non valido').or(z.literal('')).transform(val => val || null).optional(),
 });
 
 /**
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         email,
         phone,
         description,
-        videoUrl: videoUrl || null,
+        videoUrl: videoUrl ?? null,
         status: 'PENDING',
       },
     });
