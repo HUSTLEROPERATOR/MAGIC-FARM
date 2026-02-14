@@ -9,7 +9,8 @@ export const harry_potter_expert_02: GameContent = {
   solution: "lontra",
   acceptedAnswers: [
     "lontra",
-    "una lontra"
+    "una lontra",
+    "otter"
   ],
   releaseDate: "2026-03-15",
   eventId: "harry_potter_evening",
