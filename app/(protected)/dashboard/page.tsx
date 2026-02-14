@@ -143,6 +143,18 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
+          <Link href="/events/open-magic-stage" className="card-magic group block">
+            <div className="flex items-center gap-4">
+              <span className="text-4xl">✨</span>
+              <div>
+                <h3 className="text-magic-gold font-semibold text-lg group-hover:text-magic-mystic transition-colors">
+                  Palco Aperto Magico
+                </h3>
+                <p className="text-white/50 text-sm">Candidati come performer o prenota il tuo tavolo</p>
+              </div>
+            </div>
+          </Link>
+
           <Link href="/libreria" className="card-magic group block">
             <div className="flex items-center gap-4">
               <span className="text-4xl">📚</span>

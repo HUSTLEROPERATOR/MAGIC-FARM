@@ -40,9 +40,14 @@ export default function AdminPage() {
             <h1 className="font-cinzel text-3xl text-magic-gold">Pannello Admin</h1>
             <p className="text-white/40 text-sm">Gestisci serate, round, enigmi e tavoli</p>
           </div>
-          <Link href="/dashboard" className="text-magic-mystic hover:text-magic-gold text-sm">
-            ← Dashboard
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/admin/open-stage" className="text-magic-mystic hover:text-magic-gold text-sm px-3 py-1.5 bg-magic-purple/20 rounded">
+              Palco Aperto ✨
+            </Link>
+            <Link href="/dashboard" className="text-magic-mystic hover:text-magic-gold text-sm">
+              ← Dashboard
+            </Link>
+          </div>
         </div>
 
         <div className="mb-6">
