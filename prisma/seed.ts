@@ -343,7 +343,7 @@ async function main() {
         },
         {
           title: 'Juan Tamariz',
-          description: 'Grande maestro spagnolo della cartomagia, considerato uno dei più grandi maestri dell\'illusionismo e teorico della magia.',
+          description: 'Maestro spagnolo della cartomagia, considerato uno dei più grandi dell\'illusionismo e teorico della magia.',
           category: 'Maghi e Illusionisti',
           content: 'Juan Tamariz (1942-) è considerato uno dei più grandi maestri della cartomagia e un profondo teorico dell\'arte magica. Matematico di formazione, ha sviluppato tecniche innovative e ha scritto libri fondamentali come "The Five Points in Magic" e "The Magic Way". Il suo approccio alla magia enfatizza l\'importanza della misdirection psicologica e della presentazione teatrale. Tamariz è noto per la sua personalità carismatica, il suo umorismo e la sua capacità di creare momenti di puro stupore con un semplice mazzo di carte.',
           externalUrl: 'https://en.wikipedia.org/wiki/Juan_Tamariz',
