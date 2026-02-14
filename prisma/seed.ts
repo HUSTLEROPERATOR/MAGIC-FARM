@@ -343,9 +343,9 @@ async function main() {
         },
         {
           title: 'Juan Tamariz',
-          description: 'Grande maestro spagnolo della cartomagia, considerato uno dei più grandi maghi viventi e teorico della magia.',
+          description: 'Grande maestro spagnolo della cartomagia, considerato uno dei più grandi maestri dell\'illusionismo e teorico della magia.',
           category: 'Maghi e Illusionisti',
-          content: 'Juan Tamariz (1942-) è considerato uno dei più grandi cartomaghi viventi e un profondo teorico dell\'arte magica. Matematico di formazione, ha sviluppato tecniche innovative e ha scritto libri fondamentali come "The Five Points in Magic" e "The Magic Way". Il suo approccio alla magia enfatizza l\'importanza della misdirection psicologica e della presentazione teatrale. Tamariz è noto per la sua personalità carismatica, il suo umorismo e la sua capacità di creare momenti di puro stupore con un semplice mazzo di carte.',
+          content: 'Juan Tamariz (1942-) è considerato uno dei più grandi maestri della cartomagia e un profondo teorico dell\'arte magica. Matematico di formazione, ha sviluppato tecniche innovative e ha scritto libri fondamentali come "The Five Points in Magic" e "The Magic Way". Il suo approccio alla magia enfatizza l\'importanza della misdirection psicologica e della presentazione teatrale. Tamariz è noto per la sua personalità carismatica, il suo umorismo e la sua capacità di creare momenti di puro stupore con un semplice mazzo di carte.',
           externalUrl: 'https://en.wikipedia.org/wiki/Juan_Tamariz',
           entryType: 'CURIOSITY',
           order: 4,
@@ -370,9 +370,9 @@ async function main() {
         },
         {
           title: 'Shin Lim',
-          description: 'Cartomagio canadese-americano, vincitore di America\'s Got Talent, noto per le sue routine silenziose e poetiche.',
+          description: 'Cartomago canadese-americano, vincitore di America\'s Got Talent, noto per le sue routine silenziose e poetiche.',
           category: 'Maghi e Illusionisti',
-          content: 'Shin Lim (1991-) è un cartomagio canadese-americano che ha conquistato il mondo con le sue routine di sleight of hand eseguite in silenzio, accompagnate solo dalla musica. Le sue performance sono caratterizzate da movimenti fluidi, coreografie precise e effetti visualmente stupefacenti con carte da gioco. Ha vinto America\'s Got Talent nel 2018 e America\'s Got Talent: The Champions nel 2019. Il suo stile elegante e artistico ha portato la cartomagia a un nuovo livello di apprezzamento mainstream, dimostrando che la magia può essere una forma d\'arte raffinata e poetica.',
+          content: 'Shin Lim (1991-) è un cartomago canadese-americano che ha conquistato il mondo con le sue routine di sleight of hand eseguite in silenzio, accompagnate solo dalla musica. Le sue performance sono caratterizzate da movimenti fluidi, coreografie precise e effetti visualmente stupefacenti con carte da gioco. Ha vinto America\'s Got Talent nel 2018 e America\'s Got Talent: The Champions nel 2019. Il suo stile elegante e artistico ha portato la cartomagia a un nuovo livello di apprezzamento mainstream, dimostrando che la magia può essere una forma d\'arte raffinata e poetica.',
           externalUrl: 'https://it.wikipedia.org/wiki/Shin_Lim',
           entryType: 'CURIOSITY',
           order: 7,
