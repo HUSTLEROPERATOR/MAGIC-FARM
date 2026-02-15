@@ -645,3 +645,32 @@ model EventMetrics {
 
   @@map("event_metrics")
 }
+
+// ============================================================================
+// OPEN STAGE APPLICATIONS (Palco Aperto Magico)
+// ============================================================================
+
+model OpenStageApplication {
+  id          String   @id @default(cuid())
+  stageName   String   // Nome d'arte
+  realName    String   // Nome reale
+  email       String
+  phone       String
+  description String   @db.Text // Descrizione numero (max 300 caratteri)
+  videoUrl    String?  // Link video facoltativo
+  status      OpenStageStatus @default(PENDING)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+  @@map("open_stage_applications")
+}
+
+enum OpenStageStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
