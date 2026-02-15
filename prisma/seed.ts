@@ -165,6 +165,36 @@ async function main() {
     });
   }
 
+  let round3 = await prisma.round.findFirst({
+    where: { eventNightId: event.id, title: 'Round 3 — Rebus e Parole' },
+  });
+  if (!round3) {
+    round3 = await prisma.round.create({
+      data: {
+        eventNightId: event.id,
+        title: 'Round 3 — Rebus e Parole',
+        description: 'Rebus, giochi di parole e indovinelli per ogni tavolo.',
+        type: 'SINGLE_TABLE',
+        status: 'PENDING',
+      },
+    });
+  }
+
+  let round4 = await prisma.round.findFirst({
+    where: { eventNightId: event.id, title: 'Round 4 — Quiz e Logica' },
+  });
+  if (!round4) {
+    round4 = await prisma.round.create({
+      data: {
+        eventNightId: event.id,
+        title: 'Round 4 — Quiz e Logica',
+        description: 'Quiz rapidi e sequenze logiche a difficolta crescente.',
+        type: 'SINGLE_TABLE',
+        status: 'PENDING',
+      },
+    });
+  }
+
   // Set current round to round1
   await prisma.eventNight.update({
     where: { id: event.id },
@@ -221,6 +251,126 @@ async function main() {
       hints: [
         { text: 'Non è un oggetto tecnologico.', penalty: 5, order: 0 },
         { text: 'Riflette la realtà, non il tempo.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round3.id,
+      title: 'Indovinello: il buco',
+      prompt: 'Piu mi togli, piu divento grande. Cosa sono?',
+      answer: 'buco',
+      order: 0,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Non e un oggetto solido.', penalty: 5, order: 0 },
+        { text: 'Nasce quando scavi.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round3.id,
+      title: 'Indovinello: la tastiera',
+      prompt: 'Ho chiavi ma non ho porte, ho spazio ma non stanze. Cosa sono?',
+      answer: 'tastiera',
+      order: 1,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'E usata tutti i giorni.', penalty: 5, order: 0 },
+        { text: 'Serve per scrivere.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round3.id,
+      title: 'Cambia una lettera',
+      prompt: "Cambia una lettera di 'pane' per ottenere un animale.",
+      answer: 'cane',
+      order: 2,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'E un animale domestico.', penalty: 5, order: 0 },
+        { text: 'Sostituisci la prima lettera.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round3.id,
+      title: 'Rebus lampo',
+      prompt: 'RE + BUS = ?',
+      answer: 'rebus',
+      order: 3,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'E un gioco di parole.', penalty: 5, order: 0 },
+        { text: 'Unisci le due parole.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round3.id,
+      title: 'Anagramma',
+      prompt: "Riordina le lettere di 'ROMA' per ottenere un sentimento.",
+      answer: 'amor',
+      order: 4,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'E una parola latina.', penalty: 5, order: 0 },
+        { text: 'E il contrario di odio.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round4.id,
+      title: 'Sequenza 1',
+      prompt: '2, 3, 5, 8, 13, ?',
+      answer: '21',
+      order: 0,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Somma dei due numeri precedenti.', penalty: 5, order: 0 },
+        { text: 'Sequenza di Fibonacci.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round4.id,
+      title: 'Sequenza 2',
+      prompt: '2, 4, 8, 16, ?',
+      answer: '32',
+      order: 1,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Raddoppia ogni volta.', penalty: 5, order: 0 },
+        { text: 'Moltiplica per 2.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round4.id,
+      title: 'Quiz lampo: pianeta rosso',
+      prompt: 'Quale pianeta e noto come Pianeta Rosso?',
+      answer: 'marte',
+      order: 2,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Quarto pianeta del sistema solare.', penalty: 5, order: 0 },
+        { text: 'Ha due piccole lune.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round4.id,
+      title: 'Quiz lampo: mare',
+      prompt: 'Quale mare si trova tra Italia e Croazia?',
+      answer: 'adriatico',
+      order: 3,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Bagna la costa di Venezia.', penalty: 5, order: 0 },
+        { text: 'Inizia con la lettera A.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: round4.id,
+      title: 'Logica: il treno elettrico',
+      prompt: 'Un treno elettrico va verso nord. Da che parte va il fumo?',
+      answer: 'nessun fumo',
+      order: 4,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'E un treno elettrico.', penalty: 5, order: 0 },
+        { text: 'Non brucia combustibile.', penalty: 10, order: 1 },
       ],
     },
   ];
@@ -394,6 +544,90 @@ async function main() {
           externalUrl: 'https://en.wikipedia.org/wiki/Dai_Vernon',
           entryType: 'CURIOSITY',
           order: 9,
+        },
+        // Storici
+        {
+          title: 'Jean-Eugene Robert-Houdin',
+          description: 'Pioniere storico della magia moderna, trasformo la magia in uno spettacolo teatrale elegante.',
+          category: 'Maghi e Illusionisti',
+          content: 'Jean-Eugene Robert-Houdin (1805-1871) e considerato il padre della magia moderna. Portò la magia dai mercati ai teatri, introducendo costumi eleganti e una messa in scena raffinata. Le sue automazioni meccaniche e le sue illusioni hanno ispirato generazioni di prestigiatori.',
+          externalUrl: 'https://it.wikipedia.org/wiki/Jean-Eug%C3%A8ne_Robert-Houdin',
+          entryType: 'CURIOSITY',
+          order: 10,
+        },
+        {
+          title: 'Chung Ling Soo',
+          description: 'Illusionista storico dei primi del Novecento, celebre per le grandi illusioni da palcoscenico.',
+          category: 'Maghi e Illusionisti',
+          content: 'Chung Ling Soo era il nome d\'arte dell\'illusionista William Robinson (1861-1918). Divenne famoso in Europa con grandi illusioni sceniche e un personaggio esotico, mantenendo sempre il mistero sul suo metodo. La sua carriera ha segnato l\'epoca d\'oro della magia da teatro.',
+          externalUrl: 'https://en.wikipedia.org/wiki/Chung_Ling_Soo',
+          entryType: 'CURIOSITY',
+          order: 11,
+        },
+        {
+          title: 'Howard Thurston',
+          description: 'Showman storico che porto la grande magia americana nei teatri del mondo.',
+          category: 'Maghi e Illusionisti',
+          content: 'Howard Thurston (1869-1936) fu uno dei piu grandi illusionisti del primo Novecento. I suoi spettacoli combinavano grandi illusioni, levitazioni e numeri di prestigio su larga scala, contribuendo alla diffusione della magia teatrale moderna.',
+          externalUrl: 'https://en.wikipedia.org/wiki/Howard_Thurston',
+          entryType: 'CURIOSITY',
+          order: 12,
+        },
+        // Classici
+        {
+          title: 'Cardini',
+          description: 'Classico della manipolazione, maestro di carte, sigarette e guanti in scena.',
+          category: 'Maghi e Illusionisti',
+          content: 'Cardini (1894-1973) fu un maestro della manipolazione da palcoscenico. Le sue routine con carte, sigarette e guanti sono considerate un punto di riferimento per precisione e stile elegante.',
+          externalUrl: 'https://en.wikipedia.org/wiki/Cardini',
+          entryType: 'CURIOSITY',
+          order: 13,
+        },
+        {
+          title: 'Harry Blackstone Sr.',
+          description: 'Illusionista classico americano, noto per numeri spettacolari e produzione di oggetti.',
+          category: 'Maghi e Illusionisti',
+          content: 'Harry Blackstone Sr. (1885-1965) e stato un celebre illusionista da palco negli Stati Uniti. Il suo show era ricco di grandi illusioni, apparizioni e gag visive che hanno definito lo stile classico della magia da teatro.',
+          externalUrl: 'https://en.wikipedia.org/wiki/Harry_Blackstone_Sr.',
+          entryType: 'CURIOSITY',
+          order: 14,
+        },
+        {
+          title: 'Lance Burton',
+          description: 'Mago classico moderno, vincitore di FISM, famoso per la sua eleganza scenica.',
+          category: 'Maghi e Illusionisti',
+          content: 'Lance Burton (1960-) ha unito tecnica impeccabile e presenza scenica teatrale. Ha vinto il Grand Prix FISM nel 1982 e ha portato uno stile classico e raffinato nelle grandi produzioni di Las Vegas.',
+          externalUrl: 'https://en.wikipedia.org/wiki/Lance_Burton',
+          entryType: 'CURIOSITY',
+          order: 15,
+        },
+        // Italiani
+        {
+          title: 'Silvan',
+          description: 'Icona italiana della magia televisiva, noto per le sue grandi illusioni.',
+          category: 'Maghi e Illusionisti',
+          content: 'Silvan (Aldo Savoldello, 1937-) e uno dei maghi italiani piu celebri. Ha portato la magia nelle case degli italiani con show televisivi e spettacoli teatrali, diventando un simbolo della prestidigitazione italiana.',
+          externalUrl: 'https://it.wikipedia.org/wiki/Silvan',
+          entryType: 'CURIOSITY',
+          order: 16,
+        },
+        {
+          title: 'Arturo Brachetti',
+          description: 'Maestro italiano del quick-change, celebre per i cambi d\'abito fulminei.',
+          category: 'Maghi e Illusionisti',
+          content: 'Arturo Brachetti (1957-) e il piu celebre trasformista italiano. I suoi spettacoli uniscono magia visiva, teatro e cambi d\'abito rapidissimi, con una forte componente di narrazione scenica.',
+          externalUrl: 'https://it.wikipedia.org/wiki/Arturo_Brachetti',
+          entryType: 'CURIOSITY',
+          order: 17,
+        },
+        {
+          title: 'Tony Binarelli',
+          description: 'Mentalista e prestigiatore italiano, noto per lo stile comico e televisivo.',
+          category: 'Maghi e Illusionisti',
+          content: 'Tony Binarelli (1939-2022) ha unito mentalismo e comicita in uno stile personale. È stato volto noto della TV italiana e ha contribuito a diffondere la cultura della magia e del mentalismo in Italia.',
+          externalUrl: 'https://it.wikipedia.org/wiki/Tony_Binarelli',
+          entryType: 'CURIOSITY',
+          order: 18,
         },
       ],
     });
