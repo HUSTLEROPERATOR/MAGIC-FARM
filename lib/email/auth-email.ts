@@ -6,6 +6,17 @@ export async function sendVerificationRequest({
   url,
   provider: { server, from },
 }: SendVerificationRequestParams) {
+  // 🔧 DEV MODE: Log magic link invece di inviare email
+  if (process.env.NODE_ENV === 'development' && !process.env.SMTP_USER) {
+    console.log('\n' + '='.repeat(80));
+    console.log('🎩✨ MAGIC LINK (DEV MODE) ✨🎩');
+    console.log('='.repeat(80));
+    console.log(`📧 Email: ${email}`);
+    console.log(`🔗 Link:  ${url}`);
+    console.log('='.repeat(80) + '\n');
+    return; // Skip email sending
+  }
+
   const transport = nodemailer.createTransport(server);
 
   const html = `

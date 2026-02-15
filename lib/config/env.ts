@@ -4,11 +4,13 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   NEXTAUTH_SECRET: z.string().min(1, 'NEXTAUTH_SECRET is required'),
   NEXTAUTH_URL: z.string().url('NEXTAUTH_URL must be a valid URL'),
-  SMTP_HOST: z.string().min(1, 'SMTP_HOST is required'),
-  SMTP_PORT: z.string().regex(/^\d+$/, 'SMTP_PORT must be a number'),
-  SMTP_USER: z.string().min(1, 'SMTP_USER is required'),
-  SMTP_PASSWORD: z.string().min(1, 'SMTP_PASSWORD is required'),
-  SMTP_FROM: z.string().min(1, 'SMTP_FROM is required'),
+  
+  // SMTP opzionale in dev mode per permettere test senza email
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().regex(/^\d+$/, 'SMTP_PORT must be a number').optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
 
   // ── Anti-bot (Cloudflare Turnstile) — optional in dev ──
   TURNSTILE_SECRET_KEY: z.string().optional(),
