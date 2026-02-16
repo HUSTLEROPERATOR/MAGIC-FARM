@@ -7,7 +7,7 @@ export async function sendVerificationRequest({
   provider: { server, from },
 }: SendVerificationRequestParams) {
   // 🔧 DEV MODE: Log magic link invece di inviare email
-  if (process.env.NODE_ENV === 'development' && !process.env.SMTP_USER) {
+  if (process.env.NODE_ENV === 'development' && !process.env.SMTP_HOST) {
     console.log('\n' + '='.repeat(80));
     console.log('🎩✨ MAGIC LINK (DEV MODE) ✨🎩');
     console.log('='.repeat(80));
@@ -17,7 +17,14 @@ export async function sendVerificationRequest({
     return; // Skip email sending
   }
 
-  const transport = nodemailer.createTransport(server);
+  console.log('[EMAIL] Sending magic link to:', email);
+
+  const transport = nodemailer.createTransport({
+    ...(typeof server === 'object' ? server : {}),
+    connectionTimeout: 10_000,  // 10s per connettersi
+    greetingTimeout: 10_000,    // 10s per greeting SMTP
+    socketTimeout: 15_000,      // 15s per operazione socket
+  } as unknown as nodemailer.TransportOptions);
 
   const html = `
     <!DOCTYPE html>
@@ -101,16 +108,23 @@ Se non hai richiesto questo link, puoi ignorare questa email.
 © ${new Date().getFullYear()} Magic Farm
 `;
 
-  const result = await transport.sendMail({
-    to: email,
-    from,
-    subject: '✨ Magic Farm - Il tuo Magic Link',
-    text,
-    html,
-  });
+  try {
+    const result = await transport.sendMail({
+      to: email,
+      from,
+      subject: '✨ Magic Farm - Il tuo Magic Link',
+      text,
+      html,
+    });
 
-  const failed = result.rejected.concat(result.pending).filter(Boolean);
-  if (failed.length) {
-    throw new Error(`Email could not be sent to ${failed.join(', ')}`);
+    console.log('[EMAIL] Sent successfully to:', email, '| messageId:', result.messageId);
+
+    const failed = result.rejected.concat(result.pending).filter(Boolean);
+    if (failed.length) {
+      throw new Error(`Email could not be sent to ${failed.join(', ')}`);
+    }
+  } catch (error) {
+    console.error('[EMAIL] Failed to send magic link:', error);
+    throw error;
   }
 }

@@ -38,6 +38,7 @@ model User {
   accounts          Account[]
   leaderboard       LeaderboardEntry?
   badgeAwards       BadgeAward[]
+  moduleInteractions  ModuleInteraction[]
 
   @@index([email])
   @@index([alias])
@@ -201,6 +202,8 @@ model EventNight {
   alliances Alliance[]
   badges    Badge[]
   metrics   EventMetrics?
+  eventModules        EventModule[]
+  moduleInteractions  ModuleInteraction[]
 
   @@index([status])
   @@index([startsAt])
@@ -644,6 +647,81 @@ model EventMetrics {
   eventNight EventNight @relation(fields: [eventNightId], references: [id], onDelete: Cascade)
 
   @@map("event_metrics")
+}
+
+// ============================================================================
+// MAGIC MODULES (Incantesimi — Feature Flags per Evento)
+// ============================================================================
+
+model MagicModule {
+  id              String        @id @default(cuid())
+  key             String        @unique
+  name            String
+  description     String?
+  isGlobalEnabled Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  eventModules    EventModule[]
+
+  @@map("magic_modules")
+}
+
+model EventModule {
+  id             String      @id @default(cuid())
+  eventNightId   String
+  moduleId       String
+  enabled        Boolean     @default(false)
+  configJson     Json?
+  startsAt       DateTime?
+  endsAt         DateTime?
+  toggledBy      String?
+  toggledAt      DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  eventNight     EventNight  @relation(fields: [eventNightId], references: [id])
+  module         MagicModule @relation(fields: [moduleId], references: [id])
+
+  @@unique([eventNightId, moduleId])
+  @@index([eventNightId])
+  @@index([moduleId])
+  @@index([eventNightId, enabled])
+  @@index([toggledAt])
+  @@map("event_modules")
+}
+
+enum ModuleInteractionActor {
+  USER
+  SYSTEM
+}
+
+enum ModuleInteractionStatus {
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+}
+
+model ModuleInteraction {
+  id            String                   @id @default(cuid())
+  eventNightId  String
+  roundId       String
+  moduleKey     String
+  actor         ModuleInteractionActor   @default(USER)
+  userId        String?
+  tableId       String?
+  status        ModuleInteractionStatus  @default(IN_PROGRESS)
+  state         Json?
+  completedAt   DateTime?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  eventNight    EventNight  @relation(fields: [eventNightId], references: [id])
+  user          User?       @relation(fields: [userId], references: [id])
+
+  @@unique([eventNightId, roundId, moduleKey, actor, userId, tableId])
+  @@index([eventNightId, roundId])
+  @@index([userId])
+  @@map("module_interactions")
 }
 
 // ============================================================================

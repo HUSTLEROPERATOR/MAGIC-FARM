@@ -18,6 +18,9 @@ export const authOptions: NextAuthOptions = {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASSWORD,
         },
+        // Mailtrap (porta 2525) non usa TLS implicito
+        secure: Number(process.env.SMTP_PORT) === 465,
+        tls: { rejectUnauthorized: false },
       },
       from: process.env.SMTP_FROM || 'Magic Farm <noreply@magic-farm.com>',
       sendVerificationRequest,

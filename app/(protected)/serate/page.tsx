@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import Link from 'next/link';
+import { Theater, Clock, Zap, Circle, Check, ClipboardList, CrystalBall, Calendar, ScrollText, ArrowLeft } from '@/lib/ui/icons';
 
 export default async function SeratePage() {
   const session = await getServerSession(authOptions);
@@ -48,7 +49,7 @@ export default async function SeratePage() {
     <div className="min-h-screen bg-magic-dark p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <span className="text-4xl">🎭</span>
+          <Theater className="w-10 h-10 text-magic-mystic" />
           <div>
             <h1 className="font-cinzel text-3xl text-magic-gold">Serate Evento</h1>
             <p className="text-white/40 text-sm">Partecipa alle serate e risolvi gli enigmi</p>
@@ -84,16 +85,16 @@ export default async function SeratePage() {
                           <p className="text-white/60 text-sm mt-1">{event.description}</p>
                         )}
                         <div className="flex items-center gap-4 mt-3 text-xs text-white/40">
-                          <span>🕐 Iniziata {new Date(event.startsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
-                          {activeRounds > 0 && <span className="text-green-400">⚡ {activeRounds} round attivi</span>}
+                          <span className="inline-flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Iniziata {new Date(event.startsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
+                          {activeRounds > 0 && <span className="text-green-400 inline-flex items-center gap-1"><Zap className="w-3.5 h-3.5" /> {activeRounds} round attivi</span>}
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <span className="text-xs px-3 py-1 rounded-full font-medium bg-green-500/20 text-green-400">
-                          🔴 LIVE
+                          <Circle className="w-3 h-3 fill-red-500 text-red-500" /> LIVE
                         </span>
                         {isJoined ? (
-                          <span className="text-xs text-magic-mystic">✅ Al tavolo</span>
+                          <span className="text-xs text-magic-mystic inline-flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Al tavolo</span>
                         ) : (
                           <span className="text-xs text-magic-gold animate-pulse">→ Entra</span>
                         )}
@@ -109,11 +110,11 @@ export default async function SeratePage() {
         {/* Serate in programma */}
         <div className="mb-8">
           <h2 className="text-magic-mystic font-semibold text-sm uppercase tracking-wider mb-4">
-            📋 In programma
+            <ClipboardList className="w-4 h-4 inline" /> In programma
           </h2>
           {events.filter(e => e.status === 'DRAFT').length === 0 ? (
             <div className="card-magic text-center py-10">
-              <p className="text-5xl mb-4">🔮</p>
+              <CrystalBall className="w-12 h-12 text-magic-mystic mx-auto mb-4" />
               <p className="text-white/60">Nessuna serata in programma.</p>
               <p className="text-white/40 text-sm mt-1">Torna presto!</p>
             </div>
@@ -133,11 +134,11 @@ export default async function SeratePage() {
                         <p className="text-white/50 text-sm mt-1">{event.description}</p>
                       )}
                       <p className="text-white/40 text-xs mt-3">
-                        📅 {new Date(event.startsAt).toLocaleDateString('it-IT', {
+                        <Calendar className="w-3.5 h-3.5 inline" /> {new Date(event.startsAt).toLocaleDateString('it-IT', {
                           weekday: 'long', day: 'numeric', month: 'long',
                         })}
                         {' · '}
-                        🕐 {new Date(event.startsAt).toLocaleTimeString('it-IT', {
+                        <Clock className="w-3.5 h-3.5 inline" /> {new Date(event.startsAt).toLocaleTimeString('it-IT', {
                           hour: '2-digit', minute: '2-digit',
                         })}
                       </p>
@@ -156,7 +157,7 @@ export default async function SeratePage() {
         {pastEvents.length > 0 && (
           <div>
             <h2 className="text-white/40 font-semibold text-sm uppercase tracking-wider mb-4">
-              📜 Archivio
+              <ScrollText className="w-4 h-4 inline" /> Archivio
             </h2>
             <div className="space-y-2">
               {pastEvents.map((event) => (
@@ -183,8 +184,8 @@ export default async function SeratePage() {
         )}
 
         <div className="mt-10">
-          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna alla Dashboard
+          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm inline-flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Torna alla Dashboard
           </a>
         </div>
       </div>

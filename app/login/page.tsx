@@ -4,6 +4,10 @@ import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useToast } from '@/components/ui/magic-toast';
+import { CrystalBall, Sparkles, ArrowLeft, Sparkle } from '@/lib/ui/icons';
+
+const SIGNIN_TIMEOUT_MS = 15_000;
 
 export default function LoginPage() {
   return (
@@ -18,6 +22,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
+  const toast = useToast();
 
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const authError = searchParams.get('error');
@@ -48,19 +53,38 @@ function LoginForm() {
         return;
       }
 
-      // Rate limit passed, proceed with sign in
-      const result = await signIn('email', {
+      // Race signIn against a timeout so the UI never hangs forever
+      const timeoutPromise = new Promise<{ error: string }>((resolve) =>
+        setTimeout(() => resolve({ error: 'timeout' }), SIGNIN_TIMEOUT_MS),
+      );
+
+      const signInPromise = signIn('email', {
         email,
-        redirect: true,
+        redirect: false,
         callbackUrl,
       });
 
-      if (result?.error) {
-        setError('Si è verificato un errore. Riprova.');
+      const result = await Promise.race([signInPromise, timeoutPromise]);
+
+      if (result?.error === 'timeout') {
+        setError('Il server non ha risposto in tempo. Riprova tra poco.');
+        toast.error('Timeout: il server non risponde.');
+        setIsLoading(false);
+        return;
       }
+
+      if (result?.error) {
+        setError('Impossibile inviare il Magic Link. Riprova.');
+        toast.error('Errore durante l\'invio del Magic Link.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Success: redirect to verify-request page
+      window.location.href = '/verify-request';
     } catch {
-      setError('Si è verificato un errore. Riprova.');
-    } finally {
+      setError('Si è verificato un errore di rete. Riprova.');
+      toast.error('Errore di connessione.');
       setIsLoading(false);
     }
   };
@@ -82,14 +106,14 @@ function LoginForm() {
           href="/" 
           className="inline-flex items-center gap-2 text-white/50 hover:text-magic-gold transition-colors mb-8 group"
         >
-          <span className="transition-transform group-hover:-translate-x-1">←</span>
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Torna alla home</span>
         </Link>
 
         <div className="card-magic">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-5xl mb-4 animate-float">🔮</div>
+            <CrystalBall className="w-12 h-12 text-magic-mystic mx-auto mb-4 animate-float" />
             <h1 className="font-cinzel text-3xl font-bold glow-text mb-2">
               Accedi
             </h1>
@@ -139,9 +163,9 @@ function LoginForm() {
                   </>
                 ) : (
                   <>
-                    <span>✨</span>
+                    <Sparkles className="w-5 h-5" />
                     <span>Invia Magic Link</span>
-                    <span>✨</span>
+                    <Sparkles className="w-5 h-5" />
                   </>
                 )}
               </span>
@@ -153,16 +177,16 @@ function LoginForm() {
             <p className="text-white/40 text-xs text-center leading-relaxed">
               Ti invieremo un link magico alla tua email. 
               Clicca sul link per accedere automaticamente. 
-              Nessuna password da ricordare! ✨
+              Nessuna password da ricordare!
             </p>
           </div>
         </div>
 
         {/* Decorative Elements */}
         <div className="flex justify-center gap-4 mt-8 text-white/20">
-          <span>✦</span>
-          <span>✦</span>
-          <span>✦</span>
+          <Sparkle className="w-3 h-3" />
+          <Sparkle className="w-3 h-3" />
+          <Sparkle className="w-3 h-3" />
         </div>
       </div>
     </main>

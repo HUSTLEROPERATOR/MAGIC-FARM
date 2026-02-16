@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Trophy, Theater, Star, Handshake, Flame, Sparkles, HelpCircle } from '@/lib/ui/icons';
 
 interface BadgeData {
   id: string;
@@ -54,12 +55,12 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
     ? badges.filter((b) => b.category === selectedCategory)
     : badges;
 
-  const categoryLabels: Record<string, string> = {
-    ACHIEVEMENT: '🏆 Traguardi',
-    EVENT_TITLE: '🎭 Titoli di Serata',
-    SPECIAL: '⭐ Speciali',
-    COLLABORATION: '🤝 Collaborazione',
-    STREAK: '🔥 Serie',
+  const categoryIcons: Record<string, { icon: typeof Trophy; label: string }> = {
+    ACHIEVEMENT: { icon: Trophy, label: 'Traguardi' },
+    EVENT_TITLE: { icon: Theater, label: 'Titoli di Serata' },
+    SPECIAL: { icon: Star, label: 'Speciali' },
+    COLLABORATION: { icon: Handshake, label: 'Collaborazione' },
+    STREAK: { icon: Flame, label: 'Serie' },
   };
 
   if (compact) {
@@ -110,7 +111,7 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
               }}
               className="btn-magic text-sm mt-6"
             >
-              {newBadges.length > 1 ? `✨ Avanti (${newBadges.length - 1} altri)` : '✨ Fantastico!'}
+              {newBadges.length > 1 ? <><Sparkles className="w-4 h-4 inline" /> Avanti ({newBadges.length - 1} altri)</> : <><Sparkles className="w-4 h-4 inline" /> Fantastico!</>}
             </button>
           </div>
         </div>
@@ -151,7 +152,12 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
                 selectedCategory === cat ? 'bg-magic-purple/30 text-magic-mystic' : 'text-white/40 hover:text-white/60'
               }`}
             >
-              {categoryLabels[cat] || cat}
+              {(() => {
+                const entry = categoryIcons[cat];
+                if (!entry) return cat;
+                const CatIcon = entry.icon;
+                return <><CatIcon className="w-3.5 h-3.5 inline" /> {entry.label}</>;
+              })()}
             </button>
           ))}
         </div>
@@ -168,7 +174,7 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
               }`}
             >
               <div className={`text-4xl mb-2 ${badge.earned ? '' : 'filter blur-[2px]'}`}>
-                {badge.earned ? badge.icon : '❓'}
+                {badge.earned ? badge.icon : <HelpCircle className="w-10 h-10 text-white/30 mx-auto" />}
               </div>
               <h4 className={`text-sm font-semibold ${badge.earned ? 'text-white' : 'text-white/50'}`}>
                 {badge.name}
@@ -180,7 +186,7 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
                 </p>
               )}
               {badge.eventNight && (
-                <p className="text-magic-mystic/60 text-[10px] mt-1">🎭 {badge.eventNight.name}</p>
+                <p className="text-magic-mystic/60 text-[10px] mt-1 flex items-center justify-center gap-0.5"><Theater className="w-3 h-3" /> {badge.eventNight.name}</p>
               )}
             </div>
           ))}

@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
+import { BookOpen, FileText, Puzzle, ScrollText, Sparkles, MagicWand, Lock, CrystalBall, ExternalLink, ArrowLeft } from '@/lib/ui/icons';
+import type { LucideIcon } from '@/lib/ui/icons';
 
 export default async function LibreriaPage() {
   const session = await getServerSession(authOptions);
@@ -31,20 +33,20 @@ export default async function LibreriaPage() {
 
   const categories = [...new Set(processedItems.map((i) => i.category))];
 
-  const entryTypeIcons: Record<string, string> = {
-    ARTICLE: '📄',
-    PUZZLE_EXPLAIN: '🧩',
-    HISTORY: '📜',
-    CURIOSITY: '✨',
-    TECHNIQUE: '🎩',
-    LOCKED: '🔒',
+  const entryTypeIcons: Record<string, LucideIcon> = {
+    ARTICLE: FileText,
+    PUZZLE_EXPLAIN: Puzzle,
+    HISTORY: ScrollText,
+    CURIOSITY: Sparkles,
+    TECHNIQUE: MagicWand,
+    LOCKED: Lock,
   };
 
   return (
     <div className="min-h-screen bg-magic-dark p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-4xl">📚</span>
+          <BookOpen className="w-10 h-10 text-magic-gold" />
           <h1 className="font-cinzel text-3xl text-magic-gold">Il Grimorio</h1>
         </div>
         <p className="text-white/40 text-sm mb-8 ml-14">
@@ -53,7 +55,7 @@ export default async function LibreriaPage() {
 
         {processedItems.length === 0 ? (
           <div className="card-magic text-center py-12">
-            <p className="text-5xl mb-4">📖</p>
+            <BookOpen className="w-12 h-12 text-magic-mystic mx-auto mb-4" />
             <p className="text-white/60 text-lg">Il Grimorio è ancora vuoto.</p>
             <p className="text-white/40 text-sm mt-2">Partecipa alle serate per sbloccare nuovi contenuti!</p>
           </div>
@@ -79,14 +81,15 @@ export default async function LibreriaPage() {
                         }`}
                       >
                         <div className="flex items-start gap-2">
-                          <span className="text-lg mt-0.5">
-                            {item.isLocked ? '🔒' : entryTypeIcons[item.entryType] || '📄'}
-                          </span>
+                          {(() => {
+                            const IconComp = item.isLocked ? Lock : (entryTypeIcons[item.entryType] || FileText);
+                            return <IconComp className="w-5 h-5 text-magic-gold mt-0.5 shrink-0" />;
+                          })()}
                           <div className="flex-1">
                             <h3 className="text-magic-gold font-semibold">{item.title}</h3>
                             {item.isLocked ? (
-                              <p className="text-white/40 text-sm mt-1 italic">
-                                🔮 Partecipa alla serata per sbloccare questo frammento
+                              <p className="text-white/40 text-sm mt-1 italic flex items-center gap-1">
+                                <CrystalBall className="w-4 h-4 shrink-0" /> Partecipa alla serata per sbloccare questo frammento
                               </p>
                             ) : (
                               <>
@@ -108,7 +111,7 @@ export default async function LibreriaPage() {
                                 rel="noopener noreferrer"
                                 className="inline-block mt-3 text-magic-mystic text-xs hover:text-magic-gold transition-colors"
                               >
-                                🔗 Leggi di più →
+                                <ExternalLink className="w-3.5 h-3.5 inline" /> Leggi di più →
                               </a>
                             )}
                           </div>
@@ -122,8 +125,8 @@ export default async function LibreriaPage() {
         )}
 
         <div className="mt-8">
-          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna alla Dashboard
+          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm inline-flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Torna alla Dashboard
           </a>
         </div>
       </div>

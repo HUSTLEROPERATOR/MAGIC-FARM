@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { Trophy, Medal, ArrowLeft } from '@/lib/ui/icons';
 
 export default async function ClassificaPage() {
   const leaderboard = await prisma.leaderboardEntry.findMany({
@@ -15,13 +16,13 @@ export default async function ClassificaPage() {
     <div className="min-h-screen bg-magic-dark p-6 md:p-10">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <span className="text-4xl">🏆</span>
+          <Trophy className="w-10 h-10 text-magic-gold" />
           <h1 className="font-cinzel text-3xl text-magic-gold">Classifica</h1>
         </div>
 
         {leaderboard.length === 0 ? (
           <div className="card-magic text-center py-12">
-            <p className="text-5xl mb-4">🏅</p>
+            <Medal className="w-12 h-12 text-magic-gold mx-auto mb-4" />
             <p className="text-white/60 text-lg">La classifica è ancora vuota.</p>
             <p className="text-white/40 text-sm mt-2">Partecipa alle serate per scalare la classifica!</p>
           </div>
@@ -57,8 +58,8 @@ export default async function ClassificaPage() {
         )}
 
         <div className="mt-8">
-          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna alla Dashboard
+          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm inline-flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Torna alla Dashboard
           </a>
         </div>
       </div>

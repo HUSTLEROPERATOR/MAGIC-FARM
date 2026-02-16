@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Trophy, UserIcon, Users, ChevronUp, ChevronDown } from '@/lib/ui/icons';
 
 interface PlayerEntry {
   rank: number;
@@ -58,10 +59,10 @@ export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
         className="w-full flex items-center justify-between mb-3"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xl">🏆</span>
+          <Trophy className="w-5 h-5 text-magic-gold" />
           <h3 className="text-magic-gold font-semibold text-sm">Classifica Live</h3>
         </div>
-        <span className="text-white/30 text-xs">{expanded ? '▲' : '▼'}</span>
+        {expanded ? <ChevronUp className="w-3 h-3 text-white/30" /> : <ChevronDown className="w-3 h-3 text-white/30" />}
       </button>
 
       {expanded && (
@@ -74,7 +75,7 @@ export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
                 tab === 'players' ? 'bg-magic-purple/30 text-magic-mystic' : 'text-white/40 hover:text-white/60'
               }`}
             >
-              👤 Giocatori
+              <UserIcon className="w-3.5 h-3.5 inline" /> Giocatori
             </button>
             <button
               onClick={() => setTab('tables')}
@@ -82,7 +83,7 @@ export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
                 tab === 'tables' ? 'bg-magic-purple/30 text-magic-mystic' : 'text-white/40 hover:text-white/60'
               }`}
             >
-              🪑 Tavoli
+              <Users className="w-3.5 h-3.5 inline" /> Tavoli
             </button>
           </div>
 

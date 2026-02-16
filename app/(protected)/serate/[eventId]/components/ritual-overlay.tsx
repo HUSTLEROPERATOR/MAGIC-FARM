@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { ScrollText, Moon, CrystalBall, Sparkles, Star } from '@/lib/ui/icons';
 
 interface RitualOverlayProps {
   eventId: string;
@@ -48,7 +49,7 @@ export function RitualOverlay({ eventId, eventStatus }: RitualOverlayProps) {
             onClick={() => { setOverlayType('opening'); setShowOverlay(true); }}
             className="text-xs px-3 py-1.5 rounded-full bg-magic-purple/20 text-magic-mystic hover:bg-magic-purple/30 transition-colors"
           >
-            📜 Rituale d&apos;Apertura
+            <ScrollText className="w-3.5 h-3.5 inline" /> Rituale d&apos;Apertura
           </button>
         )}
         {hasClosing && (
@@ -56,7 +57,7 @@ export function RitualOverlay({ eventId, eventStatus }: RitualOverlayProps) {
             onClick={() => { setOverlayType('closing'); setShowOverlay(true); }}
             className="text-xs px-3 py-1.5 rounded-full bg-magic-gold/20 text-magic-gold hover:bg-magic-gold/30 transition-colors"
           >
-            🌙 Rituale di Chiusura
+            <Moon className="w-3.5 h-3.5 inline" /> Rituale di Chiusura
           </button>
         )}
       </div>
@@ -93,8 +94,10 @@ export function RitualOverlay({ eventId, eventStatus }: RitualOverlayProps) {
               )}
 
               {/* Icon */}
-              <div className="text-6xl">
-                {overlayType === 'opening' ? '🔮' : '🌙'}
+              <div className="flex justify-center">
+                {overlayType === 'opening'
+                  ? <CrystalBall className="w-16 h-16 text-magic-purple" />
+                  : <Moon className="w-16 h-16 text-magic-gold" />}
               </div>
 
               {/* Title */}
@@ -126,7 +129,9 @@ export function RitualOverlay({ eventId, eventStatus }: RitualOverlayProps) {
                 onClick={() => { setShowOverlay(false); setDismissed(true); }}
                 className="btn-magic text-sm mx-auto"
               >
-                {overlayType === 'opening' ? '✨ Che la magia abbia inizio' : '🌟 Chiudi'}
+                {overlayType === 'opening'
+                  ? <><Sparkles className="w-4 h-4 inline" /> Che la magia abbia inizio</>
+                  : <><Star className="w-4 h-4 inline" /> Chiudi</>}
               </button>
             </div>
           </div>
