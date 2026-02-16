@@ -1,4 +1,7 @@
 import type { MagicModuleHandler, ModuleContext, ModuleResult } from './types';
+import { cardPredictionBinary } from './modules/card-prediction-binary';
+import { equivoqueGuided } from './modules/equivoque-guided';
+import { envelopePrediction } from './modules/envelope-prediction';
 
 const MODULE_REGISTRY = new Map<string, MagicModuleHandler<any, any>>();
 
@@ -57,6 +60,11 @@ export async function executeModule(
     return { success: false, code: 'RUNTIME_ERROR', error: message };
   }
 }
+
+// Register all built-in modules
+registerModule(cardPredictionBinary);
+registerModule(equivoqueGuided);
+registerModule(envelopePrediction);
 
 /** Only for testing — clears all registered modules */
 export function _resetRegistryForTesting(): void {
