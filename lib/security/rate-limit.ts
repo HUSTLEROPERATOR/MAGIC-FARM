@@ -49,6 +49,11 @@ const puzzleCooldownLimiter = new RateLimiterMemory({
  * IP-based submission limiter: 30 submissions per 5 minutes from same IP.
  * Detects multi-account abuse from the same IP.
  */
+const moduleExecuteLimiter = new RateLimiterMemory({
+  points: 3,
+  duration: 10, // 3 executions per 10 seconds
+});
+
 const ipSubmitLimiter = new RateLimiterMemory({
   points: 30,
   duration: 300, // 30 per 5 minutes — generous for shared networks
@@ -158,6 +163,18 @@ export async function rateLimitPuzzleCooldown(userId: string, puzzleId: string):
 export async function rateLimitIPSubmissions(ipHash: string): Promise<boolean> {
   try {
     await ipSubmitLimiter.consume(ipHash);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Rate limit module executions: 3 per 10 seconds per user
+ */
+export async function rateLimitModuleExecute(userId: string): Promise<boolean> {
+  try {
+    await moduleExecuteLimiter.consume(userId);
     return true;
   } catch {
     return false;

@@ -92,6 +92,26 @@ export const allianceCreationSchema = z.object({
   tableBId: z.string().cuid(),
 });
 
+// Module toggle schema
+export const moduleToggleSchema = z.object({
+  enabled: z.boolean(),
+});
+
+// Module config update schema
+export const moduleConfigSchema = z.object({
+  configJson: z.record(z.unknown()),
+});
+
+// Module execute schema
+export const moduleExecuteSchema = z.object({
+  roundId: z.string().cuid(),
+  input: z.unknown().optional(),
+});
+
+export type ModuleToggleInput = z.infer<typeof moduleToggleSchema>;
+export type ModuleConfigInput = z.infer<typeof moduleConfigSchema>;
+export type ModuleExecuteInput = z.infer<typeof moduleExecuteSchema>;
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type AliasInput = z.infer<typeof aliasSchema>;
 export type TableJoinInput = z.infer<typeof tableJoinSchema>;
