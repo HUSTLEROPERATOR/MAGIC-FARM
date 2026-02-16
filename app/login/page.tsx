@@ -4,6 +4,9 @@ import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useToast } from '@/components/ui/magic-toast';
+
+const SIGNIN_TIMEOUT_MS = 15_000;
 
 export default function LoginPage() {
   return (
@@ -18,6 +21,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
+  const toast = useToast();
 
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
   const authError = searchParams.get('error');
@@ -48,19 +52,38 @@ function LoginForm() {
         return;
       }
 
-      // Rate limit passed, proceed with sign in
-      const result = await signIn('email', {
+      // Race signIn against a timeout so the UI never hangs forever
+      const timeoutPromise = new Promise<{ error: string }>((resolve) =>
+        setTimeout(() => resolve({ error: 'timeout' }), SIGNIN_TIMEOUT_MS),
+      );
+
+      const signInPromise = signIn('email', {
         email,
-        redirect: true,
+        redirect: false,
         callbackUrl,
       });
 
-      if (result?.error) {
-        setError('Si è verificato un errore. Riprova.');
+      const result = await Promise.race([signInPromise, timeoutPromise]);
+
+      if (result?.error === 'timeout') {
+        setError('Il server non ha risposto in tempo. Riprova tra poco.');
+        toast.error('Timeout: il server non risponde.');
+        setIsLoading(false);
+        return;
       }
+
+      if (result?.error) {
+        setError('Impossibile inviare il Magic Link. Riprova.');
+        toast.error('Errore durante l\'invio del Magic Link.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Success: redirect to verify-request page
+      window.location.href = '/verify-request';
     } catch {
-      setError('Si è verificato un errore. Riprova.');
-    } finally {
+      setError('Si è verificato un errore di rete. Riprova.');
+      toast.error('Errore di connessione.');
       setIsLoading(false);
     }
   };
