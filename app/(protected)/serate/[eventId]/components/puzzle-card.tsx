@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Monitor, Layers, Eye, Music, RefreshCw, Lightbulb, Check, Hourglass, Send } from '@/lib/ui/icons';
+import type { LucideIcon } from '@/lib/ui/icons';
 
 interface PuzzleData {
   id: string;
@@ -97,12 +99,12 @@ export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved 
     }
   }
 
-  const puzzleTypeIcons: Record<string, { icon: string; label: string; color: string }> = {
-    DIGITAL: { icon: '💻', label: 'Digitale', color: 'text-blue-400' },
-    PHYSICAL: { icon: '🎴', label: 'Oggetto Fisico', color: 'text-amber-400' },
-    OBSERVATION: { icon: '👁️', label: 'Osservazione', color: 'text-emerald-400' },
-    LISTENING: { icon: '🎵', label: 'Ascolto', color: 'text-purple-400' },
-    HYBRID: { icon: '🔄', label: 'Ibrido', color: 'text-pink-400' },
+  const puzzleTypeIcons: Record<string, { icon: LucideIcon; label: string; color: string }> = {
+    DIGITAL: { icon: Monitor, label: 'Digitale', color: 'text-blue-400' },
+    PHYSICAL: { icon: Layers, label: 'Oggetto Fisico', color: 'text-amber-400' },
+    OBSERVATION: { icon: Eye, label: 'Osservazione', color: 'text-emerald-400' },
+    LISTENING: { icon: Music, label: 'Ascolto', color: 'text-purple-400' },
+    HYBRID: { icon: RefreshCw, label: 'Ibrido', color: 'text-pink-400' },
   };
 
   const pType = puzzle.puzzleType ? puzzleTypeIcons[puzzle.puzzleType] : null;
@@ -123,11 +125,14 @@ export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved 
           <h3 className={`font-semibold ${isSolved ? 'text-green-400' : 'text-white'}`}>
             {puzzle.title}
           </h3>
-          {pType && pType.icon !== '💻' && (
-            <span className={`text-xs px-1.5 py-0.5 rounded-full bg-white/5 ${pType.color}`}>
-              {pType.icon} {pType.label}
-            </span>
-          )}
+          {pType && (() => {
+            const PTypeIcon = pType.icon;
+            return (
+              <span className={`text-xs px-1.5 py-0.5 rounded-full bg-white/5 ${pType.color} inline-flex items-center gap-1`}>
+                <PTypeIcon className="w-3 h-3" /> {pType.label}
+              </span>
+            );
+          })()}
         </div>
         <div className="flex items-center gap-2">
           {isSolved && submission && (
@@ -148,7 +153,7 @@ export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved 
           {/* Physical object hint (Estensione 2) */}
           {puzzle.physicalHint && (
             <div className="bg-amber-500/10 rounded-xl p-3 border border-amber-500/20 flex items-start gap-2">
-              <span className="text-lg">🎴</span>
+              <Layers className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs text-amber-400 font-semibold mb-0.5">Oggetto Fisico Richiesto</p>
                 <p className="text-white/70 text-sm">{puzzle.physicalHint}</p>
@@ -159,7 +164,7 @@ export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved 
           {/* Observation note (Estensione 3) */}
           {puzzle.environmentNote && (
             <div className="bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20 flex items-start gap-2">
-              <span className="text-lg">👁️</span>
+              <Eye className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs text-emerald-400 font-semibold mb-0.5">Nota di Osservazione</p>
                 <p className="text-white/70 text-sm">{puzzle.environmentNote}</p>
@@ -172,7 +177,7 @@ export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved 
             <div className="space-y-2">
               {revealedHints.map((hint) => (
                 <div key={hint.order} className="bg-magic-mystic/10 rounded-lg p-3 border border-magic-mystic/20">
-                  <p className="text-xs text-magic-mystic mb-1">💡 Suggerimento {hint.order} (-{hint.penaltyPoints} pts)</p>
+                  <p className="text-xs text-magic-mystic mb-1"><Lightbulb className="w-3.5 h-3.5 inline" /> Suggerimento {hint.order} (-{hint.penaltyPoints} pts)</p>
                   <p className="text-white/70 text-sm">{hint.text}</p>
                 </div>
               ))}
@@ -182,7 +187,7 @@ export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved 
           {/* Answer form or solved state */}
           {isSolved ? (
             <div className="bg-green-500/10 rounded-xl p-4 text-center">
-              <p className="text-green-400 font-semibold">✅ Enigma risolto!</p>
+              <p className="text-green-400 font-semibold"><Check className="w-4 h-4 inline" /> Enigma risolto!</p>
               <p className="text-white/50 text-sm mt-1">
                 {submission!.attemptsCount} tentativi · {submission!.hintsUsed} suggerimenti · +{submission!.pointsAwarded} punti
               </p>
@@ -203,7 +208,7 @@ export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved 
                   disabled={loading || !answer.trim()}
                   className="btn-magic text-sm disabled:opacity-50"
                 >
-                  <span>{loading ? '⏳' : '📤'}</span>
+                  <span>{loading ? <Hourglass className="w-4 h-4" /> : <Send className="w-4 h-4" />}</span>
                 </button>
               </form>
 
@@ -214,7 +219,7 @@ export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved 
                   disabled={hintLoading}
                   className="text-xs text-magic-mystic/60 hover:text-magic-mystic transition-colors flex items-center gap-1"
                 >
-                  💡 {hintLoading ? 'Caricamento...' : `Chiedi suggerimento ${currentHintsUsed + 1}/${puzzle.hintsCount}`}
+                  <Lightbulb className="w-3.5 h-3.5" /> {hintLoading ? 'Caricamento...' : `Chiedi suggerimento ${currentHintsUsed + 1}/${puzzle.hintsCount}`}
                   <span className="text-white/30">(-{puzzle.hintPenalties[currentHintsUsed] || 10} pts)</span>
                 </button>
               )}

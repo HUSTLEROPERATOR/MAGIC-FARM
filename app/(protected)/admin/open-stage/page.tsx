@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { Mail, Smartphone, Clock, Video, ArrowLeft } from '@/lib/ui/icons';
 
 interface Application {
   id: string;
@@ -52,7 +53,7 @@ export default function AdminOpenStagePage() {
             <p className="text-white/40 text-sm">Gestisci le candidature dei performer</p>
           </div>
           <Link href="/admin" className="text-magic-mystic hover:text-magic-gold text-sm">
-            ← Admin Panel
+            <ArrowLeft className="w-4 h-4 inline" /> Admin Panel
           </Link>
         </div>
 
@@ -201,9 +202,9 @@ function ApplicationCard({
           </div>
           <p className="text-white/60 text-sm mb-1">{application.realName}</p>
           <div className="flex items-center gap-4 text-white/40 text-xs">
-            <span>📧 {application.email}</span>
-            <span>📱 {application.phone}</span>
-            <span>🕒 {createdDate}</span>
+            <span className="inline-flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {application.email}</span>
+            <span className="inline-flex items-center gap-1"><Smartphone className="w-3.5 h-3.5" /> {application.phone}</span>
+            <span className="inline-flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {createdDate}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -249,7 +250,7 @@ function ApplicationCard({
                 rel="noopener noreferrer"
                 className="text-magic-mystic hover:text-magic-gold text-sm"
               >
-                🎥 Guarda il video →
+                <Video className="w-4 h-4 inline" /> Guarda il video →
               </a>
             </div>
           )}

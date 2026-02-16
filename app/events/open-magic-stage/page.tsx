@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Theater, Timer, Users, Sparkles, FileEdit, AlertTriangle, Clock, Ban, Camera, Check, ArrowLeft } from '@/lib/ui/icons';
 
 export default function OpenMagicStagePage() {
   return (
@@ -35,28 +36,28 @@ export default function OpenMagicStagePage() {
             <h2 className="font-cinzel text-3xl text-magic-gold mb-6">Cos&apos;è</h2>
             <div className="space-y-4 text-white/80">
               <div className="flex items-start gap-4">
-                <span className="text-2xl">🎭</span>
+                <Theater className="w-6 h-6 text-magic-gold shrink-0" />
                 <div>
                   <h3 className="text-magic-mystic font-semibold mb-2">Format Open-Mic per Maghi</h3>
                   <p>Un palco aperto dove ogni mago può esibirsi e condividere la propria arte con il pubblico.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <span className="text-2xl">⏱️</span>
+                <Timer className="w-6 h-6 text-magic-gold shrink-0" />
                 <div>
                   <h3 className="text-magic-mystic font-semibold mb-2">Slot da 10 Minuti</h3>
                   <p>Ogni performer ha a disposizione 10 minuti per presentare il proprio numero magico.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <span className="text-2xl">👥</span>
+                <Users className="w-6 h-6 text-magic-gold shrink-0" />
                 <div>
                   <h3 className="text-magic-mystic font-semibold mb-2">Numero Massimo di Performer</h3>
                   <p>Ogni serata ospita un numero limitato di performer per garantire qualità e coinvolgimento.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <span className="text-2xl">✨</span>
+                <Sparkles className="w-6 h-6 text-magic-gold shrink-0" />
                 <div>
                   <h3 className="text-magic-mystic font-semibold mb-2">Interazione con il Pubblico</h3>
                   <p>Il pubblico è parte integrante dello show, con possibilità di partecipazione diretta ai numeri.</p>
@@ -101,23 +102,23 @@ export default function OpenMagicStagePage() {
             <h2 className="font-cinzel text-3xl text-magic-gold mb-6">Regolamento</h2>
             <div className="space-y-4 text-white/80">
               <div className="p-4 bg-white/5 rounded-lg">
-                <h3 className="text-magic-mystic font-semibold mb-2">📝 Materiale Originale</h3>
+                <h3 className="text-magic-mystic font-semibold mb-2 flex items-center gap-2"><FileEdit className="w-4 h-4" /> Materiale Originale</h3>
                 <p>È richiesto materiale originale o con diritti autorizzati. Rispetta sempre la proprietà intellettuale.</p>
               </div>
               <div className="p-4 bg-white/5 rounded-lg">
-                <h3 className="text-magic-mystic font-semibold mb-2">⚠️ Sicurezza</h3>
+                <h3 className="text-magic-mystic font-semibold mb-2 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> Sicurezza</h3>
                 <p>Nessun numero pericoloso senza preventiva autorizzazione dell&apos;organizzazione.</p>
               </div>
               <div className="p-4 bg-white/5 rounded-lg">
-                <h3 className="text-magic-mystic font-semibold mb-2">⏰ Rispetto dei Tempi</h3>
+                <h3 className="text-magic-mystic font-semibold mb-2 flex items-center gap-2"><Clock className="w-4 h-4" /> Rispetto dei Tempi</h3>
                 <p>Il limite di 10 minuti deve essere rigorosamente rispettato per garantire spazio a tutti i performer.</p>
               </div>
               <div className="p-4 bg-white/5 rounded-lg">
-                <h3 className="text-magic-mystic font-semibold mb-2">🚫 Contenuti Appropriati</h3>
+                <h3 className="text-magic-mystic font-semibold mb-2 flex items-center gap-2"><Ban className="w-4 h-4" /> Contenuti Appropriati</h3>
                 <p>Divieto assoluto di contenuti offensivi, discriminatori o inappropriati.</p>
               </div>
               <div className="p-4 bg-white/5 rounded-lg">
-                <h3 className="text-magic-mystic font-semibold mb-2">📸 Privacy e Diritti d&apos;Immagine</h3>
+                <h3 className="text-magic-mystic font-semibold mb-2 flex items-center gap-2"><Camera className="w-4 h-4" /> Privacy e Diritti d&apos;Immagine</h3>
                 <p>Accettazione del GDPR e liberatoria per l&apos;uso dell&apos;immagine durante l&apos;evento.</p>
               </div>
             </div>
@@ -159,8 +160,8 @@ export default function OpenMagicStagePage() {
       {/* Footer Navigation */}
       <section className="py-10 px-6 border-t border-white/10">
         <div className="max-w-4xl mx-auto text-center">
-          <Link href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors">
-            ← Torna alla Dashboard
+          <Link href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors inline-flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Torna alla Dashboard
           </Link>
         </div>
       </section>
@@ -253,7 +254,7 @@ function ApplicationForm() {
   if (success) {
     return (
       <div className="card-magic text-center bg-green-500/10 border-green-500/30">
-        <div className="text-5xl mb-4">✅</div>
+        <Check className="w-12 h-12 text-green-400 mx-auto mb-4" />
         <h3 className="text-magic-gold font-cinzel text-2xl mb-3">Candidatura Inviata!</h3>
         <p className="text-white/80 mb-4">
           La tua candidatura è stata ricevuta con successo. Ti contatteremo presto via email.

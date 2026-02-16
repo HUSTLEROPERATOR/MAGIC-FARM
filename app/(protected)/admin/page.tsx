@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { Sparkles, ArrowLeft } from '@/lib/ui/icons';
 
 interface EventSummary {
   id: string;
@@ -42,10 +43,10 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link href="/admin/open-stage" className="text-magic-mystic hover:text-magic-gold text-sm px-3 py-1.5 bg-magic-purple/20 rounded">
-              Palco Aperto ✨
+              Palco Aperto <Sparkles className="w-4 h-4 inline" />
             </Link>
             <Link href="/dashboard" className="text-magic-mystic hover:text-magic-gold text-sm">
-              ← Dashboard
+              <ArrowLeft className="w-4 h-4 inline" /> Dashboard
             </Link>
           </div>
         </div>

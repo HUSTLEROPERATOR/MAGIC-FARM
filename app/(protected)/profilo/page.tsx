@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import Link from 'next/link';
 import { SignOutButton } from '@/components/sign-out-button';
 import { RevokeConsentButton } from '@/components/revoke-consent-button';
+import { UserIcon, MagicWand, Shield, Handshake, ArrowLeft } from '@/lib/ui/icons';
 
 export default async function ProfiloPage() {
   const session = await getServerSession(authOptions);
@@ -30,13 +31,13 @@ export default async function ProfiloPage() {
     <div className="min-h-screen bg-magic-dark p-6 md:p-10">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <span className="text-4xl">👤</span>
+          <UserIcon className="w-10 h-10 text-magic-gold" />
           <h1 className="font-cinzel text-3xl text-magic-gold">Il Tuo Profilo</h1>
         </div>
 
         <div className="card-magic space-y-6">
           <div className="text-center pb-6 border-b border-white/10">
-            <div className="text-6xl mb-3">🎩</div>
+            <MagicWand className="w-14 h-14 text-magic-gold mx-auto mb-3" />
             <h2 className="text-magic-gold font-cinzel text-2xl">
               {dbUser?.alias || dbUser?.firstName || 'Mago Misterioso'}
             </h2>
@@ -85,7 +86,7 @@ export default async function ProfiloPage() {
         {/* Privacy Summary */}
         <div className="card-magic mt-6">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xl">🛡️</span>
+            <Shield className="w-5 h-5 text-magic-gold" />
             <h3 className="text-magic-gold font-semibold">Il tuo stato privacy</h3>
           </div>
 
@@ -155,7 +156,7 @@ export default async function ProfiloPage() {
               <span className="text-white/50 text-sm">Condivisione con Host</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm ${consent?.consentShareWithHost ? 'text-blue-400' : 'text-white/40'}`}>
-                  {consent?.consentShareWithHost ? 'Attivo 🤝' : 'Non attivo'}
+                  {consent?.consentShareWithHost ? <span className="inline-flex items-center gap-1">Attivo <Handshake className="w-3.5 h-3.5" /></span> : 'Non attivo'}
                 </span>
                 {consent?.consentShareWithHost && (
                   <RevokeConsentButton
@@ -193,8 +194,8 @@ export default async function ProfiloPage() {
         </div>
 
         <div className="mt-8 flex items-center justify-between">
-          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna alla Dashboard
+          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm inline-flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Torna alla Dashboard
           </a>
           <SignOutButton />
         </div>

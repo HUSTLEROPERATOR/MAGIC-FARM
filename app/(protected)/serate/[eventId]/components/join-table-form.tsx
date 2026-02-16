@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Ticket, Hourglass, Armchair, X } from '@/lib/ui/icons';
 
 interface JoinTableFormProps {
   eventId: string;
@@ -45,7 +46,7 @@ export function JoinTableForm({ eventId }: JoinTableFormProps) {
   return (
     <div className="card-magic border-magic-mystic/30">
       <div className="text-center mb-4">
-        <span className="text-4xl">🎟️</span>
+        <Ticket className="w-10 h-10 text-magic-gold mx-auto" />
         <h2 className="text-magic-gold font-semibold text-lg mt-2">Unisciti a un Tavolo</h2>
         <p className="text-white/50 text-sm">Inserisci il codice che ti è stato dato</p>
       </div>
@@ -65,12 +66,17 @@ export function JoinTableForm({ eventId }: JoinTableFormProps) {
           disabled={loading || !code.trim()}
           className="btn-magic disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span>{loading ? '⏳' : '🪑'} {loading ? 'Accesso...' : 'Siediti'}</span>
+          <span className="flex items-center gap-1.5">
+            {loading ? <Hourglass className="w-4 h-4" /> : <Armchair className="w-4 h-4" />}
+            {loading ? 'Accesso...' : 'Siediti'}
+          </span>
         </button>
       </form>
 
       {error && (
-        <p className="text-red-400 text-sm text-center mt-3">❌ {error}</p>
+        <p className="text-red-400 text-sm text-center mt-3 flex items-center justify-center gap-1">
+          <X className="w-3.5 h-3.5" /> {error}
+        </p>
       )}
     </div>
   );

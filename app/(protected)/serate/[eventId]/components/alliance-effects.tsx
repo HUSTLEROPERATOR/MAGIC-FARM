@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Handshake, Lightbulb, ArrowUp, AlertTriangle, Target, Swords, Check } from '@/lib/ui/icons';
+import type { LucideIcon } from '@/lib/ui/icons';
 
 interface AllianceInfo {
   id: string;
@@ -53,12 +55,12 @@ export function AllianceEffects({ eventId }: AllianceEffectsProps) {
   if (loading) return null;
   if (alliances.length === 0) return null;
 
-  const effectIcons: Record<string, string> = {
-    NONE: '🤝',
-    HINT_SHARING: '💡',
-    POINT_BONUS: '⬆️',
-    POINT_PENALTY: '⚠️',
-    COMMON_GOAL: '🎯',
+  const effectIcons: Record<string, LucideIcon> = {
+    NONE: Handshake,
+    HINT_SHARING: Lightbulb,
+    POINT_BONUS: ArrowUp,
+    POINT_PENALTY: AlertTriangle,
+    COMMON_GOAL: Target,
   };
 
   const effectLabels: Record<string, string> = {
@@ -72,56 +74,59 @@ export function AllianceEffects({ eventId }: AllianceEffectsProps) {
   return (
     <div className="card-magic">
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-xl">⚔️</span>
+        <Swords className="w-5 h-5 text-magic-gold" />
         <h3 className="text-magic-gold font-semibold text-sm">Alleanze Attive</h3>
       </div>
 
       <div className="space-y-3">
-        {alliances.map((alliance) => (
-          <div
-            key={alliance.id}
-            className="bg-white/5 rounded-xl p-3 space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span>{effectIcons[alliance.effectType] || '🤝'}</span>
-                <div>
-                  <p className="text-white text-sm font-medium">{alliance.ally}</p>
-                  <p className="text-white/40 text-[10px]">
-                    {effectLabels[alliance.effectType] || 'Alleanza'}
-                  </p>
+        {alliances.map((alliance) => {
+          const EffectIcon = effectIcons[alliance.effectType] || Handshake;
+          return (
+            <div
+              key={alliance.id}
+              className="bg-white/5 rounded-xl p-3 space-y-2"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <EffectIcon className="w-4 h-4 text-magic-mystic" />
+                  <div>
+                    <p className="text-white text-sm font-medium">{alliance.ally}</p>
+                    <p className="text-white/40 text-[10px]">
+                      {effectLabels[alliance.effectType] || 'Alleanza'}
+                    </p>
+                  </div>
                 </div>
+                {alliance.bonusPoints > 0 && (
+                  <span className="text-magic-gold text-xs font-bold">+{alliance.bonusPoints} pts</span>
+                )}
               </div>
-              {alliance.bonusPoints > 0 && (
-                <span className="text-magic-gold text-xs font-bold">+{alliance.bonusPoints} pts</span>
+
+              {/* Hint sharing button */}
+              {alliance.sharedHints && (
+                <button
+                  onClick={() => shareHint()}
+                  className="w-full text-xs py-1.5 rounded-lg bg-magic-mystic/10 text-magic-mystic hover:bg-magic-mystic/20 transition-colors"
+                >
+                  <Lightbulb className="w-3.5 h-3.5 inline" /> Condividi i tuoi suggerimenti
+                </button>
+              )}
+
+              {/* Common goal */}
+              {alliance.commonGoal && (
+                <div className={`rounded-lg p-2 text-xs ${
+                  alliance.commonGoalMet
+                    ? 'bg-green-500/10 text-green-400'
+                    : 'bg-magic-purple/10 text-magic-mystic'
+                }`}>
+                  <p className="font-medium">
+                    <Target className="w-3.5 h-3.5 inline" /> {alliance.commonGoalMet ? <><Check className="w-3.5 h-3.5 inline" /> Obiettivo raggiunto!</> : 'Obiettivo condiviso:'}
+                  </p>
+                  <p className="mt-0.5 text-white/60">{alliance.commonGoal}</p>
+                </div>
               )}
             </div>
-
-            {/* Hint sharing button */}
-            {alliance.sharedHints && (
-              <button
-                onClick={() => shareHint()}
-                className="w-full text-xs py-1.5 rounded-lg bg-magic-mystic/10 text-magic-mystic hover:bg-magic-mystic/20 transition-colors"
-              >
-                💡 Condividi i tuoi suggerimenti
-              </button>
-            )}
-
-            {/* Common goal */}
-            {alliance.commonGoal && (
-              <div className={`rounded-lg p-2 text-xs ${
-                alliance.commonGoalMet
-                  ? 'bg-green-500/10 text-green-400'
-                  : 'bg-magic-purple/10 text-magic-mystic'
-              }`}>
-                <p className="font-medium">
-                  🎯 {alliance.commonGoalMet ? '✅ Obiettivo raggiunto!' : 'Obiettivo condiviso:'}
-                </p>
-                <p className="mt-0.5 text-white/60">{alliance.commonGoal}</p>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {actionMsg && (

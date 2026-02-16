@@ -10,6 +10,7 @@ import { RitualOverlay } from './components/ritual-overlay';
 import { SpectatorToggle } from './components/spectator-toggle';
 import { AllianceEffects } from './components/alliance-effects';
 import { EventMetricsPanel } from './components/event-metrics';
+import { Theater, Calendar, Clock, Circle, Check, ClipboardList, Zap, X, Hourglass, Handshake, UserIcon, Users, ArrowLeft } from '@/lib/ui/icons';
 
 interface PageProps {
   params: { eventId: string };
@@ -89,19 +90,19 @@ export default async function SerataDetailPage({ params }: PageProps) {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <a href="/serate" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm mb-4 inline-block">
-            ← Torna alle Serate
+          <a href="/serate" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm mb-4 inline-flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Torna alle Serate
           </a>
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
               <h1 className="font-cinzel text-3xl md:text-4xl text-magic-gold">{event.name}</h1>
               {theme && (
-                <p className="text-magic-mystic/80 text-sm mt-1 italic">🎭 {theme}</p>
+                <p className="text-magic-mystic/80 text-sm mt-1 italic flex items-center gap-1"><Theater className="w-4 h-4" /> {theme}</p>
               )}
               {event.description && <p className="text-white/50 mt-2">{event.description}</p>}
               <div className="flex items-center gap-4 mt-3 text-sm text-white/40">
-                <span>📅 {new Date(event.startsAt).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-                <span>🕐 {new Date(event.startsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })} - {new Date(event.endsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="inline-flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(event.startsAt).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                <span className="inline-flex items-center gap-1"><Clock className="w-4 h-4" /> {new Date(event.startsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })} - {new Date(event.endsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
               {/* Ritual overlay triggers */}
               <div className="mt-3">
@@ -113,7 +114,7 @@ export default async function SerataDetailPage({ params }: PageProps) {
               isEnded ? 'bg-white/10 text-white/50' :
               'bg-magic-purple/20 text-magic-mystic'
             }`}>
-              {isLive ? '🔴 LIVE' : isEnded ? '✅ Conclusa' : '📋 In arrivo'}
+              {isLive ? <><Circle className="w-3 h-3 fill-red-500 text-red-500 inline" /> LIVE</> : isEnded ? <><Check className="w-4 h-4 inline" /> Conclusa</> : <><ClipboardList className="w-4 h-4 inline" /> In arrivo</>}
             </span>
           </div>
         </div>
@@ -129,7 +130,7 @@ export default async function SerataDetailPage({ params }: PageProps) {
         {userTable && (
           <div className="card-magic mb-8 border-magic-gold/30">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">🪑</span>
+              <Users className="w-8 h-8 text-magic-gold" />
               <div>
                 <p className="text-magic-gold font-semibold">Il tuo tavolo: {userTable.name}</p>
                 <p className="text-white/40 text-xs mt-1">
@@ -151,7 +152,7 @@ export default async function SerataDetailPage({ params }: PageProps) {
           <div className="lg:col-span-2 space-y-6">
             {event.rounds.length === 0 ? (
               <div className="card-magic text-center py-12">
-                <p className="text-5xl mb-4">⏳</p>
+                <Hourglass className="w-12 h-12 text-magic-mystic mx-auto mb-4" />
                 <p className="text-white/60">I round non sono ancora iniziati.</p>
                 <p className="text-white/40 text-sm mt-1">Attendi che il Game Master avvii la serata!</p>
               </div>
@@ -177,13 +178,13 @@ export default async function SerataDetailPage({ params }: PageProps) {
                       round.status === 'CANCELLED' ? 'bg-red-500/10 text-red-400' :
                       'bg-white/5 text-white/30'
                     }`}>
-                      {round.status === 'ACTIVE' ? '⚡ Attivo' :
-                       round.status === 'COMPLETED' ? '✅ Completato' :
-                       round.status === 'CANCELLED' ? '❌ Annullato' : '⏳ In attesa'}
+                      {round.status === 'ACTIVE' ? <><Zap className="w-3.5 h-3.5 inline" /> Attivo</> :
+                       round.status === 'COMPLETED' ? <><Check className="w-3.5 h-3.5 inline" /> Completato</> :
+                       round.status === 'CANCELLED' ? <><X className="w-3.5 h-3.5 inline" /> Annullato</> : <><Hourglass className="w-3.5 h-3.5 inline" /> In attesa</>}
                     </span>
                     {round.type !== 'SINGLE_TABLE' && (
                       <span className="text-xs px-2 py-1 rounded bg-magic-mystic/10 text-magic-mystic">
-                        {round.type === 'MULTI_TABLE' ? '🤝 Multi-Tavolo' : '👤 Individuale'}
+                        {round.type === 'MULTI_TABLE' ? <><Handshake className="w-3.5 h-3.5 inline" /> Multi-Tavolo</> : <><UserIcon className="w-3.5 h-3.5 inline" /> Individuale</>}
                       </span>
                     )}
                   </div>
