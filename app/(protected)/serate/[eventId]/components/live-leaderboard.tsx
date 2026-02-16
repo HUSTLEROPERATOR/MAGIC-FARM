@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface PlayerEntry {
   rank: number;
@@ -26,10 +26,10 @@ interface LiveLeaderboardProps {
 export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
   const [players, setPlayers] = useState<PlayerEntry[]>([]);
   const [tables, setTables] = useState<TableEntry[]>([]);
-  const [tab, setTab] = useState<'players' | 'tables'>('players');
-  const [expanded, setExpanded] = useState(true);
+  const [view, setView] = useState<'tables' | 'players'>('tables');
+  const [collapsed, setCollapsed] = useState(false);
 
-  async function loadLeaderboard() {
+  const fetchLeaderboard = useCallback(async () => {
     try {
       const res = await fetch(`/api/serate/${eventId}/leaderboard`);
       if (res.ok) {
@@ -38,97 +38,96 @@ export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
         setTables(data.tables || []);
       }
     } catch {
-      // Ignore
+      // silently fail
     }
-  }
-
-  useEffect(() => {
-    loadLeaderboard();
-    const interval = setInterval(loadLeaderboard, 10000); // Poll every 10s
-    return () => clearInterval(interval);
   }, [eventId]);
 
-  const medal = (rank: number) =>
-    rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+  useEffect(() => {
+    fetchLeaderboard();
+    const interval = setInterval(fetchLeaderboard, 15000);
+    return () => clearInterval(interval);
+  }, [fetchLeaderboard]);
+
+  const entries = view === 'tables' ? tables : players;
 
   return (
     <div className="card-magic">
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => setCollapsed(!collapsed)}
         className="w-full flex items-center justify-between mb-3"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xl">🏆</span>
+          <span className="text-lg">🏆</span>
           <h3 className="text-magic-gold font-semibold text-sm">Classifica Live</h3>
         </div>
-        <span className="text-white/30 text-xs">{expanded ? '▲' : '▼'}</span>
+        <span className="text-white/30 text-xs">
+          {collapsed ? '▶' : '▼'}
+        </span>
       </button>
 
-      {expanded && (
+      {!collapsed && (
         <>
-          {/* Tabs */}
-          <div className="flex gap-1 mb-3">
+          {/* View toggle */}
+          <div className="flex gap-1 mb-3 bg-white/5 rounded p-0.5">
             <button
-              onClick={() => setTab('players')}
-              className={`flex-1 text-xs py-1.5 rounded-lg transition-colors ${
-                tab === 'players' ? 'bg-magic-purple/30 text-magic-mystic' : 'text-white/40 hover:text-white/60'
+              onClick={() => setView('tables')}
+              className={`flex-1 py-1 px-2 rounded text-xs font-medium transition-colors ${
+                view === 'tables'
+                  ? 'bg-magic-gold text-magic-dark'
+                  : 'text-white/50 hover:text-white'
               }`}
             >
-              👤 Giocatori
+              Tavoli
             </button>
             <button
-              onClick={() => setTab('tables')}
-              className={`flex-1 text-xs py-1.5 rounded-lg transition-colors ${
-                tab === 'tables' ? 'bg-magic-purple/30 text-magic-mystic' : 'text-white/40 hover:text-white/60'
+              onClick={() => setView('players')}
+              className={`flex-1 py-1 px-2 rounded text-xs font-medium transition-colors ${
+                view === 'players'
+                  ? 'bg-magic-gold text-magic-dark'
+                  : 'text-white/50 hover:text-white'
               }`}
             >
-              🪑 Tavoli
+              Giocatori
             </button>
           </div>
 
-          {/* Content */}
-          <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
-            {tab === 'players' ? (
-              players.length === 0 ? (
-                <p className="text-white/30 text-xs text-center py-4">Nessun punteggio ancora</p>
-              ) : (
-                players.slice(0, 10).map((p) => (
-                  <div key={p.userId} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/5">
+          {/* Leaderboard entries */}
+          <div className="space-y-1.5 max-h-64 overflow-y-auto">
+            {entries.length === 0 ? (
+              <p className="text-white/30 text-xs text-center py-4">
+                Nessun punteggio ancora.
+              </p>
+            ) : (
+              entries.map((entry, i) => {
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+                const name = view === 'tables'
+                  ? (entry as TableEntry).tableName
+                  : (entry as PlayerEntry).name;
+                const key = view === 'tables'
+                  ? (entry as TableEntry).tableId
+                  : (entry as PlayerEntry).userId;
+                return (
+                  <div
+                    key={key}
+                    className={`flex items-center justify-between py-1.5 px-2 rounded ${
+                      i < 3 ? 'bg-magic-gold/5' : ''
+                    }`}
+                  >
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm w-6 text-center ${p.rank <= 3 ? '' : 'text-white/30 text-xs'}`}>
-                        {medal(p.rank)}
+                      <span className={`text-sm w-6 text-center ${i >= 3 ? 'text-white/30 text-xs' : ''}`}>
+                        {medal}
                       </span>
                       <div>
-                        <p className="text-white text-sm">{p.name}</p>
-                        {p.tableName && <p className="text-white/30 text-[10px]">{p.tableName}</p>}
+                        <p className="text-white text-xs font-medium">{name}</p>
+                        <p className="text-white/30 text-[10px]">
+                          {entry.puzzlesSolved} enigmi
+                        </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-magic-gold text-sm font-bold">{p.totalPoints}</p>
-                      <p className="text-white/30 text-[10px]">{p.puzzlesSolved} risolti</p>
-                    </div>
+                    <span className="text-magic-gold text-xs font-bold">{entry.totalPoints}</span>
                   </div>
-                ))
-              )
-            ) : (
-              tables.length === 0 ? (
-                <p className="text-white/30 text-xs text-center py-4">Nessun punteggio ancora</p>
-              ) : (
-                tables.slice(0, 10).map((t) => (
-                  <div key={t.tableId} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-white/5">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm w-6 text-center ${t.rank <= 3 ? '' : 'text-white/30 text-xs'}`}>
-                        {medal(t.rank)}
-                      </span>
-                      <p className="text-white text-sm">{t.tableName}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-magic-gold text-sm font-bold">{t.totalPoints}</p>
-                      <p className="text-white/30 text-[10px]">{t.puzzlesSolved} risolti</p>
-                    </div>
-                  </div>
-                ))
-              )
+                );
+              })
             )}
           </div>
         </>

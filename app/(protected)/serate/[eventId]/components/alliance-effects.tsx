@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface AllianceInfo {
   id: string;
@@ -16,116 +16,90 @@ interface AllianceEffectsProps {
   eventId: string;
 }
 
+const effectLabels: Record<string, { icon: string; label: string }> = {
+  NONE: { icon: '🤝', label: 'Alleanza base' },
+  HINT_SHARING: { icon: '💡', label: 'Condivisione suggerimenti' },
+  POINT_BONUS: { icon: '⭐', label: 'Bonus punti' },
+  POINT_PENALTY: { icon: '⚠️', label: 'Penalità condivisa' },
+  COMMON_GOAL: { icon: '🎯', label: 'Obiettivo comune' },
+};
+
 export function AllianceEffects({ eventId }: AllianceEffectsProps) {
   const [alliances, setAlliances] = useState<AllianceInfo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionMsg, setActionMsg] = useState('');
+  const [collapsed, setCollapsed] = useState(true);
 
-  useEffect(() => {
-    fetch(`/api/serate/${eventId}/alliance-effect`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'list' }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        setAlliances(data.alliances || []);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [eventId]);
-
-  async function shareHint(puzzleId?: string) {
-    setActionMsg('');
+  const fetchAlliances = useCallback(async () => {
     try {
       const res = await fetch(`/api/serate/${eventId}/alliance-effect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'share_hint', puzzleId }),
+        body: JSON.stringify({ action: 'list' }),
       });
-      const data = await res.json();
-      setActionMsg(data.message || data.error || 'Fatto');
+      if (res.ok) {
+        const data = await res.json();
+        setAlliances(data.alliances || []);
+      }
     } catch {
-      setActionMsg('Errore di connessione');
+      // silently fail
     }
-  }
+  }, [eventId]);
 
-  if (loading) return null;
+  useEffect(() => {
+    fetchAlliances();
+  }, [fetchAlliances]);
+
   if (alliances.length === 0) return null;
-
-  const effectIcons: Record<string, string> = {
-    NONE: '🤝',
-    HINT_SHARING: '💡',
-    POINT_BONUS: '⬆️',
-    POINT_PENALTY: '⚠️',
-    COMMON_GOAL: '🎯',
-  };
-
-  const effectLabels: Record<string, string> = {
-    NONE: 'Alleanza base',
-    HINT_SHARING: 'Condivisione suggerimenti',
-    POINT_BONUS: 'Bonus punti',
-    POINT_PENALTY: 'Penalità condivisa',
-    COMMON_GOAL: 'Obiettivo comune',
-  };
 
   return (
     <div className="card-magic">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-xl">⚔️</span>
-        <h3 className="text-magic-gold font-semibold text-sm">Alleanze Attive</h3>
-      </div>
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="w-full flex items-center justify-between mb-3"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🤝</span>
+          <h3 className="text-magic-gold font-semibold text-sm">Alleanze</h3>
+          <span className="text-white/30 text-xs">{alliances.length}</span>
+        </div>
+        <span className="text-white/30 text-xs">
+          {collapsed ? '▶' : '▼'}
+        </span>
+      </button>
 
-      <div className="space-y-3">
-        {alliances.map((alliance) => (
-          <div
-            key={alliance.id}
-            className="bg-white/5 rounded-xl p-3 space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span>{effectIcons[alliance.effectType] || '🤝'}</span>
-                <div>
+      {!collapsed && (
+        <div className="space-y-3">
+          {alliances.map((alliance) => {
+            const effect = effectLabels[alliance.effectType] || effectLabels.NONE;
+            return (
+              <div key={alliance.id} className="bg-white/5 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1">
                   <p className="text-white text-sm font-medium">{alliance.ally}</p>
-                  <p className="text-white/40 text-[10px]">
-                    {effectLabels[alliance.effectType] || 'Alleanza'}
-                  </p>
+                  <span className="text-xs text-magic-mystic">
+                    {effect.icon} {effect.label}
+                  </span>
                 </div>
+                {alliance.sharedHints && (
+                  <p className="text-white/40 text-xs">💡 Suggerimenti condivisi attivi</p>
+                )}
+                {alliance.bonusPoints > 0 && (
+                  <p className="text-magic-gold text-xs">⭐ +{alliance.bonusPoints} punti bonus</p>
+                )}
+                {alliance.commonGoal && (
+                  <div className="mt-2">
+                    <p className="text-white/50 text-xs">
+                      🎯 {alliance.commonGoal}
+                    </p>
+                    <span className={`text-xs mt-1 inline-block ${
+                      alliance.commonGoalMet ? 'text-green-400' : 'text-white/30'
+                    }`}>
+                      {alliance.commonGoalMet ? '&#10003; Completato' : 'In corso...'}
+                    </span>
+                  </div>
+                )}
               </div>
-              {alliance.bonusPoints > 0 && (
-                <span className="text-magic-gold text-xs font-bold">+{alliance.bonusPoints} pts</span>
-              )}
-            </div>
-
-            {/* Hint sharing button */}
-            {alliance.sharedHints && (
-              <button
-                onClick={() => shareHint()}
-                className="w-full text-xs py-1.5 rounded-lg bg-magic-mystic/10 text-magic-mystic hover:bg-magic-mystic/20 transition-colors"
-              >
-                💡 Condividi i tuoi suggerimenti
-              </button>
-            )}
-
-            {/* Common goal */}
-            {alliance.commonGoal && (
-              <div className={`rounded-lg p-2 text-xs ${
-                alliance.commonGoalMet
-                  ? 'bg-green-500/10 text-green-400'
-                  : 'bg-magic-purple/10 text-magic-mystic'
-              }`}>
-                <p className="font-medium">
-                  🎯 {alliance.commonGoalMet ? '✅ Obiettivo raggiunto!' : 'Obiettivo condiviso:'}
-                </p>
-                <p className="mt-0.5 text-white/60">{alliance.commonGoal}</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {actionMsg && (
-        <p className="text-xs text-magic-mystic mt-2 text-center">{actionMsg}</p>
+            );
+          })}
+        </div>
       )}
     </div>
   );

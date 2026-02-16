@@ -8,15 +8,14 @@ interface JoinTableFormProps {
 }
 
 export function JoinTableForm({ eventId }: JoinTableFormProps) {
-  const [code, setCode] = useState('');
+  const router = useRouter();
+  const [joinCode, setJoinCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
 
-  async function handleJoin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!code.trim()) return;
-
+    if (!joinCode.trim()) return;
     setLoading(true);
     setError('');
 
@@ -24,54 +23,51 @@ export function JoinTableForm({ eventId }: JoinTableFormProps) {
       const res = await fetch(`/api/serate/${eventId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ joinCode: code.trim() }),
+        body: JSON.stringify({ joinCode: joinCode.trim() }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Errore durante l\'accesso al tavolo');
+        setError(data.error || 'Errore durante l\'accesso al tavolo.');
         return;
       }
 
       router.refresh();
     } catch {
-      setError('Errore di connessione');
+      setError('Errore di rete. Riprova.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="card-magic border-magic-mystic/30">
-      <div className="text-center mb-4">
-        <span className="text-4xl">🎟️</span>
-        <h2 className="text-magic-gold font-semibold text-lg mt-2">Unisciti a un Tavolo</h2>
-        <p className="text-white/50 text-sm">Inserisci il codice che ti è stato dato</p>
+    <div className="card-magic">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-2xl">🪑</span>
+        <h3 className="text-magic-gold font-semibold">Unisciti a un tavolo</h3>
       </div>
-
-      <form onSubmit={handleJoin} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+      <p className="text-white/50 text-sm mb-4">
+        Inserisci il codice del tuo tavolo per unirti alla serata.
+      </p>
+      <form onSubmit={handleSubmit} className="flex gap-3">
         <input
           type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="ES: ABC123"
-          maxLength={6}
-          className="input-magic text-center text-2xl tracking-[0.5em] font-mono uppercase flex-1"
-          disabled={loading}
+          value={joinCode}
+          onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+          placeholder="Codice tavolo..."
+          maxLength={10}
+          className="input-magic flex-1 uppercase tracking-widest text-center"
+          autoFocus
         />
         <button
           type="submit"
-          disabled={loading || !code.trim()}
-          className="btn-magic disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={loading || !joinCode.trim()}
+          className="btn-magic whitespace-nowrap disabled:opacity-40"
         >
-          <span>{loading ? '⏳' : '🪑'} {loading ? 'Accesso...' : 'Siediti'}</span>
+          {loading ? 'Accesso...' : 'Entra'}
         </button>
       </form>
-
-      {error && (
-        <p className="text-red-400 text-sm text-center mt-3">❌ {error}</p>
-      )}
+      {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
     </div>
   );
 }

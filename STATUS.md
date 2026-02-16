@@ -1,11 +1,11 @@
 # 🎩 MAGIC-FARM - Project Status
 
-**Last Updated:** February 5, 2026  
+**Last Updated:** February 16, 2026
 **Version:** 1.0.0 (In Development)
 
-## 📊 Overall Progress: ~25% Complete
+## 📊 Overall Progress: ~55% Complete
 
-The foundation is built, but core gameplay features are missing.
+Backend is complete. Core gameplay UI (event detail, puzzle solving, clue board, leaderboard, hints, alliances, spectator mode, metrics) is now implemented.
 
 ---
 
@@ -214,7 +214,7 @@ These features have backend logic but no UI/API integration:
 **Auth:** NextAuth 4.24 with Prisma adapter  
 **Email:** Nodemailer 7.0  
 **Security:** bcrypt, crypto-js, SHA-256, AES encryption  
-**Testing:** Vitest (configured, no tests written yet)
+**Testing:** Vitest 2.0 (7 test suites, 84 tests — all passing)
 
 ---
 
@@ -264,12 +264,14 @@ These features have backend logic but no UI/API integration:
 
 ## 🐛 KNOWN ISSUES
 
-1. Dashboard stats show "0" (no calculation implemented)
-2. Leaderboard link leads to empty page
-3. Profile page returns 404
-4. Library page returns 404
-5. No active events displayed (hardcoded empty state)
-6. Test suite configured but no tests written
+1. ~~Dashboard stats show "0"~~ — FIXED: stats now calculated from submissions
+2. ~~Leaderboard link leads to empty page~~ — FIXED: full leaderboard with 3 scopes
+3. ~~Profile page returns 404~~ — FIXED: profile page with privacy/consent management
+4. ~~Library page returns 404~~ — FIXED: library page with lockable content
+5. ~~No active events displayed~~ — FIXED: dashboard shows active event banner
+6. ~~Test suite configured but no tests written~~ — FIXED: 84 tests across 7 suites (all passing)
+7. No WebSocket for real-time updates (polling used instead)
+8. Admin panel UI is minimal (CRUD APIs exist, no full admin dashboard)
 
 ---
 

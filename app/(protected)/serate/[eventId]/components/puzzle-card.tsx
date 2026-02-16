@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 interface PuzzleData {
   id: string;
@@ -10,9 +9,9 @@ interface PuzzleData {
   order: number;
   hintsCount: number;
   hintPenalties: number[];
-  puzzleType?: string;
-  physicalHint?: string | null;
-  environmentNote?: string | null;
+  puzzleType: string;
+  physicalHint: string | null;
+  environmentNote: string | null;
 }
 
 interface SubmissionData {
@@ -30,216 +29,203 @@ interface PuzzleCardProps {
   isSolved: boolean;
 }
 
+const puzzleTypeLabels: Record<string, { icon: string; label: string }> = {
+  DIGITAL: { icon: '💻', label: 'Digitale' },
+  PHYSICAL: { icon: '🎯', label: 'Fisico' },
+  OBSERVATION: { icon: '👁️', label: 'Osservazione' },
+  LISTENING: { icon: '👂', label: 'Ascolto' },
+  HYBRID: { icon: '🔀', label: 'Ibrido' },
+};
+
 export function PuzzleCard({ puzzle, submission, eventId, roundActive, isSolved }: PuzzleCardProps) {
+  const [expanded, setExpanded] = useState(false);
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{ isCorrect: boolean; message: string } | null>(null);
+  const [revealedHints, setRevealedHints] = useState<{ order: number; text: string; penalty: number }[]>([]);
   const [hintLoading, setHintLoading] = useState(false);
-  const [result, setResult] = useState<{ isCorrect: boolean; message: string; pointsAwarded: number } | null>(null);
-  const [revealedHints, setRevealedHints] = useState<Array<{ order: number; text: string; penaltyPoints: number }>>([]);
-  const [expanded, setExpanded] = useState(!isSolved);
-  const [currentHintsUsed, setCurrentHintsUsed] = useState(submission?.hintsUsed || 0);
-  const router = useRouter();
+
+  const typeInfo = puzzleTypeLabels[puzzle.puzzleType] || puzzleTypeLabels.DIGITAL;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!answer.trim() || loading || isSolved) return;
-
+    if (!answer.trim() || isSolved || !roundActive) return;
     setLoading(true);
-    setResult(null);
+    setFeedback(null);
 
     try {
       const res = await fetch(`/api/serate/${eventId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ puzzleId: puzzle.id, answer: answer.trim() }),
+        body: JSON.stringify({ puzzleId: puzzle.id, answer }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
-        setResult({ isCorrect: false, message: data.error || 'Errore', pointsAwarded: 0 });
+        setFeedback({ isCorrect: false, message: data.error || 'Errore.' });
         return;
       }
 
-      setResult(data);
+      setFeedback({
+        isCorrect: data.isCorrect,
+        message: data.message,
+      });
+
       if (data.isCorrect) {
-        setAnswer('');
-        router.refresh();
+        setTimeout(() => window.location.reload(), 1500);
       }
     } catch {
-      setResult({ isCorrect: false, message: 'Errore di connessione', pointsAwarded: 0 });
+      setFeedback({ isCorrect: false, message: 'Errore di rete.' });
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleHint() {
-    const nextHintOrder = currentHintsUsed + 1;
-    if (nextHintOrder > puzzle.hintsCount || hintLoading) return;
-
+  async function requestHint(hintOrder: number) {
     setHintLoading(true);
     try {
       const res = await fetch(`/api/serate/${eventId}/hint`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ puzzleId: puzzle.id, hintOrder: nextHintOrder }),
+        body: JSON.stringify({ puzzleId: puzzle.id, hintOrder }),
       });
-
       const data = await res.json();
       if (res.ok && data.hint) {
-        setRevealedHints(prev => [...prev, data.hint]);
-        setCurrentHintsUsed(nextHintOrder);
+        setRevealedHints((prev) => [...prev, {
+          order: data.hint.order,
+          text: data.hint.text,
+          penalty: data.hint.penaltyPoints,
+        }]);
       }
     } catch {
-      // Ignore
+      // silently fail
     } finally {
       setHintLoading(false);
     }
   }
 
-  const puzzleTypeIcons: Record<string, { icon: string; label: string; color: string }> = {
-    DIGITAL: { icon: '💻', label: 'Digitale', color: 'text-blue-400' },
-    PHYSICAL: { icon: '🎴', label: 'Oggetto Fisico', color: 'text-amber-400' },
-    OBSERVATION: { icon: '👁️', label: 'Osservazione', color: 'text-emerald-400' },
-    LISTENING: { icon: '🎵', label: 'Ascolto', color: 'text-purple-400' },
-    HYBRID: { icon: '🔄', label: 'Ibrido', color: 'text-pink-400' },
-  };
-
-  const pType = puzzle.puzzleType ? puzzleTypeIcons[puzzle.puzzleType] : null;
-
   return (
-    <div className={`card-magic ${isSolved ? 'border-green-500/30 bg-green-500/5' : ''}`}>
-      {/* Puzzle header */}
+    <div
+      className={`card-magic transition-all ${
+        isSolved
+          ? 'border-green-500/30 opacity-80'
+          : roundActive
+            ? 'hover:border-magic-gold/40'
+            : 'opacity-60'
+      }`}
+    >
+      {/* Header */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between text-left"
+        className="w-full text-left"
       >
-        <div className="flex items-center gap-3">
-          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-            isSolved ? 'bg-green-500/20 text-green-400' : 'bg-magic-purple/20 text-magic-mystic'
-          }`}>
-            {isSolved ? '✓' : puzzle.order + 1}
-          </span>
-          <h3 className={`font-semibold ${isSolved ? 'text-green-400' : 'text-white'}`}>
-            {puzzle.title}
-          </h3>
-          {pType && pType.icon !== '💻' && (
-            <span className={`text-xs px-1.5 py-0.5 rounded-full bg-white/5 ${pType.color}`}>
-              {pType.icon} {pType.label}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {isSolved && submission && (
-            <span className="text-magic-gold text-sm font-bold">+{submission.pointsAwarded} pts</span>
-          )}
-          <span className="text-white/30 text-xs">{expanded ? '▲' : '▼'}</span>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm">{typeInfo.icon}</span>
+              <h3 className="text-magic-gold font-semibold">{puzzle.title}</h3>
+              {isSolved && <span className="text-green-400 text-xs">&#10003; Risolto</span>}
+            </div>
+            <p className="text-white/50 text-sm line-clamp-2">{puzzle.prompt}</p>
+          </div>
+          <div className="ml-3 text-right">
+            {isSolved && submission ? (
+              <span className="text-green-400 text-sm font-semibold">+{submission.pointsAwarded}</span>
+            ) : (
+              <span className="text-white/30 text-xs">{puzzle.hintsCount} suggerimenti</span>
+            )}
+          </div>
         </div>
       </button>
 
       {/* Expanded content */}
       {expanded && (
-        <div className="mt-4 space-y-4">
-          {/* Prompt */}
-          <div className="bg-white/5 rounded-xl p-4">
-            <p className="text-white/80 leading-relaxed whitespace-pre-wrap">{puzzle.prompt}</p>
-          </div>
+        <div className="mt-4 pt-4 border-t border-white/10">
+          {/* Puzzle type info */}
+          {puzzle.puzzleType !== 'DIGITAL' && (
+            <div className="mb-4 bg-magic-purple/10 rounded-lg p-3">
+              <span className="text-xs text-magic-mystic">
+                {typeInfo.icon} {typeInfo.label}
+              </span>
+              {puzzle.physicalHint && (
+                <p className="text-white/60 text-sm mt-1">🎯 {puzzle.physicalHint}</p>
+              )}
+              {puzzle.environmentNote && (
+                <p className="text-white/60 text-sm mt-1">👁️ {puzzle.environmentNote}</p>
+              )}
+            </div>
+          )}
 
-          {/* Physical object hint (Estensione 2) */}
-          {puzzle.physicalHint && (
-            <div className="bg-amber-500/10 rounded-xl p-3 border border-amber-500/20 flex items-start gap-2">
-              <span className="text-lg">🎴</span>
-              <div>
-                <p className="text-xs text-amber-400 font-semibold mb-0.5">Oggetto Fisico Richiesto</p>
-                <p className="text-white/70 text-sm">{puzzle.physicalHint}</p>
+          {/* Full prompt */}
+          <p className="text-white/70 text-sm mb-4">{puzzle.prompt}</p>
+
+          {/* Hints */}
+          {puzzle.hintsCount > 0 && !isSolved && roundActive && (
+            <div className="mb-4">
+              <p className="text-white/40 text-xs uppercase tracking-wider mb-2">Suggerimenti</p>
+              <div className="space-y-2">
+                {Array.from({ length: puzzle.hintsCount }, (_, i) => {
+                  const hintOrder = i + 1;
+                  const revealed = revealedHints.find((h) => h.order === hintOrder);
+                  const penalty = puzzle.hintPenalties[i] || 0;
+                  return (
+                    <div key={hintOrder}>
+                      {revealed ? (
+                        <div className="bg-magic-purple/10 p-3 rounded text-sm">
+                          <p className="text-magic-mystic">{revealed.text}</p>
+                          <p className="text-red-400/60 text-xs mt-1">-{revealed.penalty} punti</p>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => requestHint(hintOrder)}
+                          disabled={hintLoading || (hintOrder > 1 && !revealedHints.find((h) => h.order === hintOrder - 1))}
+                          className="text-sm text-magic-mystic hover:text-magic-gold transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          Rivela suggerimento #{hintOrder} (-{penalty} pts)
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Observation note (Estensione 3) */}
-          {puzzle.environmentNote && (
-            <div className="bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20 flex items-start gap-2">
-              <span className="text-lg">👁️</span>
-              <div>
-                <p className="text-xs text-emerald-400 font-semibold mb-0.5">Nota di Osservazione</p>
-                <p className="text-white/70 text-sm">{puzzle.environmentNote}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Revealed hints */}
-          {revealedHints.length > 0 && (
-            <div className="space-y-2">
-              {revealedHints.map((hint) => (
-                <div key={hint.order} className="bg-magic-mystic/10 rounded-lg p-3 border border-magic-mystic/20">
-                  <p className="text-xs text-magic-mystic mb-1">💡 Suggerimento {hint.order} (-{hint.penaltyPoints} pts)</p>
-                  <p className="text-white/70 text-sm">{hint.text}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Answer form or solved state */}
+          {/* Answer form */}
           {isSolved ? (
-            <div className="bg-green-500/10 rounded-xl p-4 text-center">
-              <p className="text-green-400 font-semibold">✅ Enigma risolto!</p>
-              <p className="text-white/50 text-sm mt-1">
-                {submission!.attemptsCount} tentativi · {submission!.hintsUsed} suggerimenti · +{submission!.pointsAwarded} punti
-              </p>
-            </div>
-          ) : roundActive ? (
-            <div className="space-y-3">
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <input
-                  type="text"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="Scrivi la tua risposta..."
-                  className="input-magic flex-1"
-                  disabled={loading}
-                />
-                <button
-                  type="submit"
-                  disabled={loading || !answer.trim()}
-                  className="btn-magic text-sm disabled:opacity-50"
-                >
-                  <span>{loading ? '⏳' : '📤'}</span>
-                </button>
-              </form>
-
-              {/* Hint button */}
-              {currentHintsUsed < puzzle.hintsCount && (
-                <button
-                  onClick={handleHint}
-                  disabled={hintLoading}
-                  className="text-xs text-magic-mystic/60 hover:text-magic-mystic transition-colors flex items-center gap-1"
-                >
-                  💡 {hintLoading ? 'Caricamento...' : `Chiedi suggerimento ${currentHintsUsed + 1}/${puzzle.hintsCount}`}
-                  <span className="text-white/30">(-{puzzle.hintPenalties[currentHintsUsed] || 10} pts)</span>
-                </button>
-              )}
-
-              {/* Result feedback */}
-              {result && (
-                <div className={`rounded-lg p-3 text-sm text-center ${
-                  result.isCorrect
-                    ? 'bg-green-500/10 text-green-400'
-                    : 'bg-red-500/10 text-red-400'
-                }`}>
-                  {result.message}
-                </div>
-              )}
-
-              {/* Attempts info */}
-              {submission && !submission.isCorrect && (
-                <p className="text-white/30 text-xs">
-                  Tentativi: {submission.attemptsCount} · Suggerimenti: {submission.hintsUsed}
+            <div className="text-center py-2">
+              <p className="text-green-400 font-semibold">Enigma Risolto!</p>
+              {submission && (
+                <p className="text-white/40 text-xs mt-1">
+                  +{submission.pointsAwarded} punti &middot; {submission.attemptsCount} tentativi &middot; {submission.hintsUsed} suggerimenti usati
                 </p>
               )}
             </div>
+          ) : roundActive ? (
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <input
+                type="text"
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                placeholder="La tua risposta..."
+                className="input-magic w-full"
+              />
+              {feedback && (
+                <p className={`text-sm text-center ${feedback.isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                  {feedback.message}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={loading || !answer.trim()}
+                className="btn-magic w-full disabled:opacity-40"
+              >
+                {loading ? 'Invio...' : 'Invia Risposta'}
+              </button>
+            </form>
           ) : (
-            <p className="text-white/30 text-sm italic text-center">
-              Round non attivo
+            <p className="text-white/30 text-sm text-center italic">
+              Il round non è attivo.
             </p>
           )}
         </div>
