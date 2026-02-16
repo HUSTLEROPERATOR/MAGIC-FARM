@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Icon } from '@/components/ui/icon';
 
 interface JoinTableFormProps {
   eventId: string;
@@ -45,7 +46,7 @@ export function JoinTableForm({ eventId }: JoinTableFormProps) {
   return (
     <div className="card-magic border-magic-mystic/30">
       <div className="text-center mb-4">
-        <span className="text-4xl">🎟️</span>
+        <Icon name="Ticket" size="2xl" className="mx-auto text-magic-mystic" />
         <h2 className="text-magic-gold font-semibold text-lg mt-2">Unisciti a un Tavolo</h2>
         <p className="text-white/50 text-sm">Inserisci il codice che ti è stato dato</p>
       </div>
@@ -65,12 +66,12 @@ export function JoinTableForm({ eventId }: JoinTableFormProps) {
           disabled={loading || !code.trim()}
           className="btn-magic disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <span>{loading ? '⏳' : '🪑'} {loading ? 'Accesso...' : 'Siediti'}</span>
+          <span>{loading ? <><Icon name="Hourglass" size="sm" className="inline" /> Accesso...</> : <><Icon name="Armchair" size="sm" className="inline" /> Siediti</>}</span>
         </button>
       </form>
 
       {error && (
-        <p className="text-red-400 text-sm text-center mt-3">❌ {error}</p>
+        <p className="text-red-400 text-sm text-center mt-3"><Icon name="XCircle" size="xs" className="inline" /> {error}</p>
       )}
     </div>
   );

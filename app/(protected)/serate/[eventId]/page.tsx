@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
 import { notFound } from 'next/navigation';
+import { Icon } from '@/components/ui/icon';
 import { JoinTableForm } from './components/join-table-form';
 import { PuzzleCard } from './components/puzzle-card';
 import { ClueBoard } from './components/clue-board';
@@ -90,18 +91,22 @@ export default async function SerataDetailPage({ params }: PageProps) {
         {/* Header */}
         <div className="mb-8">
           <a href="/serate" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm mb-4 inline-block">
-            ← Torna alle Serate
+            <Icon name="ArrowLeft" size="xs" className="inline" /> Torna alle Serate
           </a>
           <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
               <h1 className="font-cinzel text-3xl md:text-4xl text-magic-gold">{event.name}</h1>
               {theme && (
-                <p className="text-magic-mystic/80 text-sm mt-1 italic">🎭 {theme}</p>
+                <p className="text-magic-mystic/80 text-sm mt-1 italic"><Icon name="Theater" size="sm" className="inline" /> {theme}</p>
               )}
               {event.description && <p className="text-white/50 mt-2">{event.description}</p>}
               <div className="flex items-center gap-4 mt-3 text-sm text-white/40">
-                <span>📅 {new Date(event.startsAt).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-                <span>🕐 {new Date(event.startsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })} - {new Date(event.endsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
+                <span>
+                  <Icon name="Calendar" size="sm" className="inline" /> {new Date(event.startsAt).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </span>
+                <span>
+                  <Icon name="Clock" size="sm" className="inline" /> {new Date(event.startsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })} - {new Date(event.endsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                </span>
               </div>
               {/* Ritual overlay triggers */}
               <div className="mt-3">
@@ -113,7 +118,7 @@ export default async function SerataDetailPage({ params }: PageProps) {
               isEnded ? 'bg-white/10 text-white/50' :
               'bg-magic-purple/20 text-magic-mystic'
             }`}>
-              {isLive ? '🔴 LIVE' : isEnded ? '✅ Conclusa' : '📋 In arrivo'}
+              {isLive ? <><Icon name="Circle" size="xs" className="inline text-red-500 fill-red-500" /> LIVE</> : isEnded ? <><Icon name="CheckCircle" size="xs" className="inline" /> Conclusa</> : <><Icon name="ClipboardList" size="xs" className="inline" /> In arrivo</>}
             </span>
           </div>
         </div>
@@ -129,7 +134,7 @@ export default async function SerataDetailPage({ params }: PageProps) {
         {userTable && (
           <div className="card-magic mb-8 border-magic-gold/30">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">🪑</span>
+              <span className="text-3xl"><Icon name="Armchair" size="xl" className="text-magic-gold" /></span>
               <div>
                 <p className="text-magic-gold font-semibold">Il tuo tavolo: {userTable.name}</p>
                 <p className="text-white/40 text-xs mt-1">
@@ -151,7 +156,7 @@ export default async function SerataDetailPage({ params }: PageProps) {
           <div className="lg:col-span-2 space-y-6">
             {event.rounds.length === 0 ? (
               <div className="card-magic text-center py-12">
-                <p className="text-5xl mb-4">⏳</p>
+                <Icon name="Hourglass" size="3xl" className="mx-auto mb-4 text-magic-gold" />
                 <p className="text-white/60">I round non sono ancora iniziati.</p>
                 <p className="text-white/40 text-sm mt-1">Attendi che il Game Master avvii la serata!</p>
               </div>
@@ -177,13 +182,13 @@ export default async function SerataDetailPage({ params }: PageProps) {
                       round.status === 'CANCELLED' ? 'bg-red-500/10 text-red-400' :
                       'bg-white/5 text-white/30'
                     }`}>
-                      {round.status === 'ACTIVE' ? '⚡ Attivo' :
-                       round.status === 'COMPLETED' ? '✅ Completato' :
-                       round.status === 'CANCELLED' ? '❌ Annullato' : '⏳ In attesa'}
+                      {round.status === 'ACTIVE' ? <><Icon name="Zap" size="xs" className="inline" /> Attivo</> :
+                       round.status === 'COMPLETED' ? <><Icon name="CheckCircle" size="xs" className="inline" /> Completato</> :
+                       round.status === 'CANCELLED' ? <><Icon name="XCircle" size="xs" className="inline" /> Annullato</> : <><Icon name="Hourglass" size="xs" className="inline" /> In attesa</>}
                     </span>
                     {round.type !== 'SINGLE_TABLE' && (
                       <span className="text-xs px-2 py-1 rounded bg-magic-mystic/10 text-magic-mystic">
-                        {round.type === 'MULTI_TABLE' ? '🤝 Multi-Tavolo' : '👤 Individuale'}
+                        {round.type === 'MULTI_TABLE' ? <><Icon name="Handshake" size="xs" className="inline" /> Multi-Tavolo</> : <><Icon name="UserIcon" size="xs" className="inline" /> Individuale</>}
                       </span>
                     )}
                   </div>

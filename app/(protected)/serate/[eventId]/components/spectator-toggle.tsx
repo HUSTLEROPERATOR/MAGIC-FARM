@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Icon } from '@/components/ui/icon';
 
 interface SpectatorToggleProps {
   eventId: string;
@@ -39,7 +40,7 @@ export function SpectatorToggle({ eventId, spectatorAvailable }: SpectatorToggle
     <div className="card-magic border-magic-mystic/20 p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-xl">{isSpectator ? '👁️' : '🎮'}</span>
+          <span className="text-xl">{isSpectator ? <Icon name="Eye" size="md" /> : <Icon name="Gamepad2" size="md" />}</span>
           <div>
             <p className="text-sm text-white font-medium">
               {isSpectator ? 'Modalità Spettatore' : 'Modalità Giocatore'}

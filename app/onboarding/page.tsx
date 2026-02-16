@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { Sparkles } from '@/lib/ui/icons';
+import { Icon } from '@/components/ui/icon';
 
 export default function OnboardingPage() {
   const [firstName, setFirstName] = useState('');
@@ -85,7 +87,7 @@ export default function OnboardingPage() {
         <div className="card-magic">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4 animate-float">&#x2728;</div>
+            <div className="mb-4 animate-float"><Icon name="Sparkles" size="2xl" className="text-magic-gold w-14 h-14" /></div>
             <h1 className="font-cinzel text-3xl font-bold glow-text mb-3">
               Completa il Profilo
             </h1>

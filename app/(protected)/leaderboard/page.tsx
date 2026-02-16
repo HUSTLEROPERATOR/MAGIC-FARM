@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { Icon } from '@/components/ui/icon';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -126,7 +127,7 @@ export default function LeaderboardPage() {
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <span className="text-4xl">🏆</span>
+          <Icon name="Trophy" size="2xl" className="text-magic-gold" />
           <div>
             <h1 className="font-cinzel text-3xl text-magic-gold">Classifica</h1>
             <p className="text-white/40 text-sm">
@@ -178,7 +179,7 @@ export default function LeaderboardPage() {
         {/* Navigation */}
         <div className="mt-8 flex gap-4">
           <Link href="/game" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna al Gioco
+            <Icon name="ArrowLeft" size="xs" className="inline" /> Torna al Gioco
           </Link>
           <Link href="/dashboard" className="text-white/40 hover:text-white transition-colors text-sm">
             Dashboard
@@ -195,7 +196,7 @@ function EventLeaderboard({ entries }: { entries: TableLeaderboardEntry[] }) {
   if (entries.length === 0) {
     return (
       <div className="card-magic text-center py-10">
-        <p className="text-5xl mb-4">🏅</p>
+        <Icon name="Medal" size="3xl" className="mx-auto mb-4 text-magic-gold" />
         <p className="text-white/60">Nessun punteggio ancora.</p>
       </div>
     );
@@ -205,12 +206,12 @@ function EventLeaderboard({ entries }: { entries: TableLeaderboardEntry[] }) {
     <div className="space-y-3">
       {entries.map((entry) => {
         const medal =
-          entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`;
+          entry.rank === 1 ? <Icon name="Medal" size="lg" className="text-yellow-400" /> : entry.rank === 2 ? <Icon name="Medal" size="lg" className="text-gray-300" /> : entry.rank === 3 ? <Icon name="Medal" size="lg" className="text-amber-600" /> : <span className="text-white/40 text-sm">#{entry.rank}</span>;
         return (
           <div key={entry.tableId} className={`card-magic ${entry.rank <= 3 ? 'border-magic-gold/30' : ''}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className={`text-2xl w-10 text-center ${entry.rank > 3 ? 'text-white/40 text-sm' : ''}`}>
+                <span className="text-2xl w-10 text-center flex items-center justify-center">
                   {medal}
                 </span>
                 <div>
@@ -241,7 +242,7 @@ function UserLeaderboard({ entries }: { entries: UserLeaderboardEntry[] }) {
   if (entries.length === 0) {
     return (
       <div className="card-magic text-center py-10">
-        <p className="text-5xl mb-4">🏅</p>
+        <Icon name="Medal" size="3xl" className="mx-auto mb-4 text-magic-gold" />
         <p className="text-white/60">Nessun punteggio ancora.</p>
       </div>
     );
@@ -251,19 +252,19 @@ function UserLeaderboard({ entries }: { entries: UserLeaderboardEntry[] }) {
     <div className="space-y-3">
       {entries.map((entry) => {
         const medal =
-          entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `#${entry.rank}`;
+          entry.rank === 1 ? <Icon name="Medal" size="lg" className="text-yellow-400" /> : entry.rank === 2 ? <Icon name="Medal" size="lg" className="text-gray-300" /> : entry.rank === 3 ? <Icon name="Medal" size="lg" className="text-amber-600" /> : <span className="text-white/40 text-sm">#{entry.rank}</span>;
         return (
           <div key={entry.userId} className={`card-magic ${entry.rank <= 3 ? 'border-magic-gold/30' : ''}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className={`text-2xl w-10 text-center ${entry.rank > 3 ? 'text-white/40 text-sm' : ''}`}>
+                <span className="text-2xl w-10 text-center flex items-center justify-center">
                   {medal}
                 </span>
                 <div>
                   <p className="text-white font-semibold">
                     {entry.username}
                     {entry.hostSharingEnabled && (
-                      <span className="inline-block ml-1.5 text-xs" title="Disponibile per inviti dall'host">🤝</span>
+                      <span className="inline-block ml-1.5" title="Disponibile per inviti dall'host"><Icon name="Handshake" size="xs" className="inline text-magic-mystic" /></span>
                     )}
                   </p>
                   <p className="text-white/30 text-xs mt-1">{entry.totalSolved} enigmi risolti</p>

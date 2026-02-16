@@ -1,4 +1,12 @@
 import { prisma } from '@/lib/db/prisma';
+import { Icon } from '@/components/ui/icon';
+
+function MedalIcon({ index }: { index: number }) {
+  if (index === 0) return <Icon name="Medal" size="lg" className="text-yellow-400" />;
+  if (index === 1) return <Icon name="Medal" size="lg" className="text-gray-300" />;
+  if (index === 2) return <Icon name="Medal" size="lg" className="text-amber-600" />;
+  return <span className="text-white/40 text-sm">#{index + 1}</span>;
+}
 
 export default async function ClassificaPage() {
   const leaderboard = await prisma.leaderboardEntry.findMany({
@@ -15,20 +23,19 @@ export default async function ClassificaPage() {
     <div className="min-h-screen bg-magic-dark p-6 md:p-10">
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <span className="text-4xl">🏆</span>
+          <Icon name="Trophy" size="2xl" className="text-magic-gold" />
           <h1 className="font-cinzel text-3xl text-magic-gold">Classifica</h1>
         </div>
 
         {leaderboard.length === 0 ? (
           <div className="card-magic text-center py-12">
-            <p className="text-5xl mb-4">🏅</p>
+            <div className="mb-4"><Icon name="Medal" size="2xl" className="text-magic-gold w-12 h-12" /></div>
             <p className="text-white/60 text-lg">La classifica è ancora vuota.</p>
             <p className="text-white/40 text-sm mt-2">Partecipa alle serate per scalare la classifica!</p>
           </div>
         ) : (
           <div className="space-y-2">
             {leaderboard.map((entry, index) => {
-              const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
               return (
                 <div
                   key={entry.id}
@@ -37,8 +44,8 @@ export default async function ClassificaPage() {
                   }`}
                 >
                   <div className="flex items-center gap-4">
-                    <span className={`text-2xl w-10 text-center ${index >= 3 ? 'text-white/40 text-sm' : ''}`}>
-                      {medal}
+                    <span className="w-10 flex justify-center">
+                      <MedalIcon index={index} />
                     </span>
                     <div>
                       <p className="text-white font-semibold">
@@ -57,8 +64,8 @@ export default async function ClassificaPage() {
         )}
 
         <div className="mt-8">
-          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna alla Dashboard
+          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm inline-flex items-center gap-1">
+            <Icon name="ArrowLeft" size="sm" /> Torna alla Dashboard
           </a>
         </div>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Icon } from '@/components/ui/icon';
 
 interface PlayerEntry {
   rank: number;
@@ -49,7 +50,7 @@ export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
   }, [eventId]);
 
   const medal = (rank: number) =>
-    rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    rank === 1 ? <Icon name="Medal" size="sm" className="text-yellow-400" /> : rank === 2 ? <Icon name="Medal" size="sm" className="text-gray-300" /> : rank === 3 ? <Icon name="Medal" size="sm" className="text-amber-600" /> : <span className="text-white/40 text-xs">#{rank}</span>;
 
   return (
     <div className="card-magic">
@@ -58,7 +59,7 @@ export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
         className="w-full flex items-center justify-between mb-3"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xl">🏆</span>
+          <Icon name="Trophy" size="md" className="text-magic-gold" />
           <h3 className="text-magic-gold font-semibold text-sm">Classifica Live</h3>
         </div>
         <span className="text-white/30 text-xs">{expanded ? '▲' : '▼'}</span>
@@ -74,7 +75,7 @@ export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
                 tab === 'players' ? 'bg-magic-purple/30 text-magic-mystic' : 'text-white/40 hover:text-white/60'
               }`}
             >
-              👤 Giocatori
+              <Icon name="UserIcon" size="xs" className="inline" /> Giocatori
             </button>
             <button
               onClick={() => setTab('tables')}
@@ -82,7 +83,7 @@ export function LiveLeaderboard({ eventId }: LiveLeaderboardProps) {
                 tab === 'tables' ? 'bg-magic-purple/30 text-magic-mystic' : 'text-white/40 hover:text-white/60'
               }`}
             >
-              🪑 Tavoli
+              <Icon name="Armchair" size="xs" className="inline" /> Tavoli
             </button>
           </div>
 

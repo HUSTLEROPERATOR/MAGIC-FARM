@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import Link from 'next/link';
 import { SignOutButton } from '@/components/sign-out-button';
 import { RevokeConsentButton } from '@/components/revoke-consent-button';
+import { Icon } from '@/components/ui/icon';
 
 export default async function ProfiloPage() {
   const session = await getServerSession(authOptions);
@@ -30,13 +31,13 @@ export default async function ProfiloPage() {
     <div className="min-h-screen bg-magic-dark p-6 md:p-10">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <span className="text-4xl">👤</span>
+          <Icon name="UserIcon" size="2xl" className="text-magic-gold" />
           <h1 className="font-cinzel text-3xl text-magic-gold">Il Tuo Profilo</h1>
         </div>
 
         <div className="card-magic space-y-6">
           <div className="text-center pb-6 border-b border-white/10">
-            <div className="text-6xl mb-3">🎩</div>
+            <div className="mb-3"><Icon name="MagicWand" size="2xl" className="text-magic-gold w-14 h-14" /></div>
             <h2 className="text-magic-gold font-cinzel text-2xl">
               {dbUser?.alias || dbUser?.firstName || 'Mago Misterioso'}
             </h2>
@@ -85,21 +86,21 @@ export default async function ProfiloPage() {
         {/* Privacy Summary */}
         <div className="card-magic mt-6">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xl">🛡️</span>
+            <Icon name="Shield" size="md" className="text-magic-gold" />
             <h3 className="text-magic-gold font-semibold">Il tuo stato privacy</h3>
           </div>
 
           {/* Plain-language summary */}
           <div className="rounded-lg bg-white/5 p-4 mb-5 space-y-2 text-sm leading-relaxed">
             {consent?.consentPlatform ? (
-              <p className="text-green-400">✓ Puoi partecipare alle serate e accumulare punti.</p>
+              <p className="text-green-400"><Icon name="Check" size="sm" className="inline mr-1" />Puoi partecipare alle serate e accumulare punti.</p>
             ) : (
-              <p className="text-red-400">✗ Devi accettare il consenso piattaforma per giocare.</p>
+              <p className="text-red-400"><Icon name="X" size="sm" className="inline mr-1" />Devi accettare il consenso piattaforma per giocare.</p>
             )}
 
             {consent?.consentShareWithHost ? (
               <p className="text-green-400">
-                ✓ Il tuo alias appare nella classifica host.{' '}
+                <Icon name="Check" size="sm" className="inline mr-1" />Il tuo alias appare nella classifica host.{' '}
                 {consent?.consentHostMarketing
                   ? "L'host può invitarti a eventi futuri (la tua email non viene mai mostrata)."
                   : "L'host vede solo il tuo alias — nessun invito diretto."}
@@ -109,7 +110,7 @@ export default async function ProfiloPage() {
             )}
 
             {consent?.consentControllerMarketing ? (
-              <p className="text-green-400">✓ Puoi ricevere comunicazioni dalla piattaforma Magic Farm.</p>
+              <p className="text-green-400"><Icon name="Check" size="sm" className="inline mr-1" />Puoi ricevere comunicazioni dalla piattaforma Magic Farm.</p>
             ) : (
               <p className="text-white/60">— Nessuna comunicazione marketing dalla piattaforma.</p>
             )}
@@ -155,7 +156,7 @@ export default async function ProfiloPage() {
               <span className="text-white/50 text-sm">Condivisione con Host</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm ${consent?.consentShareWithHost ? 'text-blue-400' : 'text-white/40'}`}>
-                  {consent?.consentShareWithHost ? 'Attivo 🤝' : 'Non attivo'}
+                  {consent?.consentShareWithHost ? <span className="inline-flex items-center gap-1">Attivo <Icon name="Handshake" size="sm" /></span> : 'Non attivo'}
                 </span>
                 {consent?.consentShareWithHost && (
                   <RevokeConsentButton
@@ -187,14 +188,14 @@ export default async function ProfiloPage() {
             La tua email non viene mai condivisa con l&apos;host. Eventuali inviti vengono inviati dalla piattaforma per tuo conto.
           </p>
 
-          <Link href="/consents" className="inline-block mt-4 text-magic-mystic text-sm hover:text-magic-gold transition-colors">
-            Aggiorna consensi →
+          <Link href="/consents" className="inline-flex items-center gap-1 mt-4 text-magic-mystic text-sm hover:text-magic-gold transition-colors">
+            Aggiorna consensi <Icon name="ArrowRight" size="sm" />
           </Link>
         </div>
 
         <div className="mt-8 flex items-center justify-between">
-          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna alla Dashboard
+          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm inline-flex items-center gap-1">
+            <Icon name="ArrowLeft" size="sm" /> Torna alla Dashboard
           </a>
           <SignOutButton />
         </div>

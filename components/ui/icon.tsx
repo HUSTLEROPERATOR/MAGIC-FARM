@@ -2,10 +2,15 @@
 
 import { type ComponentProps } from 'react';
 import * as icons from '@/lib/ui/icons';
-import type { LucideIcon } from '@/lib/ui/icons';
+import type { LucideIcon } from 'lucide-react';
 
-/** All valid icon names (keys of the icon map). */
-type IconName = Exclude<keyof typeof icons, 'LucideIcon'>;
+/**
+ * Tipo helper: prende solo le chiavi di `icons` che puntano a componenti Lucide.
+ * Esclude automaticamente eventuali export non-componenti.
+ */
+export type IconName = {
+  [K in keyof typeof icons]: (typeof icons)[K] extends LucideIcon ? K : never;
+}[keyof typeof icons];
 
 const sizes = {
   xs: 'w-3 h-3',
@@ -19,26 +24,35 @@ const sizes = {
 
 type IconSize = keyof typeof sizes;
 
-interface IconProps extends Omit<ComponentProps<LucideIcon>, 'ref'> {
-  /** Semantic name matching a key in lib/ui/icons.ts */
+type IconProps = Omit<ComponentProps<LucideIcon>, 'ref'> & {
+  /** Nome semantico che deve esistere in lib/ui/icons.ts */
   name: IconName;
-  /** Predefined size token (default: "md") */
+  /** Token dimensione (default: md) */
   size?: IconSize;
-}
+};
 
 /**
- * Unified icon wrapper. Usage:
- * ```tsx
+ * Unified icon wrapper.
+ * Usage:
  * <Icon name="Sparkles" size="lg" className="text-magic-gold" />
- * ```
  */
 export function Icon({ name, size = 'md', className = '', ...rest }: IconProps) {
-  const Component = icons[name] as LucideIcon;
+  const Component = icons[name];
+
   if (!Component) {
     if (process.env.NODE_ENV === 'development') {
-      console.warn(`[Icon] Unknown icon name: "${name}"`);
+      // eslint-disable-next-line no-console
+      console.warn(`[Icon] Unknown icon name: "${String(name)}"`);
     }
     return null;
   }
-  return <Component className={`${sizes[size]} ${className}`.trim()} {...rest} />;
+
+  const LucideComponent = Component as unknown as LucideIcon;
+
+  return (
+    <LucideComponent
+      className={`${sizes[size]} ${className}`.trim()}
+      {...rest}
+    />
+  );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Icon, type IconName } from '@/components/ui/icon';
 
 interface AllianceInfo {
   id: string;
@@ -53,12 +54,12 @@ export function AllianceEffects({ eventId }: AllianceEffectsProps) {
   if (loading) return null;
   if (alliances.length === 0) return null;
 
-  const effectIcons: Record<string, string> = {
-    NONE: '🤝',
-    HINT_SHARING: '💡',
-    POINT_BONUS: '⬆️',
-    POINT_PENALTY: '⚠️',
-    COMMON_GOAL: '🎯',
+  const effectIcons: Record<string, IconName> = {
+    NONE: 'Handshake',
+    HINT_SHARING: 'Lightbulb',
+    POINT_BONUS: 'ArrowUp',
+    POINT_PENALTY: 'AlertTriangle',
+    COMMON_GOAL: 'Target',
   };
 
   const effectLabels: Record<string, string> = {
@@ -72,7 +73,7 @@ export function AllianceEffects({ eventId }: AllianceEffectsProps) {
   return (
     <div className="card-magic">
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-xl">⚔️</span>
+        <Icon name="Swords" size="md" className="text-magic-gold" />
         <h3 className="text-magic-gold font-semibold text-sm">Alleanze Attive</h3>
       </div>
 
@@ -84,7 +85,7 @@ export function AllianceEffects({ eventId }: AllianceEffectsProps) {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span>{effectIcons[alliance.effectType] || '🤝'}</span>
+                <Icon name={effectIcons[alliance.effectType] || 'Handshake'} size="sm" />
                 <div>
                   <p className="text-white text-sm font-medium">{alliance.ally}</p>
                   <p className="text-white/40 text-[10px]">
@@ -103,7 +104,7 @@ export function AllianceEffects({ eventId }: AllianceEffectsProps) {
                 onClick={() => shareHint()}
                 className="w-full text-xs py-1.5 rounded-lg bg-magic-mystic/10 text-magic-mystic hover:bg-magic-mystic/20 transition-colors"
               >
-                💡 Condividi i tuoi suggerimenti
+                <Icon name="Lightbulb" size="xs" className="inline" /> Condividi i tuoi suggerimenti
               </button>
             )}
 
@@ -115,7 +116,7 @@ export function AllianceEffects({ eventId }: AllianceEffectsProps) {
                   : 'bg-magic-purple/10 text-magic-mystic'
               }`}>
                 <p className="font-medium">
-                  🎯 {alliance.commonGoalMet ? '✅ Obiettivo raggiunto!' : 'Obiettivo condiviso:'}
+                  <Icon name="Target" size="xs" className="inline" /> {alliance.commonGoalMet ? <><Icon name="CheckCircle" size="xs" className="inline" /> Obiettivo raggiunto!</> : 'Obiettivo condiviso:'}
                 </p>
                 <p className="mt-0.5 text-white/60">{alliance.commonGoal}</p>
               </div>

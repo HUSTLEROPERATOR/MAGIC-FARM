@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import Link from 'next/link';
 import { SignOutButton } from '@/components/sign-out-button';
 import { JoinEventForm } from './join-event-form';
+import { Icon } from '@/components/ui/icon';
 
 async function getUserStats(userId: string) {
   const submissions = await prisma.submission.findMany({
@@ -104,7 +105,7 @@ export default async function DashboardPage() {
                   Sei al tavolo: <span className="text-magic-mystic">{activeEvent.tableName}</span>
                 </p>
                 <Link href="/game" className="btn-magic text-sm">
-                  Vai al Gioco →
+                  Vai al Gioco <Icon name="ArrowRight" size="xs" className="inline" />
                 </Link>
               </div>
             ) : (
@@ -133,7 +134,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link href="/serate" className="card-magic group block">
             <div className="flex items-center gap-4">
-              <span className="text-4xl">🎭</span>
+              <Icon name="Theater" size="2xl" className="text-magic-gold" />
               <div>
                 <h3 className="text-magic-gold font-semibold text-lg group-hover:text-magic-mystic transition-colors">
                   Serate Evento
@@ -145,7 +146,7 @@ export default async function DashboardPage() {
 
           <Link href="/events/open-magic-stage" className="card-magic group block">
             <div className="flex items-center gap-4">
-              <span className="text-4xl">✨</span>
+              <Icon name="Sparkles" size="2xl" className="text-magic-gold" />
               <div>
                 <h3 className="text-magic-gold font-semibold text-lg group-hover:text-magic-mystic transition-colors">
                   Palco Aperto Magico
@@ -157,7 +158,7 @@ export default async function DashboardPage() {
 
           <Link href="/libreria" className="card-magic group block">
             <div className="flex items-center gap-4">
-              <span className="text-4xl">📚</span>
+              <Icon name="BookOpen" size="2xl" className="text-magic-gold" />
               <div>
                 <h3 className="text-magic-gold font-semibold text-lg group-hover:text-magic-mystic transition-colors">
                   Libreria
@@ -169,7 +170,7 @@ export default async function DashboardPage() {
 
           <Link href="/classifica" className="card-magic group block">
             <div className="flex items-center gap-4">
-              <span className="text-4xl">🏆</span>
+              <Icon name="Trophy" size="2xl" className="text-magic-gold" />
               <div>
                 <h3 className="text-magic-gold font-semibold text-lg group-hover:text-magic-mystic transition-colors">
                   Classifica
@@ -181,7 +182,7 @@ export default async function DashboardPage() {
 
           <Link href="/profilo" className="card-magic group block">
             <div className="flex items-center gap-4">
-              <span className="text-4xl">👤</span>
+              <Icon name="UserIcon" size="2xl" className="text-magic-gold" />
               <div>
                 <h3 className="text-magic-gold font-semibold text-lg group-hover:text-magic-mystic transition-colors">
                   Profilo

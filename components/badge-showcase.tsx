@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Icon, type IconName } from '@/components/ui/icon';
 
 interface BadgeData {
   id: string;
@@ -55,11 +56,19 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
     : badges;
 
   const categoryLabels: Record<string, string> = {
-    ACHIEVEMENT: '🏆 Traguardi',
-    EVENT_TITLE: '🎭 Titoli di Serata',
-    SPECIAL: '⭐ Speciali',
-    COLLABORATION: '🤝 Collaborazione',
-    STREAK: '🔥 Serie',
+    ACHIEVEMENT: 'Traguardi',
+    EVENT_TITLE: 'Titoli di Serata',
+    SPECIAL: 'Speciali',
+    COLLABORATION: 'Collaborazione',
+    STREAK: 'Serie',
+  };
+
+  const categoryIconMap: Record<string, IconName> = {
+    ACHIEVEMENT: 'Trophy',
+    EVENT_TITLE: 'Theater',
+    SPECIAL: 'Star',
+    COLLABORATION: 'Handshake',
+    STREAK: 'Flame',
   };
 
   if (compact) {
@@ -110,7 +119,7 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
               }}
               className="btn-magic text-sm mt-6"
             >
-              {newBadges.length > 1 ? `✨ Avanti (${newBadges.length - 1} altri)` : '✨ Fantastico!'}
+              {newBadges.length > 1 ? <><Icon name="Sparkles" size="sm" className="inline" /> Avanti ({newBadges.length - 1} altri)</> : <><Icon name="Sparkles" size="sm" className="inline" /> Fantastico!</>}
             </button>
           </div>
         </div>
@@ -151,6 +160,7 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
                 selectedCategory === cat ? 'bg-magic-purple/30 text-magic-mystic' : 'text-white/40 hover:text-white/60'
               }`}
             >
+              {categoryIconMap[cat] && <Icon name={categoryIconMap[cat]} size="xs" className="inline mr-1" />}
               {categoryLabels[cat] || cat}
             </button>
           ))}
@@ -168,7 +178,7 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
               }`}
             >
               <div className={`text-4xl mb-2 ${badge.earned ? '' : 'filter blur-[2px]'}`}>
-                {badge.earned ? badge.icon : '❓'}
+                {badge.earned ? badge.icon : <Icon name="HelpCircle" size="2xl" />}
               </div>
               <h4 className={`text-sm font-semibold ${badge.earned ? 'text-white' : 'text-white/50'}`}>
                 {badge.name}
@@ -180,7 +190,7 @@ export function BadgeShowcase({ compact = false }: BadgeShowcaseProps) {
                 </p>
               )}
               {badge.eventNight && (
-                <p className="text-magic-mystic/60 text-[10px] mt-1">🎭 {badge.eventNight.name}</p>
+                <p className="text-magic-mystic/60 text-[10px] mt-1"><Icon name="Theater" size="xs" className="inline" /> {badge.eventNight.name}</p>
               )}
             </div>
           ))}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { Icon } from '@/components/ui/icon';
 
 interface Application {
   id: string;
@@ -52,7 +53,7 @@ export default function AdminOpenStagePage() {
             <p className="text-white/40 text-sm">Gestisci le candidature dei performer</p>
           </div>
           <Link href="/admin" className="text-magic-mystic hover:text-magic-gold text-sm">
-            ← Admin Panel
+            <Icon name="ArrowLeft" size="xs" className="inline" /> Admin Panel
           </Link>
         </div>
 
@@ -201,9 +202,9 @@ function ApplicationCard({
           </div>
           <p className="text-white/60 text-sm mb-1">{application.realName}</p>
           <div className="flex items-center gap-4 text-white/40 text-xs">
-            <span>📧 {application.email}</span>
-            <span>📱 {application.phone}</span>
-            <span>🕒 {createdDate}</span>
+            <span><Icon name="Mail" size="xs" className="inline" /> {application.email}</span>
+            <span><Icon name="Smartphone" size="xs" className="inline" /> {application.phone}</span>
+            <span><Icon name="Clock" size="xs" className="inline" /> {createdDate}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -214,14 +215,14 @@ function ApplicationCard({
                 disabled={updating}
                 className="text-xs px-3 py-1 bg-green-500/20 text-green-400 rounded hover:bg-green-500/30 disabled:opacity-40"
               >
-                ✓ Approva
+                <Icon name="Check" size="xs" className="inline" /> Approva
               </button>
               <button
                 onClick={() => updateStatus('REJECTED')}
                 disabled={updating}
                 className="text-xs px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 disabled:opacity-40"
               >
-                ✗ Rifiuta
+                <Icon name="X" size="xs" className="inline" /> Rifiuta
               </button>
             </>
           )}
@@ -249,7 +250,7 @@ function ApplicationCard({
                 rel="noopener noreferrer"
                 className="text-magic-mystic hover:text-magic-gold text-sm"
               >
-                🎥 Guarda il video →
+                <Icon name="Video" size="sm" className="inline" /> Guarda il video <Icon name="ArrowRight" size="xs" className="inline" />
               </a>
             </div>
           )}

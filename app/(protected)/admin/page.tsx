@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { Icon } from '@/components/ui/icon';
 
 interface EventSummary {
   id: string;
@@ -41,11 +42,11 @@ export default function AdminPage() {
             <p className="text-white/40 text-sm">Gestisci serate, round, enigmi e tavoli</p>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/admin/open-stage" className="text-magic-mystic hover:text-magic-gold text-sm px-3 py-1.5 bg-magic-purple/20 rounded">
-              Palco Aperto ✨
+            <Link href="/admin/open-stage" className="text-magic-mystic hover:text-magic-gold text-sm px-3 py-1.5 bg-magic-purple/20 rounded inline-flex items-center gap-1">
+              Palco Aperto <Icon name="Sparkles" size="sm" />
             </Link>
-            <Link href="/dashboard" className="text-magic-mystic hover:text-magic-gold text-sm">
-              ← Dashboard
+            <Link href="/dashboard" className="text-magic-mystic hover:text-magic-gold text-sm inline-flex items-center gap-1">
+              <Icon name="ArrowLeft" size="sm" /> Dashboard
             </Link>
           </div>
         </div>

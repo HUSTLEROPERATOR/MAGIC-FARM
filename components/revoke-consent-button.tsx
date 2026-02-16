@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Icon } from '@/components/ui/icon';
 
 interface RevokeConsentButtonProps {
   field: 'consentShareWithHost' | 'consentHostMarketing' | 'consentControllerMarketing';
@@ -53,7 +54,7 @@ export function RevokeConsentButton({ field, label, warning }: RevokeConsentButt
   if (result?.success) {
     return (
       <span className="text-yellow-400 text-xs animate-pulse">
-        ✓ Revocato
+        <Icon name="Check" size="xs" className="inline" /> Revocato
       </span>
     );
   }

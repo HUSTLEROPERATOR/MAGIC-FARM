@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import Link from 'next/link';
+import { Icon } from '@/components/ui/icon';
 
 export default async function SeratePage() {
   const session = await getServerSession(authOptions);
@@ -48,7 +49,7 @@ export default async function SeratePage() {
     <div className="min-h-screen bg-magic-dark p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <span className="text-4xl">🎭</span>
+          <Icon name="Theater" size="2xl" className="text-magic-gold" />
           <div>
             <h1 className="font-cinzel text-3xl text-magic-gold">Serate Evento</h1>
             <p className="text-white/40 text-sm">Partecipa alle serate e risolvi gli enigmi</p>
@@ -84,18 +85,18 @@ export default async function SeratePage() {
                           <p className="text-white/60 text-sm mt-1">{event.description}</p>
                         )}
                         <div className="flex items-center gap-4 mt-3 text-xs text-white/40">
-                          <span>🕐 Iniziata {new Date(event.startsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
-                          {activeRounds > 0 && <span className="text-green-400">⚡ {activeRounds} round attivi</span>}
+                          <span className="inline-flex items-center gap-1"><Icon name="Clock" size="xs" /> Iniziata {new Date(event.startsAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}</span>
+                          {activeRounds > 0 && <span className="text-green-400 inline-flex items-center gap-1"><Icon name="Zap" size="xs" /> {activeRounds} round attivi</span>}
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-2">
-                        <span className="text-xs px-3 py-1 rounded-full font-medium bg-green-500/20 text-green-400">
-                          🔴 LIVE
+                        <span className="text-xs px-3 py-1 rounded-full font-medium bg-green-500/20 text-green-400 inline-flex items-center gap-1">
+                          <Icon name="Circle" size="xs" className="text-red-500 fill-red-500" /> LIVE
                         </span>
                         {isJoined ? (
-                          <span className="text-xs text-magic-mystic">✅ Al tavolo</span>
+                          <span className="text-xs text-magic-mystic inline-flex items-center gap-1"><Icon name="Check" size="xs" /> Al tavolo</span>
                         ) : (
-                          <span className="text-xs text-magic-gold animate-pulse">→ Entra</span>
+                          <span className="text-xs text-magic-gold animate-pulse inline-flex items-center gap-1">Entra <Icon name="ArrowRight" size="xs" /></span>
                         )}
                       </div>
                     </div>
@@ -108,12 +109,12 @@ export default async function SeratePage() {
 
         {/* Serate in programma */}
         <div className="mb-8">
-          <h2 className="text-magic-mystic font-semibold text-sm uppercase tracking-wider mb-4">
-            📋 In programma
+          <h2 className="text-magic-mystic font-semibold text-sm uppercase tracking-wider mb-4 inline-flex items-center gap-1.5">
+            <Icon name="ClipboardList" size="sm" /> In programma
           </h2>
           {events.filter(e => e.status === 'DRAFT').length === 0 ? (
             <div className="card-magic text-center py-10">
-              <p className="text-5xl mb-4">🔮</p>
+              <div className="mb-4"><Icon name="CrystalBall" size="2xl" className="text-magic-mystic w-12 h-12" /></div>
               <p className="text-white/60">Nessuna serata in programma.</p>
               <p className="text-white/40 text-sm mt-1">Torna presto!</p>
             </div>
@@ -132,14 +133,14 @@ export default async function SeratePage() {
                       {event.description && (
                         <p className="text-white/50 text-sm mt-1">{event.description}</p>
                       )}
-                      <p className="text-white/40 text-xs mt-3">
-                        📅 {new Date(event.startsAt).toLocaleDateString('it-IT', {
+                      <p className="text-white/40 text-xs mt-3 inline-flex items-center gap-2">
+                        <span className="inline-flex items-center gap-0.5"><Icon name="Calendar" size="xs" /> {new Date(event.startsAt).toLocaleDateString('it-IT', {
                           weekday: 'long', day: 'numeric', month: 'long',
-                        })}
+                        })}</span>
                         {' · '}
-                        🕐 {new Date(event.startsAt).toLocaleTimeString('it-IT', {
+                        <span className="inline-flex items-center gap-0.5"><Icon name="Clock" size="xs" /> {new Date(event.startsAt).toLocaleTimeString('it-IT', {
                           hour: '2-digit', minute: '2-digit',
-                        })}
+                        })}</span>
                       </p>
                     </div>
                     <span className="text-xs px-3 py-1 rounded-full bg-magic-purple/20 text-magic-mystic">
@@ -155,8 +156,8 @@ export default async function SeratePage() {
         {/* Serate passate */}
         {pastEvents.length > 0 && (
           <div>
-            <h2 className="text-white/40 font-semibold text-sm uppercase tracking-wider mb-4">
-              📜 Archivio
+            <h2 className="text-white/40 font-semibold text-sm uppercase tracking-wider mb-4 inline-flex items-center gap-1.5">
+              <Icon name="ScrollText" size="sm" /> Archivio
             </h2>
             <div className="space-y-2">
               {pastEvents.map((event) => (
@@ -174,7 +175,7 @@ export default async function SeratePage() {
                         })}
                       </p>
                     </div>
-                    <span className="text-xs text-white/30">Conclusa →</span>
+                    <span className="text-xs text-white/30 inline-flex items-center gap-1">Conclusa <Icon name="ArrowRight" size="xs" /></span>
                   </div>
                 </Link>
               ))}
@@ -183,8 +184,8 @@ export default async function SeratePage() {
         )}
 
         <div className="mt-10">
-          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna alla Dashboard
+          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm inline-flex items-center gap-1">
+            <Icon name="ArrowLeft" size="sm" /> Torna alla Dashboard
           </a>
         </div>
       </div>

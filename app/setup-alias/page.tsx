@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { Icon } from '@/components/ui/icon';
 
 export default function SetupAliasPage() {
   const [alias, setAlias] = useState('');
@@ -88,7 +89,7 @@ export default function SetupAliasPage() {
         <div className="card-magic">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4 animate-float">🎭</div>
+            <div className="mb-4 animate-float"><Icon name="Theater" size="2xl" className="text-magic-gold w-14 h-14" /></div>
             <h1 className="font-cinzel text-3xl font-bold glow-text mb-3">
               Scegli il tuo Alias
             </h1>
@@ -102,7 +103,7 @@ export default function SetupAliasPage() {
           {session?.user?.email && (
             <div className="mb-6 p-4 rounded-xl bg-magic-purple/10 border border-magic-purple/20 text-center">
               <p className="text-magic-mystic text-sm">
-                Benvenuto/a, <span className="text-white font-medium">{session.user.email}</span>! 🎉
+                Benvenuto/a, <span className="text-white font-medium">{session.user.email}</span>!
               </p>
             </div>
           )}
@@ -170,7 +171,7 @@ export default function SetupAliasPage() {
                   </>
                 ) : (
                   <>
-                    <span>🎩</span>
+                    <Icon name="MagicWand" size="sm" />
                     <span>Conferma Alias</span>
                   </>
                 )}
@@ -183,7 +184,7 @@ export default function SetupAliasPage() {
             <div className="mt-8 pt-6 border-t border-white/10 text-center">
               <p className="text-white/50 text-xs mb-2">Anteprima in classifica:</p>
               <div className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-magic-purple/20 to-magic-mystic/20 border border-magic-purple/30">
-                <span className="text-magic-gold text-xl">🏆</span>
+                <Icon name="Trophy" size="md" className="text-magic-gold" />
                 <span className="font-semibold text-lg text-white">{alias.trim()}</span>
               </div>
             </div>
@@ -192,9 +193,9 @@ export default function SetupAliasPage() {
 
         {/* Decorative */}
         <div className="flex justify-center gap-4 mt-8 text-white/20">
-          <span>✦</span>
-          <span>✦</span>
-          <span>✦</span>
+          <Icon name="Sparkle" size="xs" />
+          <Icon name="Sparkle" size="xs" />
+          <Icon name="Sparkle" size="xs" />
         </div>
       </div>
     </main>

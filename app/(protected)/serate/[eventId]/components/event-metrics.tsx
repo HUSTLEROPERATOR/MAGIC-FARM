@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Icon, type IconName } from '@/components/ui/icon';
 
 interface PuzzleMetric {
   puzzleId: string;
@@ -64,12 +65,12 @@ export function EventMetricsPanel({ eventId, eventStatus }: EventMetricsPanelPro
     return `${mins}m ${remSecs}s`;
   }
 
-  const puzzleTypeIcons: Record<string, string> = {
-    DIGITAL: '💻',
-    PHYSICAL: '🎴',
-    OBSERVATION: '👁️',
-    LISTENING: '🎵',
-    HYBRID: '🔄',
+  const puzzleTypeIcons: Record<string, IconName> = {
+    DIGITAL: 'Monitor',
+    PHYSICAL: 'Layers',
+    OBSERVATION: 'Eye',
+    LISTENING: 'Music',
+    HYBRID: 'RefreshCw',
   };
 
   return (
@@ -79,7 +80,7 @@ export function EventMetricsPanel({ eventId, eventStatus }: EventMetricsPanelPro
         className="w-full flex items-center justify-between"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xl">📊</span>
+          <Icon name="Stats" size="md" className="text-magic-gold" />
           <h3 className="text-magic-gold font-semibold text-sm">Statistiche della Serata</h3>
         </div>
         <span className="text-white/30 text-xs">{expanded ? '▲' : '▼'}</span>
@@ -146,7 +147,7 @@ export function EventMetricsPanel({ eventId, eventStatus }: EventMetricsPanelPro
               {metrics.puzzleMetrics.map((p) => (
                 <div key={p.puzzleId} className="bg-white/5 rounded-lg p-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm">{puzzleTypeIcons[p.puzzleType] || '🧩'}</span>
+                    <Icon name={puzzleTypeIcons[p.puzzleType] || 'Puzzle'} size="sm" />
                     <div>
                       <p className="text-white text-xs font-medium">{p.title}</p>
                       <p className="text-white/30 text-[10px]">

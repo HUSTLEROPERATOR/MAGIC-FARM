@@ -50,6 +50,20 @@ export {
   Camera,
   FileEdit,
   Hourglass,
+  CheckCircle,
+  XCircle,
+  Armchair,
+  Monitor,
+  Layers,
+  Music,
+  Ticket,
+  MessageCircle,
+  Swords,
+  Gamepad2,
+  Moon,
+  Smartphone,
+  Video,
+  ArrowUp,
 } from 'lucide-react';
 
 export type { LucideIcon } from 'lucide-react';

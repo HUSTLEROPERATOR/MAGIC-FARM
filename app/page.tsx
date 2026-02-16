@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import { redirect } from 'next/navigation';
+import { MagicWand, Sparkles, Target, Handshake, BookOpen, Sparkle as SparkleIcon } from '@/lib/ui/icons';
+import { Icon } from '@/components/ui/icon';
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
@@ -32,9 +34,7 @@ export default async function HomePage() {
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
         {/* Logo/Icon */}
         <div className="mb-8 animate-float">
-          <span className="text-8xl md:text-9xl filter drop-shadow-[0_0_30px_rgba(212,175,55,0.5)]">
-            🎩
-          </span>
+          <Icon name="MagicWand" size="3xl" className="text-magic-gold drop-shadow-[0_0_30px_rgba(212,175,55,0.5)] w-20 h-20 md:w-28 md:h-28" />
         </div>
 
         {/* Title */}
@@ -51,7 +51,7 @@ export default async function HomePage() {
         {/* Decorative Line */}
         <div className="flex items-center justify-center gap-4 my-8">
           <div className="h-px w-20 md:w-32 bg-gradient-to-r from-transparent via-magic-gold/50 to-transparent" />
-          <span className="text-magic-gold">✦</span>
+          <Icon name="Sparkle" size="sm" className="text-magic-gold" />
           <div className="h-px w-20 md:w-32 bg-gradient-to-r from-transparent via-magic-gold/50 to-transparent" />
         </div>
 
@@ -63,26 +63,26 @@ export default async function HomePage() {
         {/* CTA Button */}
         <Link href="/login" className="btn-magic group">
           <span className="flex items-center gap-3">
-            <span className="text-xl transition-transform group-hover:rotate-12">✨</span>
+            <Icon name="Sparkles" size="md" className="transition-transform group-hover:rotate-12" />
             <span className="tracking-wide">Entra nel Magic</span>
-            <span className="text-xl transition-transform group-hover:-rotate-12">✨</span>
+            <Icon name="Sparkles" size="md" className="transition-transform group-hover:-rotate-12" />
           </span>
         </Link>
 
         {/* Features Teaser */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
           <div className="text-center p-4">
-            <div className="text-3xl mb-3">🎯</div>
+            <div className="mb-3"><Icon name="Target" size="xl" className="text-magic-gold" /></div>
             <h3 className="text-magic-gold font-semibold mb-1">Compete</h3>
             <p className="text-white/50 text-sm">Sfida altri maghi in competizioni avvincenti</p>
           </div>
           <div className="text-center p-4">
-            <div className="text-3xl mb-3">🤝</div>
+            <div className="mb-3"><Icon name="Handshake" size="xl" className="text-magic-gold" /></div>
             <h3 className="text-magic-gold font-semibold mb-1">Collabora</h3>
             <p className="text-white/50 text-sm">Forma alleanze strategiche con altri tavoli</p>
           </div>
           <div className="text-center p-4">
-            <div className="text-3xl mb-3">📚</div>
+            <div className="mb-3"><Icon name="BookOpen" size="xl" className="text-magic-gold" /></div>
             <h3 className="text-magic-gold font-semibold mb-1">Impara</h3>
             <p className="text-white/50 text-sm">Accedi alla libreria di contenuti esclusivi</p>
           </div>

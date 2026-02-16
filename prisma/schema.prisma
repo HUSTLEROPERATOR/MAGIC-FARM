@@ -192,6 +192,10 @@ model EventNight {
   // Spettatore (Estensione 7)
   spectatorEnabled  Boolean  @default(true) // Permetti modalità spettatore
 
+  // Routine Modules (Estensione 9)
+  routinesEnabled   String[] @default([])  // Array di routine IDs attive
+  routinesConfig    Json?                  // { [routineId]: configObject }
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

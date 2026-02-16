@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Icon } from '@/components/ui/icon';
 
 interface Hint {
   id: string;
@@ -82,7 +83,7 @@ export default function GamePage() {
     return (
       <div className="min-h-screen bg-magic-dark flex items-center justify-center p-6">
         <div className="card-magic text-center max-w-md">
-          <p className="text-5xl mb-4">🎭</p>
+          <Icon name="Theater" size="3xl" className="mx-auto mb-4 text-magic-mystic" />
           <p className="text-white/60 mb-4">{error || 'Nessuna serata attiva.'}</p>
           <Link href="/dashboard" className="btn-magic inline-block">
             Torna alla Dashboard
@@ -150,7 +151,7 @@ export default function GamePage() {
           </>
         ) : (
           <div className="card-magic text-center py-10">
-            <p className="text-5xl mb-4">⏳</p>
+            <Icon name="Hourglass" size="3xl" className="mx-auto mb-4 text-magic-gold" />
             <p className="text-white/60">Nessun round attivo al momento.</p>
             <p className="text-white/40 text-sm mt-1">Attendi che l&apos;organizzatore attivi un round.</p>
           </div>
@@ -162,13 +163,13 @@ export default function GamePage() {
             href={`/leaderboard?eventId=${event.id}`}
             className="text-magic-mystic hover:text-magic-gold transition-colors text-sm"
           >
-            Classifica Serata →
+            Classifica Serata <Icon name="ArrowRight" size="xs" className="inline" />
           </Link>
           <Link
             href="/dashboard"
             className="text-white/40 hover:text-white transition-colors text-sm"
           >
-            ← Dashboard
+            <Icon name="ArrowLeft" size="xs" className="inline" /> Dashboard
           </Link>
         </div>
       </div>

@@ -31,6 +31,8 @@ const config: Config = {
         'toast-in': 'toast-slide-up 0.3s ease-out',
         'toast-out': 'toast-fade-out 0.3s ease-in forwards',
         'sparkle-burst': 'sparkle-burst 0.75s ease-out forwards',
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
       },
       keyframes: {
         'toast-slide-up': {

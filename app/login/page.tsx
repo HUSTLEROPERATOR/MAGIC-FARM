@@ -4,6 +4,8 @@ import { Suspense, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { ArrowLeft, CrystalBall } from '@/lib/ui/icons';
+import { Icon } from '@/components/ui/icon';
 
 export default function LoginPage() {
   return (
@@ -82,14 +84,14 @@ function LoginForm() {
           href="/" 
           className="inline-flex items-center gap-2 text-white/50 hover:text-magic-gold transition-colors mb-8 group"
         >
-          <span className="transition-transform group-hover:-translate-x-1">←</span>
+          <ArrowLeft className="transition-transform group-hover:-translate-x-1" />
           <span>Torna alla home</span>
         </Link>
 
         <div className="card-magic">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-5xl mb-4 animate-float">🔮</div>
+            <div className="mb-4 animate-float"><Icon name="CrystalBall" size="2xl" className="text-magic-mystic w-12 h-12" /></div>
             <h1 className="font-cinzel text-3xl font-bold glow-text mb-2">
               Accedi
             </h1>
@@ -139,9 +141,9 @@ function LoginForm() {
                   </>
                 ) : (
                   <>
-                    <span>✨</span>
+                    <Icon name="Sparkles" size="sm" />
                     <span>Invia Magic Link</span>
-                    <span>✨</span>
+                    <Icon name="Sparkles" size="sm" />
                   </>
                 )}
               </span>
@@ -153,16 +155,16 @@ function LoginForm() {
             <p className="text-white/40 text-xs text-center leading-relaxed">
               Ti invieremo un link magico alla tua email. 
               Clicca sul link per accedere automaticamente. 
-              Nessuna password da ricordare! ✨
+              Nessuna password da ricordare!
             </p>
           </div>
         </div>
 
         {/* Decorative Elements */}
         <div className="flex justify-center gap-4 mt-8 text-white/20">
-          <span>✦</span>
-          <span>✦</span>
-          <span>✦</span>
+          <Icon name="Sparkle" size="xs" />
+          <Icon name="Sparkle" size="xs" />
+          <Icon name="Sparkle" size="xs" />
         </div>
       </div>
     </main>

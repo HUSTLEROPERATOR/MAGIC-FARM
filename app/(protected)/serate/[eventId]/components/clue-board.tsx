@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { Icon } from '@/components/ui/icon';
 
 interface Message {
   id: string;
@@ -77,7 +78,7 @@ export function ClueBoard({ eventId, tableName }: ClueBoardProps) {
         className="w-full flex items-center justify-between mb-3"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xl">💬</span>
+          <Icon name="MessageCircle" size="md" className="text-magic-gold" />
           <h3 className="text-magic-gold font-semibold text-sm">Chat — {tableName}</h3>
         </div>
         <div className="flex items-center gap-2">
@@ -132,7 +133,7 @@ export function ClueBoard({ eventId, tableName }: ClueBoardProps) {
               disabled={loading || !newMessage.trim()}
               className="px-3 py-2 rounded-xl bg-magic-purple/50 text-white text-sm hover:bg-magic-purple transition-colors disabled:opacity-50"
             >
-              {loading ? '⏳' : '📤'}
+              {loading ? <Icon name="Hourglass" size="sm" /> : <Icon name="Send" size="sm" />}
             </button>
           </form>
         </>

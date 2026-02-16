@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { Icon } from '@/components/ui/icon';
 
 export default function ConsentsPage() {
   const { update } = useSession();
@@ -101,7 +102,7 @@ export default function ConsentsPage() {
     <div className="min-h-screen bg-magic-dark flex items-center justify-center p-6">
       <div className="max-w-lg w-full">
         <div className="text-center mb-8">
-          <p className="text-5xl mb-4">📜</p>
+          <div className="mb-4"><Icon name="ScrollText" size="2xl" className="text-magic-gold w-12 h-12" /></div>
           <h1 className="font-cinzel text-3xl text-magic-gold">Consensi e Privacy</h1>
           <p className="text-white/50 mt-2 text-sm">
             Gestisci i tuoi consensi. Puoi revocarli in qualsiasi momento.
@@ -269,8 +270,8 @@ export default function ConsentsPage() {
         </form>
 
         <div className="mt-6 text-center">
-          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm">
-            ← Torna alla Dashboard
+          <a href="/dashboard" className="text-magic-mystic hover:text-magic-gold transition-colors text-sm inline-flex items-center gap-1">
+            <Icon name="ArrowLeft" size="sm" /> Torna alla Dashboard
           </a>
         </div>
       </div>
