@@ -1,4 +1,4 @@
-import { GameContent } from "../types";
+import type { GameContent } from "../types";
 
 export const programming_001: GameContent = {
   id: "programming_001",
