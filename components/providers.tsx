@@ -1,6 +1,7 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
+import { ToastProvider } from '@/components/ui/magic-toast';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -8,6 +9,8 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <SessionProvider>{children}</SessionProvider>
+    <SessionProvider>
+      <ToastProvider>{children}</ToastProvider>
+    </SessionProvider>
   );
 }
