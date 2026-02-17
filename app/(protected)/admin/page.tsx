@@ -224,6 +224,37 @@ function EventCard({ event, onUpdated }: { event: EventSummary; onUpdated: () =>
   );
 }
 
+interface ModuleInfo {
+  moduleKey: string;
+  magicModuleId: string | null;
+  eventModuleId: string | null;
+  enabled: boolean;
+  configJson: Record<string, unknown>;
+  toggledBy: string | null;
+  toggledAt: string | null;
+  globallyDisabled: boolean;
+  blockedCount: number;
+  meta: {
+    name: string;
+    description: string;
+    icon: string;
+    difficulty: string;
+    scope: string;
+    priority: number;
+  };
+  ui: {
+    fields: Record<string, {
+      label: string;
+      kind?: string;
+      options?: string[];
+      min?: number;
+      max?: number;
+      step?: number;
+    }>;
+  } | null;
+  defaultConfig: Record<string, unknown>;
+}
+
 interface EventDetail {
   id: string;
   name: string;
@@ -277,6 +308,12 @@ function EventDetailPanel({ event, onUpdated }: { event: EventDetail; onUpdated:
         {event.rounds.map((round) => (
           <RoundPanel key={round.id} round={round} eventId={event.id} onUpdated={onUpdated} />
         ))}
+      </div>
+
+      {/* Incantesimi */}
+      <div>
+        <h4 className="text-white font-medium text-sm mb-2">Incantesimi</h4>
+        <SpellsPanel eventId={event.id} />
       </div>
     </div>
   );
@@ -445,5 +482,268 @@ function AddPuzzleForm({ roundId, onAdded }: { roundId: string; onAdded: () => v
         {loading ? 'Aggiunta...' : 'Aggiungi Enigma'}
       </button>
     </form>
+  );
+}
+
+function SpellsPanel({ eventId }: { eventId: string }) {
+  const [modules, setModules] = useState<ModuleInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [togglingKey, setTogglingKey] = useState<string | null>(null);
+  const [configModal, setConfigModal] = useState<ModuleInfo | null>(null);
+
+  const fetchModules = useCallback(async () => {
+    const res = await fetch(`/api/admin/modules?eventNightId=${eventId}`);
+    if (res.ok) {
+      const data = await res.json();
+      setModules(data.modules);
+    }
+    setLoading(false);
+  }, [eventId]);
+
+  useEffect(() => {
+    fetchModules();
+  }, [fetchModules]);
+
+  async function handleToggle(mod: ModuleInfo) {
+    if (!mod.eventModuleId || mod.globallyDisabled) return;
+    setTogglingKey(mod.moduleKey);
+
+    // Optimistic update
+    const prev = [...modules];
+    setModules((ms) => ms.map((m) =>
+      m.moduleKey === mod.moduleKey ? { ...m, enabled: !m.enabled } : m
+    ));
+
+    const res = await fetch(`/api/admin/modules/${mod.eventModuleId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled: !mod.enabled }),
+    });
+
+    if (!res.ok) {
+      setModules(prev); // rollback
+    }
+
+    setTogglingKey(null);
+    fetchModules();
+  }
+
+  if (loading) return <p className="text-white/30 text-xs animate-pulse">Caricamento moduli...</p>;
+
+  if (modules.length === 0) {
+    return <p className="text-white/30 text-xs">Nessun modulo disponibile.</p>;
+  }
+
+  return (
+    <>
+      <div className="space-y-2">
+        {modules.map((mod) => (
+          <ModuleCard
+            key={mod.moduleKey}
+            mod={mod}
+            toggling={togglingKey === mod.moduleKey}
+            onToggle={() => handleToggle(mod)}
+            onConfigure={() => setConfigModal(mod)}
+          />
+        ))}
+      </div>
+
+      {configModal && (
+        <ConfigModal
+          mod={configModal}
+          onClose={() => setConfigModal(null)}
+          onSaved={() => {
+            setConfigModal(null);
+            fetchModules();
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function ModuleCard({
+  mod,
+  toggling,
+  onToggle,
+  onConfigure,
+}: {
+  mod: ModuleInfo;
+  toggling: boolean;
+  onToggle: () => void;
+  onConfigure: () => void;
+}) {
+  const difficultyColor =
+    mod.meta.difficulty === 'base' ? 'text-green-400 bg-green-500/20' :
+    mod.meta.difficulty === 'intermedio' ? 'text-yellow-400 bg-yellow-500/20' :
+    'text-red-400 bg-red-500/20';
+
+  return (
+    <div className="bg-white/5 rounded-lg p-3 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <span className="text-white text-sm font-medium">{mod.meta.name}</span>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${difficultyColor}`}>
+              {mod.meta.difficulty}
+            </span>
+            {mod.blockedCount > 0 && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full text-red-400 bg-red-500/20">
+                {mod.blockedCount} bloccati
+              </span>
+            )}
+          </div>
+          <span className="text-white/30 text-xs">
+            {mod.enabled && mod.toggledAt
+              ? `Attivo da ${new Date(mod.toggledAt).toLocaleString('it-IT')}`
+              : mod.globallyDisabled
+              ? 'Disattivato globalmente'
+              : 'Disattivo'}
+          </span>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        {mod.eventModuleId && (
+          <button
+            onClick={onConfigure}
+            className="text-xs text-magic-mystic hover:text-magic-gold"
+          >
+            Configura
+          </button>
+        )}
+        <button
+          onClick={onToggle}
+          disabled={toggling || mod.globallyDisabled || !mod.eventModuleId}
+          className={`relative w-10 h-5 rounded-full transition-colors ${
+            mod.enabled ? 'bg-magic-gold' : 'bg-white/20'
+          } ${(toggling || mod.globallyDisabled) ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}
+        >
+          <span
+            className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
+              mod.enabled ? 'translate-x-5' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ConfigModal({
+  mod,
+  onClose,
+  onSaved,
+}: {
+  mod: ModuleInfo;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [config, setConfig] = useState<Record<string, unknown>>(
+    (mod.configJson as Record<string, unknown>) || mod.defaultConfig
+  );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const fields = mod.ui?.fields ?? {};
+  const fieldKeys = Object.keys(fields).filter((k) => k !== 'configVersion');
+
+  function updateField(key: string, value: unknown) {
+    setConfig((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setError('');
+
+    const res = await fetch(`/api/admin/modules/${mod.eventModuleId}/config`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ configJson: config }),
+    });
+
+    if (res.ok) {
+      onSaved();
+    } else {
+      const data = await res.json();
+      setError(data.error || 'Errore nel salvataggio');
+    }
+    setSaving(false);
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+      <div className="card-magic w-full max-w-md mx-4">
+        <h3 className="text-magic-gold font-semibold mb-4">Configura: {mod.meta.name}</h3>
+
+        <div className="space-y-3">
+          {fieldKeys.map((key) => {
+            const field = fields[key];
+            const value = config[key] ?? '';
+
+            if (field.kind === 'select' && field.options) {
+              return (
+                <div key={key}>
+                  <label className="text-white/60 text-xs block mb-1">{field.label}</label>
+                  <select
+                    value={String(value)}
+                    onChange={(e) => updateField(key, e.target.value)}
+                    className="input-magic w-full text-sm"
+                  >
+                    {field.options.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+              );
+            }
+
+            if (field.kind === 'number') {
+              return (
+                <div key={key}>
+                  <label className="text-white/60 text-xs block mb-1">{field.label}</label>
+                  <input
+                    type="number"
+                    value={Number(value) || 0}
+                    onChange={(e) => updateField(key, Number(e.target.value))}
+                    min={field.min}
+                    max={field.max}
+                    step={field.step}
+                    className="input-magic w-full text-sm"
+                  />
+                </div>
+              );
+            }
+
+            return (
+              <div key={key}>
+                <label className="text-white/60 text-xs block mb-1">{field.label}</label>
+                <input
+                  type="text"
+                  value={String(value)}
+                  onChange={(e) => updateField(key, e.target.value)}
+                  className="input-magic w-full text-sm"
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+
+        <div className="flex justify-end gap-2 mt-4">
+          <button onClick={onClose} className="text-xs text-white/40 hover:text-white/60 px-3 py-1.5">
+            Annulla
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-magic text-xs disabled:opacity-40"
+          >
+            {saving ? 'Salvataggio...' : 'Salva'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

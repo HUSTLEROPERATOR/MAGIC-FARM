@@ -633,6 +633,39 @@ async function main() {
     });
   }
 
+  // --- Magic Modules (sync from registry) ---
+  const moduleDefinitions = [
+    { key: 'CARD_PREDICTION_BINARY', name: 'Predizione Carta', description: 'Scelta binaria su carta con timer' },
+    { key: 'EQUIVOQUE_GUIDED', name: 'Equivoque Guidato', description: 'Script guidato a step con rivelazione' },
+    { key: 'ENVELOPE_PREDICTION', name: 'Predizione in Busta', description: 'Predizione sigillata con rivelazione programmata' },
+  ];
+
+  for (const mod of moduleDefinitions) {
+    await prisma.magicModule.upsert({
+      where: { key: mod.key },
+      update: { name: mod.name, description: mod.description },
+      create: { key: mod.key, name: mod.name, description: mod.description },
+    });
+  }
+  console.log(`Synced ${moduleDefinitions.length} magic modules`);
+
+  // Create EventModules for the seed event (all disabled by default)
+  const allMagicModules = await prisma.magicModule.findMany();
+  for (const mm of allMagicModules) {
+    await prisma.eventModule.upsert({
+      where: {
+        eventNightId_moduleId: { eventNightId: event.id, moduleId: mm.id },
+      },
+      update: {},
+      create: {
+        eventNightId: event.id,
+        moduleId: mm.id,
+        enabled: false,
+      },
+    });
+  }
+  console.log(`Created EventModules for seed event`);
+
   console.log('Seed completed successfully!');
   console.log('---');
   console.log('Admin login: admin@magic-farm.test');
