@@ -59,6 +59,11 @@ const ipSubmitLimiter = new RateLimiterMemory({
   duration: 300, // 30 per 5 minutes — generous for shared networks
 });
 
+const moduleExecuteLimiter = new RateLimiterMemory({
+  points: 3,
+  duration: 10, // 3 executions per 10 seconds
+});
+
 /**
  * Rate limit login attempts
  */

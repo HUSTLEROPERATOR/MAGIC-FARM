@@ -56,5 +56,17 @@ export async function POST(request: NextRequest) {
     metadata: { eventId: event.id, name: event.name },
   });
 
+  // Auto-create EventModules for all MagicModules (disabled by default)
+  const allMagicModules = await prisma.magicModule.findMany();
+  if (allMagicModules.length > 0) {
+    await prisma.eventModule.createMany({
+      data: allMagicModules.map((mm) => ({
+        eventNightId: event.id,
+        moduleId: mm.id,
+        enabled: false,
+      })),
+    });
+  }
+
   return NextResponse.json({ event: { ...event, joinCode } }, { status: 201 });
 }
