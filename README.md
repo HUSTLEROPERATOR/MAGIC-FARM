@@ -17,6 +17,60 @@ MAGIC-FARM è una piattaforma full-stack per serate di enigmi collaborativi a te
 
 ---
 
+## 🪄 Magic Modules (Incantesimi) — in sviluppo
+
+> **Branch:** `feat/magic-modules` — Tasks 1–12 completati su 13 (92%) · Verificato 2026-02-18
+
+Il sistema di **Incantesimi** è un layer di feature-flag per evento che permette all'admin di abilitare
+moduli di gioco opzionali su singole serate. Ogni modulo ha una logica autonoma (validazione input,
+disponibilità per round, esecuzione con scoring), può richiedere artefatti server-side all'attivazione
+(`onEnable`), ed è rate-limited lato player (3 esecuzioni / 10s / utente). Il catalogo è in-memory
+(registry), la configurazione per-evento è su DB (`EventModule`), le interazioni player sono tracciate
+su `ModuleInteraction`.
+
+### Dove vive il codice
+
+| Path | Contenuto |
+|------|-----------|
+| `lib/modules/types.ts` | Interfacce TypeScript (`MagicModuleHandler`, `ActiveModule`, `ModuleResult`) |
+| `lib/modules/registry.ts` | Registry in-memory: `registerModule`, `executeModule` |
+| `lib/modules/resolver.ts` | DB resolver con cache 15s: `getActiveModulesForRound` |
+| `lib/modules/modules/` | 3 moduli starter (card-prediction, equivoque, envelope) |
+| `lib/validations/schemas.ts` | Zod: `moduleToggleSchema`, `moduleConfigSchema`, `moduleExecuteSchema` |
+| `lib/security/rate-limit.ts` | `rateLimitModuleExecute` (3 esecuzioni / 10s / utente) |
+| `prisma/schema.prisma` | Modelli: `MagicModule`, `EventModule`, `ModuleInteraction` |
+| `__tests__/modules/` | ~34 test Vitest (validators, registry, 3 moduli, resolver) |
+
+### Come abilitare un modulo per un evento
+
+1. Admin → `/admin` → EventCard → sezione **Incantesimi** → SpellsPanel → toggle modulo
+2. API admin: `PATCH /api/admin/modules/[eventModuleId]` con `{ "enabled": true }`
+3. Player → `GET /api/serate/[eventId]/modules?roundId=X` per leggere i moduli attivi
+4. Player → `POST /api/serate/[eventId]/modules/[moduleKey]/execute` per eseguire
+
+### Test e build
+
+```bash
+npx vitest run __tests__/modules/   # test moduli (~34 test)
+npx vitest run                       # tutti i test
+npm run build                        # build Next.js
+```
+
+### DB: migrazione richiesta
+
+I modelli Prisma sono definiti, il codice è completo, ma **la migrazione NON è ancora stata applicata** (Task 13).
+Le tabelle `magic_modules`, `event_modules`, `module_interactions` non esistono nel DB.
+
+```bash
+# Applica la migrazione — unico step mancante
+npx prisma migrate dev --name add_magic_modules
+
+# Poi esegui il seed (crea i 3 MagicModule + EventModules per la serata di test)
+npm run db:seed
+```
+
+---
+
 ## ✨ Funzionalità
 
 ### Autenticazione e Utenti
@@ -88,7 +142,7 @@ MAGIC-FARM è una piattaforma full-stack per serate di enigmi collaborativi a te
 ### Prerequisiti
 - **Node.js** 18+
 - **PostgreSQL** 16+ (o usa il `docker-compose.yml` incluso)
-- **pnpm** (package manager)
+- **npm** (incluso con Node.js) — i comandi `pnpm` mostrati sotto funzionano anche con `npm run` / `npx`
 - **Account SMTP** per l'invio email (o servizio di testing)
 
 ### Installazione
@@ -227,7 +281,7 @@ Landing (/)
 
 ## 🗄️ Database Schema
 
-18 modelli Prisma, 8 enum. Vedi [prisma/schema.prisma](./prisma/schema.prisma) per lo schema completo.
+21 modelli Prisma, 10 enum (incl. 3 modelli Magic Modules). Vedi [prisma/schema.prisma](./prisma/schema.prisma) per lo schema completo.
 
 | Modello | Scopo |
 |---|---|
@@ -399,7 +453,7 @@ Vedi [SECURITY.md](./SECURITY.md) e [PRIVACY_IMPLEMENTATION.md](./PRIVACY_IMPLEM
 | Linguaggio | TypeScript 5.5 |
 | UI | React 18, Tailwind CSS (tema custom: `magic-dark`, `magic-gold`, `magic-purple`) |
 | Font | Cinzel (headings) + Inter (body) |
-| Database | PostgreSQL 16 + Prisma ORM 5.18 (5 migrazioni) |
+| Database | PostgreSQL 16 + Prisma ORM 5.18 (5 migrazioni applicate; +1 pending per magic modules) |
 | Auth | NextAuth 4.24 (Email provider, JWT, PrismaAdapter) |
 | Email | Nodemailer 7.0 (template HTML custom) |
 | Validazione | Zod 3.23 |
