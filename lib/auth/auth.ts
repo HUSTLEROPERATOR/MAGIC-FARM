@@ -78,6 +78,16 @@ export const authOptions: NextAuthOptions = {
           consent?.privacyAcceptedAt &&
           consent?.termsAcceptedAt
         );
+      } else if (!trigger && token.id) {
+        // Periodic refresh: re-fetch role from DB so role changes take effect
+        // without requiring sign-out (e.g. after seed updates role)
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, deletedAt: true },
+        });
+        if (dbUser && !dbUser.deletedAt) {
+          token.role = dbUser.role as 'USER' | 'ADMIN';
+        }
       }
 
       // Allow session updates to refresh token data

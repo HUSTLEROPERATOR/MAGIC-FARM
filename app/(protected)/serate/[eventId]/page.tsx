@@ -10,6 +10,7 @@ import { RitualOverlay } from './components/ritual-overlay';
 import { SpectatorToggle } from './components/spectator-toggle';
 import { AllianceEffects } from './components/alliance-effects';
 import { EventMetricsPanel } from './components/event-metrics';
+import { MagicModulesPanel } from './components/magic-modules-panel';
 import { Theater, Calendar, Clock, Circle, Check, ClipboardList, Zap, X, Hourglass, Handshake, UserIcon, Users, ArrowLeft } from '@/lib/ui/icons';
 
 interface PageProps {
@@ -84,6 +85,7 @@ export default async function SerataDetailPage({ params }: PageProps) {
   const userTable = userMembership?.table || null;
   const isLive = event.status === 'LIVE';
   const isEnded = event.status === 'ENDED';
+  const activeRound = event.rounds.find((r) => r.status === 'ACTIVE') ?? null;
 
   return (
     <div className="min-h-screen bg-magic-dark p-4 md:p-8">
@@ -243,6 +245,11 @@ export default async function SerataDetailPage({ params }: PageProps) {
 
             {/* Live Leaderboard */}
             <LiveLeaderboard eventId={params.eventId} />
+
+            {/* Magic Modules */}
+            {isLive && (
+              <MagicModulesPanel eventId={params.eventId} activeRoundId={activeRound?.id ?? null} />
+            )}
 
             {/* Alliance Effects */}
             {userTable && isLive && (

@@ -313,7 +313,7 @@ function EventDetailPanel({ event, onUpdated }: { event: EventDetail; onUpdated:
       {/* Incantesimi */}
       <div>
         <h4 className="text-white font-medium text-sm mb-2">Incantesimi</h4>
-        <SpellsPanel eventId={event.id} />
+        <SpellsPanel eventId={event.id} rounds={event.rounds} />
       </div>
     </div>
   );
@@ -485,7 +485,10 @@ function AddPuzzleForm({ roundId, onAdded }: { roundId: string; onAdded: () => v
   );
 }
 
-function SpellsPanel({ eventId }: { eventId: string }) {
+function SpellsPanel({ eventId, rounds }: {
+  eventId: string;
+  rounds: EventDetail['rounds'];
+}) {
   const [modules, setModules] = useState<ModuleInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [togglingKey, setTogglingKey] = useState<string | null>(null);
@@ -551,6 +554,7 @@ function SpellsPanel({ eventId }: { eventId: string }) {
       {configModal && (
         <ConfigModal
           mod={configModal}
+          rounds={rounds}
           onClose={() => setConfigModal(null)}
           onSaved={() => {
             setConfigModal(null);
@@ -632,10 +636,12 @@ function ModuleCard({
 
 function ConfigModal({
   mod,
+  rounds,
   onClose,
   onSaved,
 }: {
   mod: ModuleInfo;
+  rounds: EventDetail['rounds'];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -711,6 +717,25 @@ function ConfigModal({
                     step={field.step}
                     className="input-magic w-full text-sm"
                   />
+                </div>
+              );
+            }
+
+            // roundId: render a select of available rounds
+            if (key === 'roundId' && rounds.length > 0) {
+              return (
+                <div key={key}>
+                  <label className="text-white/60 text-xs block mb-1">{field.label}</label>
+                  <select
+                    value={String(value)}
+                    onChange={(e) => updateField(key, e.target.value)}
+                    className="input-magic w-full text-sm"
+                  >
+                    <option value="">— Seleziona round —</option>
+                    {rounds.map((r) => (
+                      <option key={r.id} value={r.id}>{r.title}</option>
+                    ))}
+                  </select>
                 </div>
               );
             }
