@@ -53,3 +53,11 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+# Claude
+.claude/
+
+# Local scratch
+tall
+
+# Local docs scratch (se non vuoi versionarlo)
+# CLAUDE.md
