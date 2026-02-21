@@ -13,5 +13,5 @@ export const harry_potter_normal_01: GameContent = {
   ],
   releaseDate: "2026-03-15",
   eventId: "harry_potter_evening",
-  active: false
+  active: true
 };
