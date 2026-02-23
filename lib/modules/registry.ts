@@ -16,6 +16,7 @@ import { syncedCardThought } from './modules/synced-card-thought';
 import { invisibleDeckDigital } from './modules/invisible-deck-digital';
 import { acaanDynamic } from './modules/acaan-dynamic';
 import { multilevelPrediction } from './modules/multilevel-prediction';
+import { firmaSigillata } from './modules/firma-sigillata';
 
 const MODULE_REGISTRY = new Map<string, MagicModuleHandler<any, any>>();
 
@@ -98,6 +99,8 @@ registerModule(syncedCardThought);
 registerModule(invisibleDeckDigital);
 registerModule(acaanDynamic);
 registerModule(multilevelPrediction);
+// Mentalism engine modules
+registerModule(firmaSigillata);
 
 /** Only for testing — clears all registered modules */
 export function _resetRegistryForTesting(): void {
