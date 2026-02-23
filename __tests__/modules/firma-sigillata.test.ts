@@ -63,10 +63,24 @@ const ctx = { eventNightId: 'evt_001', roundId: 'round_001', userId: 'user_001' 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('FIRMA_SIGILLATA', () => {
+  const restoreTransactionImpl = () =>
+    mockTransaction.mockImplementation(
+      async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn({
+          moduleInteraction: {
+            findFirst: mockFindFirst,
+            create: mockCreate,
+            update: mockUpdate,
+          },
+        }),
+    );
+
   beforeEach(() => {
-    vi.clearAllMocks();
+    // resetAllMocks clears once-queues AND implementations — prevents cross-test contamination
+    vi.resetAllMocks();
     mockCreate.mockResolvedValue({});
     mockUpdate.mockResolvedValue({});
+    restoreTransactionImpl();
   });
 
   // ── onEnable ──────────────────────────────────────────────────────────────
@@ -163,7 +177,7 @@ describe('FIRMA_SIGILLATA', () => {
   describe('run > submit_thought', () => {
     it('rifiuta se userId non presente nel contesto', async () => {
       const ctxNoUser = { eventNightId: 'evt_001', roundId: 'round_001' };
-      mockCount.mockResolvedValueOnce(0);
+      // count must NOT be called — module returns early on missing userId
 
       const result = await firmaSigillata.run(
         ctxNoUser as typeof ctx,
