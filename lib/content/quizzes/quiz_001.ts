@@ -13,5 +13,5 @@ export const quiz_001: GameContent = {
   ],
   releaseDate: "2026-03-11",
   eventId: "2026_03_11",
-  active: false
+  active: true
 };

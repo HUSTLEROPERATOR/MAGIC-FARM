@@ -2,6 +2,20 @@ import type { MagicModuleHandler, ModuleContext, ModuleResult } from './types';
 import { cardPredictionBinary } from './modules/card-prediction-binary';
 import { equivoqueGuided } from './modules/equivoque-guided';
 import { envelopePrediction } from './modules/envelope-prediction';
+import { mathematicalForce27 } from './modules/mathematical-force-27';
+import { psychologicalForceCard } from './modules/psychological-force-card';
+import { magiciansChoice4 } from './modules/magicians-choice-4';
+import { clockForce } from './modules/clock-force';
+import { sealedEnvelopeDigital } from './modules/sealed-envelope-digital';
+import { predictionHash } from './modules/prediction-hash';
+import { math1089Cards } from './modules/math-1089-cards';
+import { twentyOneCards } from './modules/twenty-one-cards';
+import { birthdayCardForce } from './modules/birthday-card-force';
+import { sharedImpossibleCard } from './modules/shared-impossible-card';
+import { syncedCardThought } from './modules/synced-card-thought';
+import { invisibleDeckDigital } from './modules/invisible-deck-digital';
+import { acaanDynamic } from './modules/acaan-dynamic';
+import { multilevelPrediction } from './modules/multilevel-prediction';
 
 const MODULE_REGISTRY = new Map<string, MagicModuleHandler<any, any>>();
 
@@ -65,6 +79,25 @@ export async function executeModule(
 registerModule(cardPredictionBinary);
 registerModule(equivoqueGuided);
 registerModule(envelopePrediction);
+// Force modules
+registerModule(mathematicalForce27);
+registerModule(psychologicalForceCard);
+registerModule(magiciansChoice4);
+registerModule(clockForce);
+registerModule(sealedEnvelopeDigital);
+// Prediction modules
+registerModule(predictionHash);
+// Mathematical card games
+registerModule(math1089Cards);
+registerModule(twentyOneCards);
+registerModule(birthdayCardForce);
+// Social / multiplayer
+registerModule(sharedImpossibleCard);
+registerModule(syncedCardThought);
+// Advanced
+registerModule(invisibleDeckDigital);
+registerModule(acaanDynamic);
+registerModule(multilevelPrediction);
 
 /** Only for testing — clears all registered modules */
 export function _resetRegistryForTesting(): void {

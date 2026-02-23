@@ -919,6 +919,357 @@ async function main() {
     });
   }
 
+  // --- Harry Potter Event ---
+  let hpEvent = await prisma.eventNight.findFirst({
+    where: { joinCode: 'HP2024' },
+  });
+
+  if (!hpEvent) {
+    hpEvent = await prisma.eventNight.create({
+      data: {
+        name: 'La Notte di Hogwarts',
+        description: 'Una serata magica dedicata al mondo di Harry Potter. Dimostra la tua conoscenza del mondo dei maghi!',
+        startsAt: now,
+        endsAt: twoHoursFromNow,
+        status: 'LIVE',
+        joinCode: 'HP2024',
+        theme: 'Harry Potter',
+        hostName: 'Lorenzo Mameli',
+        venueName: 'Vecchia Fattoria',
+        organizationId: org.id,
+        openingNarrative: 'Benvenuti alla Notte di Hogwarts. Stasera i quattro casati si sfideranno per conquistare la Coppa delle Case. Che abbiate la furbizia di Serpeverde, il coraggio di Grifondoro, la saggezza di Corvonero o la lealtà di Tassorosso, dimostrate il vostro valore!',
+      },
+    });
+  }
+
+  console.log(`Created HP event: ${hpEvent.name} (joinCode: HP2024)`);
+
+  // HP Tables — 4 casati
+  const hpTableConfigs = [
+    { name: 'Grifondoro', code: 'GRIF01' },
+    { name: 'Serpeverde', code: 'SERP01' },
+    { name: 'Corvonero', code: 'CORV01' },
+    { name: 'Tassorosso', code: 'TASS01' },
+  ];
+
+  const hpTables = [];
+  for (const tc of hpTableConfigs) {
+    const existing = await prisma.table.findFirst({
+      where: { eventNightId: hpEvent.id, name: tc.name },
+    });
+    if (existing) {
+      hpTables.push(existing);
+      continue;
+    }
+    const { hash, salt } = hashWithSalt(tc.code);
+    const table = await prisma.table.create({
+      data: {
+        eventNightId: hpEvent.id,
+        name: tc.name,
+        joinCodeHash: hash,
+        joinCodeSalt: salt,
+      },
+    });
+    hpTables.push(table);
+  }
+  console.log(`Created ${hpTables.length} HP tables`);
+
+  // HP Rounds
+  let hpRound1 = await prisma.round.findFirst({
+    where: { eventNightId: hpEvent.id, title: 'Round 1 — I Personaggi' },
+  });
+  if (!hpRound1) {
+    hpRound1 = await prisma.round.create({
+      data: {
+        eventNightId: hpEvent.id,
+        title: 'Round 1 — I Personaggi',
+        description: 'Quanto conosci i protagonisti del mondo di Harry Potter?',
+        type: 'SINGLE_TABLE',
+        status: 'ACTIVE',
+      },
+    });
+  }
+
+  let hpRound2 = await prisma.round.findFirst({
+    where: { eventNightId: hpEvent.id, title: 'Round 2 — Hogwarts e il Mondo Magico' },
+  });
+  if (!hpRound2) {
+    hpRound2 = await prisma.round.create({
+      data: {
+        eventNightId: hpEvent.id,
+        title: 'Round 2 — Hogwarts e il Mondo Magico',
+        description: 'Incantesimi, pozioni, creature magiche e luoghi segreti.',
+        type: 'SINGLE_TABLE',
+        status: 'PENDING',
+      },
+    });
+  }
+
+  let hpRound3 = await prisma.round.findFirst({
+    where: { eventNightId: hpEvent.id, title: 'Round 3 — Indovinelli del Mago' },
+  });
+  if (!hpRound3) {
+    hpRound3 = await prisma.round.create({
+      data: {
+        eventNightId: hpEvent.id,
+        title: 'Round 3 — Indovinelli del Mago',
+        description: 'Enigmi e rebus ispirati al mondo magico.',
+        type: 'SINGLE_TABLE',
+        status: 'PENDING',
+      },
+    });
+  }
+
+  // Set current round
+  await prisma.eventNight.update({
+    where: { id: hpEvent.id },
+    data: { currentRoundId: hpRound1.id },
+  });
+
+  // HP Puzzles
+  const hpPuzzleDefs = [
+    // Round 1 — Personaggi
+    {
+      roundId: hpRound1.id,
+      title: 'Il Prescelto',
+      prompt: 'Come si chiama il personaggio principale della saga di Harry Potter? (cognome)',
+      answer: 'potter',
+      order: 0,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È un ragazzo che scopre di essere un mago.', penalty: 5, order: 0 },
+        { text: 'I suoi genitori si chiamavano James e Lily.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound1.id,
+      title: 'Il Migliore Amico',
+      prompt: 'Come si chiama il migliore amico di Harry Potter, dai capelli rossi e della famiglia Weasley?',
+      answer: 'ron',
+      order: 1,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Ha sei fratelli.', penalty: 5, order: 0 },
+        { text: 'Il suo nome è Ronald, ma tutti lo chiamano con il diminutivo.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound1.id,
+      title: "L'Amica Brillante",
+      prompt: 'Chi è la studentessa più brava di Hogwarts, con i capelli ricci e sempre il primo della classe?',
+      answer: 'hermione',
+      order: 2,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Il suo cognome è Granger.', penalty: 5, order: 0 },
+        { text: 'È nata da genitori non magici (babbani).', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound1.id,
+      title: 'Il Nemico di Hogwarts',
+      prompt: 'Qual è il cognome del nemico giurato di Harry Potter a Hogwarts, figlio di Lucio?',
+      answer: 'malfoy',
+      order: 3,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È di Serpeverde e ha i capelli biondi.', penalty: 5, order: 0 },
+        { text: 'Il suo nome di battesimo è Draco.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound1.id,
+      title: 'Il Grande Mago Oscuro',
+      prompt: "Come si chiama il Grande Mago Oscuro, il nemico di Harry Potter, \"colui che non deve essere nominato\"?",
+      answer: 'voldemort',
+      order: 4,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Il suo vero nome è Tom Riddle.', penalty: 5, order: 0 },
+        { text: 'Molti lo chiamano "il Signore Oscuro" o "Tu-sai-chi".', penalty: 10, order: 1 },
+      ],
+    },
+    // Round 2 — Hogwarts e il Mondo Magico
+    {
+      roundId: hpRound2.id,
+      title: 'Lo Sport dei Maghi',
+      prompt: 'Come si chiama lo sport magico che si gioca su scope volanti?',
+      answer: 'quidditch',
+      order: 0,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Si gioca in aria su scope volanti.', penalty: 5, order: 0 },
+        { text: 'Si cerca di catturare un piccolo pallino d\'oro alato.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound2.id,
+      title: "L'Incantesimo della Luce",
+      prompt: 'Quale incantesimo crea un fascio di luce dalla bacchetta, usato come torcia?',
+      answer: 'lumos',
+      order: 1,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È una parola latina che significa luce.', penalty: 5, order: 0 },
+        { text: 'Si disattiva con "Nox".', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound2.id,
+      title: 'La Piattaforma Segreta',
+      prompt: 'Da quale binario della stazione di Londra parte il Hogwarts Express?',
+      answer: '9 e tre quarti',
+      order: 2,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È un numero tra il 9 e il 10.', penalty: 5, order: 0 },
+        { text: 'Per accedervi bisogna attraversare un muro.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound2.id,
+      title: 'Il Guardiano della Porta',
+      prompt: 'Come si chiama il gigante guardiano di Hogwarts, grande amico di Harry, cane di nome Fang?',
+      answer: 'hagrid',
+      order: 3,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È il custode delle chiavi e dei luoghi magici di Hogwarts.', penalty: 5, order: 0 },
+        { text: 'Il suo nome completo è Rubeus Hagrid.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound2.id,
+      title: 'La Pozione dell\'Amore',
+      prompt: "Come si chiama la pozione che fa innamorare perdutamente chiunque la beva?",
+      answer: 'amortentia',
+      order: 4,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È la pozione d\'amore più potente al mondo.', penalty: 5, order: 0 },
+        { text: 'Ogni persona percepisce l\'odore di chi la attrae.', penalty: 10, order: 1 },
+      ],
+    },
+    // Round 3 — Indovinelli del Mago
+    {
+      roundId: hpRound3.id,
+      title: 'Indovinello: il segreto',
+      prompt: 'Sono invisibile agli occhi, ma ti proteggo dai pericoli. A Hogwarts mi portano addosso. Cosa sono? (Hint: Harry lo riceve nel primo anno)',
+      answer: 'mantello dell\'invisibilita',
+      order: 0,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È uno dei Doni della Morte.', penalty: 5, order: 0 },
+        { text: 'Chi lo indossa non può essere visto.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound3.id,
+      title: 'Indovinello: il magazzino dei sogni',
+      prompt: "Mostro il desiderio più profondo di chi mi guarda, ma non mostro la verità. Sono uno specchio. Come mi chiamo?",
+      answer: 'specchio delle brame',
+      order: 1,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'Il mio nome in latino significa: "Non vedo quello che ho, ma quello che desidero".', penalty: 5, order: 0 },
+        { text: 'Dumbledore avverte Harry di non fidarsi di ciò che mostro.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound3.id,
+      title: 'Il Casato del Coraggio',
+      prompt: 'Quale casato di Hogwarts è simboleggiato dal leone ed è noto per il coraggio?',
+      answer: 'grifondoro',
+      order: 2,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'I colori sono rosso e oro.', penalty: 5, order: 0 },
+        { text: 'Harry, Ron ed Hermione appartengono a questo casato.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound3.id,
+      title: 'Il Numero Magico di HP',
+      prompt: 'Quanti anni ha Harry Potter quando riceve la lettera di Hogwarts?',
+      answer: '11',
+      order: 3,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È un numero tra 10 e 12.', penalty: 5, order: 0 },
+        { text: 'Nel primo libro festeggia il compleanno il 31 luglio.', penalty: 10, order: 1 },
+      ],
+    },
+    {
+      roundId: hpRound3.id,
+      title: 'L\'Animale Magico di Hogwarts',
+      prompt: 'Come si chiama il rospo di Neville Paciock che perde sempre?',
+      answer: 'trevor',
+      order: 4,
+      puzzleType: 'DIGITAL' as const,
+      hints: [
+        { text: 'È un anfibio di colore verde.', penalty: 5, order: 0 },
+        { text: 'Neville lo cerca disperatamente sul treno per Hogwarts.', penalty: 10, order: 1 },
+      ],
+    },
+  ];
+
+  const createdHpPuzzles = [];
+  for (const pd of hpPuzzleDefs) {
+    const existing = await prisma.puzzle.findFirst({
+      where: { roundId: pd.roundId, title: pd.title },
+    });
+    if (existing) {
+      createdHpPuzzles.push(existing);
+      continue;
+    }
+    const { hash: ansHash, salt: ansSalt } = hashWithSalt(pd.answer.toLowerCase().trim());
+    const puzzle = await prisma.puzzle.create({
+      data: {
+        roundId: pd.roundId,
+        title: pd.title,
+        prompt: pd.prompt,
+        answerHash: ansHash,
+        answerSalt: ansSalt,
+        order: pd.order,
+        puzzleType: pd.puzzleType,
+        scoringJson: { basePoints: 100, timeBonusEnabled: true, hintPenalty: 10 },
+      },
+    });
+    createdHpPuzzles.push(puzzle);
+    for (const h of pd.hints) {
+      await prisma.hint.create({
+        data: {
+          puzzleId: puzzle.id,
+          text: h.text,
+          penaltyPoints: h.penalty,
+          order: h.order,
+        },
+      });
+    }
+  }
+  console.log(`Created ${hpPuzzleDefs.length} HP puzzles`);
+
+  // EventModules for HP event
+  const allMagicModulesForHp = await prisma.magicModule.findMany();
+  for (const mm of allMagicModulesForHp) {
+    await prisma.eventModule.upsert({
+      where: {
+        eventNightId_moduleId: { eventNightId: hpEvent.id, moduleId: mm.id },
+      },
+      update: {},
+      create: {
+        eventNightId: hpEvent.id,
+        moduleId: mm.id,
+        enabled: false,
+      },
+    });
+  }
+  console.log(`Created EventModules for HP event`);
+
+  console.log('---');
+  console.log('HP event join code: HP2024');
+  console.log('HP table codes: GRIF01, SERP01, CORV01, TASS01');
+
   // --- Magic Modules (sync from registry) ---
   const moduleDefinitions = [
     { key: 'CARD_PREDICTION_BINARY', name: 'Predizione Carta', description: 'Scelta binaria su carta con timer' },
