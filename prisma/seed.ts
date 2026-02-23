@@ -451,292 +451,6 @@ async function main() {
     console.log('Created pre-filled submission (admin solved puzzle 1 with 120 pts)');
   }
 
-  // --- Harry Potter EventNight ---
-  const hpStartsAt = new Date('2026-03-15T20:00:00.000Z');
-  const hpEndsAt = new Date('2026-03-15T23:00:00.000Z');
-
-  let hpEvent = await prisma.eventNight.findFirst({
-    where: { joinCode: 'HPQZ01' },
-  });
-
-  if (!hpEvent) {
-    hpEvent = await prisma.eventNight.create({
-      data: {
-        name: 'Serata Magica: Harry Potter Quiz Night',
-        description: 'Una serata magica dedicata al mondo di Harry Potter. Metti alla prova la tua conoscenza del mondo dei maghi più famoso al mondo, tra case di Hogwarts, personaggi indimenticabili e incantesimi leggendari!',
-        startsAt: hpStartsAt,
-        endsAt: hpEndsAt,
-        status: 'DRAFT',
-        joinCode: 'HPQZ01',
-        theme: 'Il Mondo di Harry Potter',
-        hostName: 'Lorenzo Mameli',
-        venueName: 'Vecchia Fattoria',
-        organizationId: org.id,
-        openingNarrative: 'Benvenuti alla Serata Magica di Harry Potter! Stasera ci immergiamo nel mondo incantato di Hogwarts. Ogni tavolo rappresenta una casa: Grifondoro, Serpeverde, Tassorosso o Corvonero. Che la magia abbia inizio!',
-        closingNarrative: 'Expecto Patronum! Avete dimostrato una conoscenza degna dei migliori studenti di Hogwarts. Questa serata rimarrà nella storia della Vecchia Fattoria!',
-        nextEventTeaser: 'La prossima serata: ancora più misteri e magia vi aspettano...',
-      },
-    });
-  }
-
-  console.log(`Created HP event: ${hpEvent.name} (joinCode: HPQZ01)`);
-
-  // Tables for HP event
-  const hpTableConfigs = [
-    { name: 'Tavolo Grifondoro', code: 'HP001' },
-    { name: 'Tavolo Serpeverde', code: 'HP002' },
-    { name: 'Tavolo Tassorosso', code: 'HP003' },
-    { name: 'Tavolo Corvonero', code: 'HP004' },
-  ];
-
-  const hpTables = [];
-  for (const tc of hpTableConfigs) {
-    const existing = await prisma.table.findFirst({
-      where: { eventNightId: hpEvent.id, name: tc.name },
-    });
-    if (existing) {
-      hpTables.push(existing);
-      continue;
-    }
-    const { hash, salt } = hashWithSalt(tc.code);
-    const table = await prisma.table.create({
-      data: {
-        eventNightId: hpEvent.id,
-        name: tc.name,
-        joinCodeHash: hash,
-        joinCodeSalt: salt,
-      },
-    });
-    hpTables.push(table);
-  }
-  console.log(`Created ${hpTables.length} HP tables`);
-
-  // Rounds for HP event
-  let hpRound1 = await prisma.round.findFirst({
-    where: { eventNightId: hpEvent.id, title: 'Round 1 — Il Mondo di Hogwarts' },
-  });
-  if (!hpRound1) {
-    hpRound1 = await prisma.round.create({
-      data: {
-        eventNightId: hpEvent.id,
-        title: 'Round 1 — Il Mondo di Hogwarts',
-        description: 'Domande per tutti: personaggi, case e luoghi iconici di Harry Potter.',
-        type: 'SINGLE_TABLE',
-        status: 'PENDING',
-      },
-    });
-  }
-
-  let hpRound2 = await prisma.round.findFirst({
-    where: { eventNightId: hpEvent.id, title: 'Round 2 — Per Esperti di Hogwarts' },
-  });
-  if (!hpRound2) {
-    hpRound2 = await prisma.round.create({
-      data: {
-        eventNightId: hpEvent.id,
-        title: 'Round 2 — Per Esperti di Hogwarts',
-        description: 'Domande avanzate per i veri fan della saga: Horcrux, Patronus e segreti nascosti.',
-        type: 'SINGLE_TABLE',
-        status: 'PENDING',
-      },
-    });
-  }
-
-  // Set current round for HP event
-  await prisma.eventNight.update({
-    where: { id: hpEvent.id },
-    data: { currentRoundId: hpRound1.id },
-  });
-
-  // Puzzles for HP event
-  const hpPuzzleDefs = [
-    // Round 1 — Livello Normale
-    {
-      roundId: hpRound1.id,
-      title: 'La Casa di Harry',
-      prompt: 'In quale casa di Hogwarts viene selezionato Harry Potter dalla Cappella Parlante?',
-      answer: 'grifondoro',
-      order: 0,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'I suoi colori sono il rosso e il dorato.', penalty: 5, order: 0 },
-        { text: 'Il fantasma della casa è Nick Quasi Senza Testa.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound1.id,
-      title: 'Il Migliore Amico',
-      prompt: 'Come si chiama il migliore amico di Harry Potter, membro di una numerosa famiglia di maghi dai capelli rossi?',
-      answer: 'ron',
-      order: 1,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'Il suo cognome è Weasley.', penalty: 5, order: 0 },
-        { text: 'Ha sei fratelli e una sorella.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound1.id,
-      title: 'La Scuola di Magia',
-      prompt: 'Come si chiama la scuola di magia e stregoneria che frequenta Harry Potter?',
-      answer: 'hogwarts',
-      order: 2,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'Si trova in Scozia ed è nascosta ai babbani.', penalty: 5, order: 0 },
-        { text: 'Il preside si chiama Albus Silente.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound1.id,
-      title: 'Il Cattivo Principale',
-      prompt: 'Come si chiama il mago oscuro che ha ucciso i genitori di Harry Potter ed è il principale antagonista della saga?',
-      answer: 'voldemort',
-      order: 3,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'Viene chiamato "Colui Che Non Deve Essere Nominato".', penalty: 5, order: 0 },
-        { text: 'Il suo vero nome è Tom Riddle.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound1.id,
-      title: 'Il Gufo di Harry',
-      prompt: 'Come si chiama il gufo bianco nivale di Harry Potter, ricevuto come regalo di compleanno da Hagrid?',
-      answer: 'edvige',
-      order: 4,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'È un gufo femmina di colore bianco neve.', penalty: 5, order: 0 },
-        { text: 'In inglese si chiama Hedwig.', penalty: 10, order: 1 },
-      ],
-    },
-    // Round 2 — Livello Esperto
-    {
-      roundId: hpRound2.id,
-      title: 'Il Numero del Binario',
-      prompt: "Da quale binario (e tre quarti) parte l'Hogwarts Express dalla stazione di King's Cross di Londra?",
-      answer: '9 3/4',
-      order: 0,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'È un numero tra 9 e 10.', penalty: 5, order: 0 },
-        { text: 'Si accede correndo contro un muro apparentemente solido.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound2.id,
-      title: 'Il Patronus di Hermione',
-      prompt: 'In quale animale si manifesta il Patronus di Hermione Granger?',
-      answer: 'lontra',
-      order: 1,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'È un mammifero semi-acquatico.', penalty: 5, order: 0 },
-        { text: 'In inglese si chiama otter.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound2.id,
-      title: 'Il Custode delle Chiavi',
-      prompt: 'Chi è il gigantesco Custode delle Chiavi e dei Terreni di Hogwarts, amico fidato di Harry fin dal primo anno?',
-      answer: 'hagrid',
-      order: 2,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'È mezzo gigante e ama le creature magiche pericolose.', penalty: 5, order: 0 },
-        { text: 'Il suo nome completo è Rubeus Hagrid.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound2.id,
-      title: 'Gli Horcrux Totali',
-      prompt: 'Quanti Horcrux crea in totale Lord Voldemort (incluso quello involontario)?',
-      answer: '7',
-      order: 3,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'Voldemort voleva dividere la sua anima in 7 frammenti.', penalty: 5, order: 0 },
-        { text: 'Harry Potter stesso è uno di essi, involontariamente.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound2.id,
-      title: 'Il Padre di Draco',
-      prompt: 'Come si chiama il padre di Draco Malfoy, un Mangiamorte e fedele servitore di Voldemort?',
-      answer: 'lucius',
-      order: 4,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'Ha lunghi capelli biondi e porta sempre un bastone da passeggio.', penalty: 5, order: 0 },
-        { text: 'Il suo cognome è Malfoy.', penalty: 10, order: 1 },
-      ],
-    },
-    {
-      roundId: hpRound2.id,
-      title: 'La Pozione della Fortuna',
-      prompt: 'Come si chiama la pozione dorata che garantisce straordinaria fortuna al bevitore per un periodo limitato?',
-      answer: 'felix felicis',
-      order: 5,
-      puzzleType: 'DIGITAL' as const,
-      hints: [
-        { text: 'È una pozione rarissima e illegale nelle competizioni sportive magiche.', penalty: 5, order: 0 },
-        { text: 'Harry la vince in una lezione di Pozioni del Professor Dosaggio.', penalty: 10, order: 1 },
-      ],
-    },
-  ];
-
-  for (const pd of hpPuzzleDefs) {
-    const existing = await prisma.puzzle.findFirst({
-      where: { roundId: pd.roundId, title: pd.title },
-    });
-    if (existing) continue;
-
-    const { hash: ansHash, salt: ansSalt } = hashWithSalt(pd.answer.toLowerCase().trim());
-    const puzzle = await prisma.puzzle.create({
-      data: {
-        roundId: pd.roundId,
-        title: pd.title,
-        prompt: pd.prompt,
-        answerHash: ansHash,
-        answerSalt: ansSalt,
-        order: pd.order,
-        puzzleType: pd.puzzleType,
-        scoringJson: { basePoints: 100, timeBonusEnabled: true, hintPenalty: 10 },
-      },
-    });
-
-    for (const h of pd.hints) {
-      await prisma.hint.create({
-        data: {
-          puzzleId: puzzle.id,
-          text: h.text,
-          penaltyPoints: h.penalty,
-          order: h.order,
-        },
-      });
-    }
-  }
-
-  console.log(`Created ${hpPuzzleDefs.length} Harry Potter puzzles`);
-
-  // Auto-create EventModules for HP event
-  const allMagicModulesForHP = await prisma.magicModule.findMany();
-  for (const mm of allMagicModulesForHP) {
-    await prisma.eventModule.upsert({
-      where: {
-        eventNightId_moduleId: { eventNightId: hpEvent.id, moduleId: mm.id },
-      },
-      update: {},
-      create: {
-        eventNightId: hpEvent.id,
-        moduleId: mm.id,
-        enabled: false,
-      },
-    });
-  }
-  console.log(`Created EventModules for Harry Potter event`);
-
   // --- Library entries ---
   const existingLibrary = await prisma.libraryEntry.count();
   if (existingLibrary === 0) {
@@ -1249,32 +963,61 @@ async function main() {
   }
   console.log(`Created ${hpPuzzleDefs.length} HP puzzles`);
 
-  // EventModules for HP event
+  // Moduli abilitati per la serata HP2024 — 3 raccomandati + 3 originali
+  const hpEnabledKeys = new Set([
+    'MAGICIANS_CHOICE_4',      // Equivoque digitale — controllo totale
+    'CLOCK_FORCE',             // Forzatura ciclica — perfetta multiplayer
+    'SEALED_ENVELOPE_DIGITAL', // Busta sigillata — impatto massimo
+    'CARD_PREDICTION_BINARY',  // Originale
+    'EQUIVOQUE_GUIDED',        // Originale
+    'MATHEMATICAL_FORCE_27',   // Forzatura matematica — zero rischio
+  ]);
+
   const allMagicModulesForHp = await prisma.magicModule.findMany();
   for (const mm of allMagicModulesForHp) {
     await prisma.eventModule.upsert({
       where: {
         eventNightId_moduleId: { eventNightId: hpEvent.id, moduleId: mm.id },
       },
-      update: {},
+      update: { enabled: hpEnabledKeys.has(mm.key) },
       create: {
         eventNightId: hpEvent.id,
         moduleId: mm.id,
-        enabled: false,
+        enabled: hpEnabledKeys.has(mm.key),
       },
     });
   }
-  console.log(`Created EventModules for HP event`);
+  console.log(`Created/updated EventModules for HP event (${hpEnabledKeys.size} attivi)`);
 
   console.log('---');
   console.log('HP event join code: HP2024');
   console.log('HP table codes: GRIF01, SERP01, CORV01, TASS01');
 
-  // --- Magic Modules (sync from registry) ---
+  // --- Magic Modules (sync from registry — all 17) ---
   const moduleDefinitions = [
-    { key: 'CARD_PREDICTION_BINARY', name: 'Predizione Carta', description: 'Scelta binaria su carta con timer' },
-    { key: 'EQUIVOQUE_GUIDED', name: 'Equivoque Guidato', description: 'Script guidato a step con rivelazione' },
-    { key: 'ENVELOPE_PREDICTION', name: 'Predizione in Busta', description: 'Predizione sigillata con rivelazione programmata' },
+    // Originali
+    { key: 'CARD_PREDICTION_BINARY',   name: 'Predizione Carta',            description: 'Scelta binaria su carta con timer' },
+    { key: 'EQUIVOQUE_GUIDED',         name: 'Equivoque Guidato',           description: 'Script guidato a step con rivelazione' },
+    { key: 'ENVELOPE_PREDICTION',      name: 'Predizione in Busta',         description: 'Predizione sigillata con rivelazione programmata' },
+    // Forzature matematiche/psicologiche
+    { key: 'MATHEMATICAL_FORCE_27',    name: 'Forzatura Matematica 27',     description: 'Operazioni guidate → sempre 27 → Asso di Quadri' },
+    { key: 'PSYCHOLOGICAL_FORCE_CARD', name: 'Forzatura Psicologica Carta', description: 'Suggestione statistica verso 7 di Cuori / Asso di Picche' },
+    { key: 'MAGICIANS_CHOICE_4',       name: 'Equivoque Digitale 4 Carte',  description: 'Qualunque scelta porta alla carta prevista (logica condizionale invisibile)' },
+    { key: 'CLOCK_FORCE',              name: 'Forzatura a Orologio',        description: 'Conteggio circolare — sempre la stessa carta' },
+    { key: 'SEALED_ENVELOPE_DIGITAL',  name: 'Busta Sigillata Digitale',    description: 'Previsione impossibile: la busta contiene la carta scelta' },
+    // Previsioni hash
+    { key: 'PREDICTION_HASH',          name: 'Prediction Hash',             description: 'SHA-256 mostrato a inizio serata, rivelato alla fine' },
+    // Giochi matematici con carte
+    { key: 'MATH_1089_CARDS',          name: '1089 con Carte',              description: 'Formula numerica 1089 → 9 di Cuori, funziona sempre' },
+    { key: 'TWENTY_ONE_CARDS',         name: '21 Carte',                    description: 'Principio matematico: 3 colonne × 3 cicli → carta in posizione 11' },
+    { key: 'BIRTHDAY_CARD_FORCE',      name: 'Carta dalla Data di Nascita', description: 'La data viene trasformata con formula fissa → carta specifica' },
+    // Giochi sociali tra tavoli
+    { key: 'SHARED_IMPOSSIBLE_CARD',   name: 'Carta Condivisa Impossibile', description: 'Ogni tavolo sceglie una carta — insieme formano una scala reale' },
+    { key: 'SYNCED_CARD_THOUGHT',      name: 'Carta Pensata in Sincronia',  description: 'Tutti i tavoli arrivano alla stessa carta simultaneamente' },
+    // Avanzati
+    { key: 'INVISIBLE_DECK_DIGITAL',   name: 'Mazzo Invisibile Digitale',   description: 'Classico Invisible Deck su app — carta nominata già girata' },
+    { key: 'ACAAN_DYNAMIC',            name: 'ACAAN Dinamico',              description: 'Any Card At Any Number: carta libera, numero libero, sempre corretto' },
+    { key: 'MULTILEVEL_PREDICTION',    name: 'Previsione Multilivello',     description: '4 previsioni progressive: seme, valore, colore, posizione' },
   ];
 
   for (const mod of moduleDefinitions) {
@@ -1286,22 +1029,28 @@ async function main() {
   }
   console.log(`Synced ${moduleDefinitions.length} magic modules`);
 
-  // Create EventModules for the seed event (all disabled by default)
+  // Moduli abilitati per default sull'evento MAGIC1
+  const magic1EnabledKeys = new Set([
+    'CARD_PREDICTION_BINARY',
+    'EQUIVOQUE_GUIDED',
+    'ENVELOPE_PREDICTION',
+  ]);
+
   const allMagicModules = await prisma.magicModule.findMany();
   for (const mm of allMagicModules) {
     await prisma.eventModule.upsert({
       where: {
         eventNightId_moduleId: { eventNightId: event.id, moduleId: mm.id },
       },
-      update: {},
+      update: { enabled: magic1EnabledKeys.has(mm.key) },
       create: {
         eventNightId: event.id,
         moduleId: mm.id,
-        enabled: false,
+        enabled: magic1EnabledKeys.has(mm.key),
       },
     });
   }
-  console.log(`Created EventModules for seed event`);
+  console.log(`Created/updated EventModules for MAGIC1 event (${magic1EnabledKeys.size} attivi)`);
 
   console.log('Seed completed successfully!');
   console.log('---');
