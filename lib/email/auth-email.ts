@@ -1,5 +1,20 @@
 import { SendVerificationRequestParams } from 'next-auth/providers/email';
 import nodemailer from 'nodemailer';
+import { lookup } from 'dns';
+import { promisify } from 'util';
+
+const dnsLookup = promisify(lookup);
+
+/** Risolve l'hostname SMTP usando dns.lookup (sistema OS) invece di dns.resolve4 (c-ares).
+ *  Fix per Windows dove c-ares fallisce con ETIMEOUT ma getaddrinfo funziona. */
+async function resolveSmtpHost(hostname: string): Promise<string> {
+  try {
+    const result = await dnsLookup(hostname);
+    return typeof result === 'string' ? result : result.address;
+  } catch {
+    return hostname; // fallback all'hostname originale
+  }
+}
 
 export async function sendVerificationRequest({
   identifier: email,
@@ -19,11 +34,20 @@ export async function sendVerificationRequest({
 
   console.log('[EMAIL] Sending magic link to:', email);
 
+  const serverOptions = typeof server === 'object' ? server : {};
+  const smtpHostname = (serverOptions as { host?: string }).host || '';
+  const resolvedHost = await resolveSmtpHost(smtpHostname);
+
   const transport = nodemailer.createTransport({
-    ...(typeof server === 'object' ? server : {}),
-    connectionTimeout: 10_000,  // 10s per connettersi
-    greetingTimeout: 10_000,    // 10s per greeting SMTP
-    socketTimeout: 15_000,      // 15s per operazione socket
+    ...serverOptions,
+    host: resolvedHost,
+    tls: {
+      ...((serverOptions as { tls?: object }).tls ?? {}),
+      servername: smtpHostname, // necessario per TLS quando si usa IP diretto
+    },
+    connectionTimeout: 20_000,
+    greetingTimeout: 20_000,
+    socketTimeout: 30_000,
   } as unknown as nodemailer.TransportOptions);
 
   const html = `

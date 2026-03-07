@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { useToast } from '@/components/ui/magic-toast';
 import { CrystalBall, Sparkles, ArrowLeft, Sparkle } from '@/lib/ui/icons';
 
-const SIGNIN_TIMEOUT_MS = 15_000;
+const SIGNIN_TIMEOUT_MS = 45_000;
 
 export default function LoginPage() {
   return (
@@ -67,9 +67,8 @@ function LoginForm() {
       const result = await Promise.race([signInPromise, timeoutPromise]);
 
       if (result?.error === 'timeout') {
-        setError('Il server non ha risposto in tempo. Riprova tra poco.');
-        toast.error('Timeout: il server non risponde.');
-        setIsLoading(false);
+        // Email is likely on its way — redirect to verify-request anyway
+        window.location.href = '/verify-request';
         return;
       }
 

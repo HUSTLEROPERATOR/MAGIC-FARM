@@ -1,14 +1,28 @@
 import nodemailer from 'nodemailer';
+import { lookup } from 'dns';
+import { promisify } from 'util';
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_PORT === '465',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-});
+const dnsLookup = promisify(lookup);
+
+async function createTransporter() {
+  const smtpHostname = process.env.SMTP_HOST || '';
+  let resolvedHost = smtpHostname;
+  try {
+    const result = await dnsLookup(smtpHostname);
+    resolvedHost = typeof result === 'string' ? result : result.address;
+  } catch { /* usa hostname originale come fallback */ }
+
+  return nodemailer.createTransport({
+    host: resolvedHost,
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_PORT === '465',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD,
+    },
+    tls: { servername: smtpHostname, rejectUnauthorized: false },
+  } as unknown as nodemailer.TransportOptions);
+}
 
 interface SendMagicLinkEmailParams {
   to: string;
@@ -34,13 +48,8 @@ export async function sendMagicLinkEmail({ to, url, firstName }: SendMagicLinkEm
   `;
 
   try {
-    await transporter.sendMail({
-      from,
-      to,
-      subject,
-      text,
-      html,
-    });
+    const transporter = await createTransporter();
+    await transporter.sendMail({ from, to, subject, text, html });
     return { success: true };
   } catch (error) {
     console.error('Error sending email:', error);
@@ -55,7 +64,7 @@ interface SendWelcomeEmailParams {
 
 export async function sendWelcomeEmail({ to, firstName }: SendWelcomeEmailParams) {
   const from = process.env.SMTP_FROM || 'Magic Farm <noreply@magic-farm.local>';
-  
+
   const subject = 'Welcome to Magic Farm!';
   const text = `Hi ${firstName},\n\nWelcome to Magic Farm! Your email has been verified.\n\nYou can now set your alias and join an event to start playing.\n\nEnjoy the magic!`;
   const html = `
@@ -68,13 +77,8 @@ export async function sendWelcomeEmail({ to, firstName }: SendWelcomeEmailParams
   `;
 
   try {
-    await transporter.sendMail({
-      from,
-      to,
-      subject,
-      text,
-      html,
-    });
+    const transporter = await createTransporter();
+    await transporter.sendMail({ from, to, subject, text, html });
     return { success: true };
   } catch (error) {
     console.error('Error sending email:', error);
