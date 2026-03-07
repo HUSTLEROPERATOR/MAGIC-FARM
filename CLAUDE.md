@@ -65,13 +65,13 @@ Analisi completa del repo eseguita il 2026-02-24. 33 problemi trovati e classifi
 
 | # | File | Problema | Note |
 |---|------|----------|------|
-| A1 | `lib/security/crypto.ts:4` | **ENCRYPTION_KEY hardcoded** — lancia errore se non settata in prod | `process.env.ENCRYPTION_KEY \|\| 'default-key...'` |
+| ~~A1~~ | `lib/security/crypto.ts:4` | **ENCRYPTION_KEY hardcoded** — lancia errore se non settata in prod | `process.env.ENCRYPTION_KEY \|\| 'default-key...'` |
 | A2 | `prisma/migrations/` | **Migration Magic Modules non applicata** — Task 13 ancora aperto | Vedi comandi sotto |
-| A3 | Tutte le API routes | **`request.json()` senza try/catch** — JSON malformato crasha la route | Impatta: admin/events, admin/puzzles, alliance-effect, ecc. |
-| A4 | `lib/security/crypto.ts:73` | **`generateJoinCode()` usa `Math.random()`** — non sicuro crittograficamente | Sostituire con `crypto.getRandomValues()` |
-| A5 | `app/api/serate/[eventId]/hint/route.ts` | **`rateLimitHint()` definita ma mai chiamata** | Aggiungere check all'inizio del handler |
-| A6 | `app/api/serate/[eventId]/messages/route.ts` | **`rateLimitClueBoard()` definita ma mai chiamata** | Aggiungere check nel POST handler |
-| A7 | `app/api/serate/[eventId]/alliance-effect/route.ts` | **Nessuna validazione Zod** su `action` e `puzzleId` | Aggiungere schema `z.enum(['share_hint','check_common_goal','list'])` |
+| ~~A3~~ | Tutte le API routes | **`request.json()` senza try/catch** — JSON malformato crasha la route | Impatta: admin/events, admin/puzzles, alliance-effect, ecc. |
+| ~~A4~~ | `lib/security/crypto.ts:73` | **`generateJoinCode()` usa `Math.random()`** — non sicuro crittograficamente | Sostituire con `crypto.getRandomValues()` |
+| ~~A5~~ | `app/api/serate/[eventId]/hint/route.ts` | **`rateLimitHint()` definita ma mai chiamata** | Aggiungere check all'inizio del handler |
+| ~~A6~~ | `app/api/serate/[eventId]/messages/route.ts` | **`rateLimitClueBoard()` definita ma mai chiamata** | Aggiungere check nel POST handler |
+| ~~A7~~ | `app/api/serate/[eventId]/alliance-effect/route.ts` | **Nessuna validazione Zod** su `action` e `puzzleId` | Aggiungere schema `z.enum(['share_hint','check_common_goal','list'])` |
 
 ### PRIORITÀ 2 — Prossimo sprint (feature incomplete / qualità)
 
