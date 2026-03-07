@@ -20,7 +20,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+    }
 
     // Validate with the existing registerSchema (minus email, which comes from session)
     const result = registerSchema.omit({ email: true }).safeParse(body);

@@ -1,7 +1,16 @@
 import crypto from 'crypto';
 import CryptoJS from 'crypto-js';
 
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-key-change-in-production';
+const ENCRYPTION_KEY = (() => {
+  const key = process.env.ENCRYPTION_KEY;
+  if (!key || key === 'default-key-change-in-production') {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('ENCRYPTION_KEY env var must be set in production');
+    }
+    return 'default-key-change-in-production';
+  }
+  return key;
+})();
 
 /**
  * Hash a value with salt using SHA-256
@@ -72,9 +81,10 @@ export function generateConsentEvidenceHash(
  */
 export function generateJoinCode(): string {
   const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Excluding similar chars
+  const randomBytes = crypto.randomBytes(6);
   let code = '';
   for (let i = 0; i < 6; i++) {
-    code += characters.charAt(Math.floor(Math.random() * characters.length));
+    code += characters.charAt(randomBytes[i] % characters.length);
   }
   return code;
 }

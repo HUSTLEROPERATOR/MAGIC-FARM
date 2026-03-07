@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
+import { z } from 'zod';
+
+const allianceEffectSchema = z.object({
+  action: z.enum(['share_hint', 'check_common_goal', 'list']),
+  puzzleId: z.string().cuid().optional(),
+});
 
 // POST /api/serate/[eventId]/alliance-effect — Apply alliance effect (hint sharing)
 export async function POST(
@@ -12,7 +18,23 @@ export async function POST(
   if (!session) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
 
   const userId = session.user.id;
-  const { action, puzzleId } = await req.json();
+
+  let rawBody: unknown;
+  try {
+    rawBody = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
+
+  const parsed = allianceEffectSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Parametri non validi', details: parsed.error.flatten().fieldErrors },
+      { status: 400 }
+    );
+  }
+
+  const { action, puzzleId } = parsed.data;
 
   // Find user's table
   const membership = await prisma.tableMembership.findFirst({
@@ -49,6 +71,10 @@ export async function POST(
   }
 
   if (action === 'share_hint') {
+    if (!puzzleId) {
+      return NextResponse.json({ error: 'puzzleId richiesto per share_hint' }, { status: 400 });
+    }
+
     // Share hints with allied tables
     const shareableAlliances = alliances.filter(
       (a) => a.effectType === 'HINT_SHARING' && a.sharedHints
@@ -111,19 +137,16 @@ export async function POST(
     });
   }
 
-  if (action === 'list') {
-    return NextResponse.json({
-      alliances: alliances.map((a) => ({
-        id: a.id,
-        ally: a.tableAId === membership.tableId ? a.tableB.name : a.tableA.name,
-        effectType: a.effectType,
-        sharedHints: a.sharedHints,
-        bonusPoints: a.bonusPoints,
-        commonGoal: a.commonGoal,
-        commonGoalMet: a.commonGoalMet,
-      })),
-    });
-  }
-
-  return NextResponse.json({ error: 'Azione non valida' }, { status: 400 });
+  // action === 'list'
+  return NextResponse.json({
+    alliances: alliances.map((a) => ({
+      id: a.id,
+      ally: a.tableAId === membership.tableId ? a.tableB.name : a.tableA.name,
+      effectType: a.effectType,
+      sharedHints: a.sharedHints,
+      bonusPoints: a.bonusPoints,
+      commonGoal: a.commonGoal,
+      commonGoalMet: a.commonGoalMet,
+    })),
+  });
 }

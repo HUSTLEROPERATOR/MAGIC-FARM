@@ -14,7 +14,12 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
   const { joinCode } = body;
 
   if (!joinCode || typeof joinCode !== 'string') {

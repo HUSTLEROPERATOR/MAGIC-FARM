@@ -56,7 +56,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const body = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
   const parsed = inviteSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(

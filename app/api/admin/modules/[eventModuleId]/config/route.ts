@@ -14,7 +14,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { session, response } = await requireAdmin();
   if (response) return response;
 
-  const body = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
   const parsed = moduleConfigSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.errors[0].message }, { status: 400 });

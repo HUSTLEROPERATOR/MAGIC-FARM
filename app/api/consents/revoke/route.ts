@@ -29,7 +29,12 @@ export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   const userAgent = request.headers.get('user-agent') || 'unknown';
 
-  const body = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
   const parsed = revokeSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
+import { rateLimitHint } from '@/lib/security/rate-limit';
 
 // POST /api/serate/[eventId]/hint — Richiedi un suggerimento
 export async function POST(
@@ -10,11 +11,22 @@ export async function POST(
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
   }
 
-  const body = await req.json();
-  const { puzzleId, hintOrder } = body;
+  const allowed = await rateLimitHint(session.user.id);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Troppe richieste. Riprova tra poco.' }, { status: 429 });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
+  const puzzleId = body.puzzleId as string | undefined;
+  const hintOrder = body.hintOrder as number | undefined;
 
   if (!puzzleId || hintOrder === undefined) {
     return NextResponse.json({ error: 'puzzleId e hintOrder richiesti' }, { status: 400 });

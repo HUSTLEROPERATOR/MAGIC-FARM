@@ -15,8 +15,14 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await req.json();
-  const { puzzleId, answer } = body;
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
+  const puzzleId = body.puzzleId as string | undefined;
+  const answer = body.answer as string | undefined;
 
   if (!puzzleId || !answer) {
     return NextResponse.json({ error: 'puzzleId e answer richiesti' }, { status: 400 });

@@ -12,7 +12,13 @@ export async function POST(
   if (!session) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
 
   const userId = session.user.id;
-  const { enabled } = await req.json();
+  let body: { enabled?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
+  const { enabled } = body;
 
   const event = await prisma.eventNight.findUnique({
     where: { id: params.eventId },

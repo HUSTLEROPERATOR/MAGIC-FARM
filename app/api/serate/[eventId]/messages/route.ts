@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
+import { rateLimitClueBoard } from '@/lib/security/rate-limit';
 
 // GET /api/serate/[eventId]/messages — Messaggi del tavolo
 export async function GET(
@@ -10,7 +11,7 @@ export async function GET(
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
   }
 
   // Find user's table
@@ -50,10 +51,20 @@ export async function POST(
 ) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
   }
 
-  const body = await req.json();
+  const allowed = await rateLimitClueBoard(session.user.id);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Troppe richieste. Riprova tra poco.' }, { status: 429 });
+  }
+
+  let body: { message?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Corpo della richiesta non valido' }, { status: 400 });
+  }
   const { message } = body;
 
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
