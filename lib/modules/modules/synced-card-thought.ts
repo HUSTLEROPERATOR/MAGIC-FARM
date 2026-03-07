@@ -43,6 +43,7 @@ export const syncedCardThought: MagicModuleHandler<SyncedCardConfig, SyncedCardI
             'TUTTI i tavoli insieme: pensate un numero da 1 a 10. Ognuno pensi in silenzio al proprio numero.',
           synchronizedMessage: 'Tutta la sala sta pensando...',
           nextStep: 1,
+          isLastStep: false,
         },
       };
     }
@@ -54,6 +55,7 @@ export const syncedCardThought: MagicModuleHandler<SyncedCardConfig, SyncedCardI
           step: 1,
           instruction: 'Moltiplicate per 2 il vostro numero.',
           nextStep: 2,
+          isLastStep: false,
         },
       };
     }
@@ -65,6 +67,7 @@ export const syncedCardThought: MagicModuleHandler<SyncedCardConfig, SyncedCardI
           step: 2,
           instruction: 'Aggiungete 54.',
           nextStep: 3,
+          isLastStep: false,
         },
       };
     }
@@ -76,6 +79,7 @@ export const syncedCardThought: MagicModuleHandler<SyncedCardConfig, SyncedCardI
           step: 3,
           instruction: 'Dividete per 2.',
           nextStep: 4,
+          isLastStep: false,
         },
       };
     }
@@ -87,6 +91,7 @@ export const syncedCardThought: MagicModuleHandler<SyncedCardConfig, SyncedCardI
           step: 4,
           instruction: 'Sottraete il vostro numero originale.',
           nextStep: 5,
+          isLastStep: false,
         },
       };
     }
@@ -99,8 +104,9 @@ export const syncedCardThought: MagicModuleHandler<SyncedCardConfig, SyncedCardI
         result: 27,
         targetCard: config.targetCard,
         reveal: true,
+        isLastStep: true,
         message:
-          'OGNI tavolo ha ottenuto 27! E il numero 27 corrisponde a... il 7 di Cuori! La stessa carta per tutta la sala. IMPOSSIBILE.',
+          'OGNI tavolo ha ottenuto 27! E il numero 27 corrisponde a... ' + config.targetCard + '! La stessa carta per tutta la sala. IMPOSSIBILE.',
         synchronizedReveal: true,
       },
       audit: {

@@ -35,14 +35,28 @@ export interface MagicModuleHandler<
   key: string;
   meta: {
     name: string;
+    playerLabel?: string; // label shown to players instead of name (hides admin info)
     description: string;
     icon: string;
     difficulty: 'base' | 'intermedio' | 'avanzato';
     scope: 'global' | 'table' | 'user';
     priority: number;
+    /**
+     * If true, module is controlled by the magician (not player-interactive).
+     * Input is provided via magician control panel instead of player forms.
+     * Allows all modules to be usable during live shows even without custom UI.
+     */
+    magicianControlled?: boolean;
   };
   ui?: {
     fields: Record<string, ModuleUIField>;
+  };
+  /** Describes input schema for magician control panel auto-generation */
+  inputSchema?: {
+    type: 'object' | 'discriminatedUnion';
+    fields?: Record<string, { type: string; label: string; options?: string[]; min?: number; max?: number }>;
+    discriminator?: string;
+    variants?: Record<string, { label: string; fields?: Record<string, { type: string; label: string }> }>;
   };
   defaultConfig: TConfig;
   validateConfig: (config: unknown) => TConfig;

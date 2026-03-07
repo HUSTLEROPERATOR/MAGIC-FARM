@@ -44,6 +44,7 @@ export const math1089Cards: MagicModuleHandler<Math1089Config, Math1089Input> = 
             step: 0,
             instruction: "Pensa a un numero a 3 cifre dove la prima cifra è maggiore dell'ultima (es. 532, 741, 863). Scrivilo.",
             nextStep: 1,
+            isLastStep: false,
           },
         };
       case 1:
@@ -53,6 +54,7 @@ export const math1089Cards: MagicModuleHandler<Math1089Config, Math1089Input> = 
             step: 1,
             instruction: "Inverti il numero (es. 532 → 235). Sottrai il numero minore dal maggiore.",
             nextStep: 2,
+            isLastStep: false,
           },
         };
       case 2:
@@ -62,6 +64,7 @@ export const math1089Cards: MagicModuleHandler<Math1089Config, Math1089Input> = 
             step: 2,
             instruction: "Inverti il risultato e sommalo al risultato stesso.",
             nextStep: 3,
+            isLastStep: false,
           },
         };
       case 3:
@@ -72,7 +75,8 @@ export const math1089Cards: MagicModuleHandler<Math1089Config, Math1089Input> = 
             result: 1089,
             targetCard: config.targetCard,
             reveal: true,
-            message: "Il risultato è sempre 1089! 1+0+8+9 = 18, 1+8 = 9. La tua carta è il 9 di Cuori!",
+            isLastStep: true,
+            message: `Il risultato è sempre 1089! La tua carta è ${config.targetCard}!`,
             mathNote: "Questo funziona con qualsiasi numero a 3 cifre dove prima cifra > ultima cifra.",
           },
         };

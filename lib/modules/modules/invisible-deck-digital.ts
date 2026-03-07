@@ -21,8 +21,7 @@ export const invisibleDeckDigital: MagicModuleHandler<InvisibleDeckConfig, Invis
     icon: 'EyeOff',
     difficulty: 'avanzato',
     scope: 'user',
-    priority: 55,
-  },
+    priority: 55,    magicianControlled: true,  },
   ui: {
     fields: {
       deckStyle: {

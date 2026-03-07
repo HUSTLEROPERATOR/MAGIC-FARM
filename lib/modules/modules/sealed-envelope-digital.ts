@@ -23,6 +23,7 @@ export const sealedEnvelopeDigital: MagicModuleHandler<SealedEnvelopeConfig, Sea
     difficulty: 'intermedio',
     scope: 'table',
     priority: 50,
+    magicianControlled: true,
   },
   ui: {
     fields: {

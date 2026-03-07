@@ -19,6 +19,7 @@ export const mathematicalForce27: MagicModuleHandler<MathForceConfig, MathForceI
     name: 'Forzatura Matematica Carta 27',
     description: 'Percorso guidato con operazioni matematiche. Il risultato è sempre 27 → Asso di Quadri.',
     icon: 'Calculator',
+    playerLabel: 'Sfida Matematica',
     difficulty: 'base',
     scope: 'user',
     priority: 30,
@@ -42,6 +43,7 @@ export const mathematicalForce27: MagicModuleHandler<MathForceConfig, MathForceI
           step: 0,
           instruction: 'Pensa un numero da 1 a 10. Tienilo segreto.',
           nextStep: 1,
+          isLastStep: false,
         },
       };
     }
@@ -53,6 +55,7 @@ export const mathematicalForce27: MagicModuleHandler<MathForceConfig, MathForceI
           step: 1,
           instruction: 'Moltiplica il tuo numero per 2.',
           nextStep: 2,
+          isLastStep: false,
         },
       };
     }
@@ -64,6 +67,7 @@ export const mathematicalForce27: MagicModuleHandler<MathForceConfig, MathForceI
           step: 2,
           instruction: 'Al risultato aggiungi 54.',
           nextStep: 3,
+          isLastStep: false,
         },
       };
     }
@@ -75,6 +79,7 @@ export const mathematicalForce27: MagicModuleHandler<MathForceConfig, MathForceI
           step: 3,
           instruction: 'Dividi tutto per 2.',
           nextStep: 4,
+          isLastStep: false,
         },
       };
     }
@@ -86,6 +91,7 @@ export const mathematicalForce27: MagicModuleHandler<MathForceConfig, MathForceI
           step: 4,
           instruction: "Sottrai il numero che avevi pensato all'inizio.",
           nextStep: 5,
+          isLastStep: false,
         },
       };
     }
@@ -98,7 +104,8 @@ export const mathematicalForce27: MagicModuleHandler<MathForceConfig, MathForceI
         result: 27,
         targetCard: config.targetCard,
         reveal: true,
-        message: "Il risultato è sempre 27. La tua carta è l'Asso di Quadri!",
+        isLastStep: true,
+        message: `Il risultato è sempre 27. La tua carta è ${config.targetCard}!`,
       },
     };
   },

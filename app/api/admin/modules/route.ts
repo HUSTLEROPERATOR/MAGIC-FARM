@@ -27,6 +27,33 @@ export async function GET(request: NextRequest) {
   const registryModules = getAllModules();
   const eventModuleMap = new Map(eventModules.map((em) => [em.module.key, em]));
 
+  // Auto-create EventModule records for any registry modules not yet linked to this event
+  const missingKeys = registryModules
+    .filter((h) => !eventModuleMap.has(h.key))
+    .map((h) => h.key);
+
+  if (missingKeys.length > 0) {
+    const missingDbModules = await prisma.magicModule.findMany({
+      where: { key: { in: missingKeys } },
+    });
+    if (missingDbModules.length > 0) {
+      await prisma.eventModule.createMany({
+        data: missingDbModules.map((mm) => ({
+          eventNightId,
+          moduleId: mm.id,
+          enabled: false,
+        })),
+        skipDuplicates: true,
+      });
+      // Re-fetch to include newly created records
+      const refreshed = await prisma.eventModule.findMany({
+        where: { eventNightId },
+        include: { module: true },
+      });
+      refreshed.forEach((em) => eventModuleMap.set(em.module.key, em));
+    }
+  }
+
   const modules = registryModules.map((handler) => {
     const em = eventModuleMap.get(handler.key);
     return {

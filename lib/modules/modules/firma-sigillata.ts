@@ -161,6 +161,7 @@ export const firmaSigillata: MagicModuleHandler<FirmaSigillatConfig, FirmaInput>
     difficulty: 'avanzato',
     scope: 'global',
     priority: 60,
+    magicianControlled: true,
   },
   ui: {
     fields: {

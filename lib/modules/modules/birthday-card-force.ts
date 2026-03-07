@@ -24,6 +24,7 @@ export const birthdayCardForce: MagicModuleHandler<BirthdayCardConfig, BirthdayC
     difficulty: 'base',
     scope: 'user',
     priority: 65,
+    magicianControlled: true,
   },
   ui: {
     fields: {

@@ -37,6 +37,7 @@ export const clockForce: MagicModuleHandler<ClockForceConfig, ClockForceInput> =
     difficulty: 'base',
     scope: 'user',
     priority: 35,
+    magicianControlled: true,
   },
   ui: {
     fields: {

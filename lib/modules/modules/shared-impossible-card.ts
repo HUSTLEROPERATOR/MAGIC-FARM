@@ -23,6 +23,7 @@ export const sharedImpossibleCard: MagicModuleHandler<SharedImpossibleConfig, Sh
     difficulty: 'avanzato',
     scope: 'table',
     priority: 15,
+    magicianControlled: true,
   },
   ui: {
     fields: {

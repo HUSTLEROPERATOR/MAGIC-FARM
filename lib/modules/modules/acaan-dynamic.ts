@@ -29,6 +29,7 @@ export const acaanDynamic: MagicModuleHandler<AcaanConfig, AcaanInput> = {
     difficulty: 'avanzato',
     scope: 'user',
     priority: 58,
+    magicianControlled: true,
   },
   ui: {
     fields: {

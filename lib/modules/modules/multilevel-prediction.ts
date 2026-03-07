@@ -29,6 +29,7 @@ export const multilevelPrediction: MagicModuleHandler<MultilevelConfig, Multilev
     difficulty: 'avanzato',
     scope: 'user',
     priority: 52,
+    magicianControlled: true,
   },
   ui: {
     fields: {
@@ -63,6 +64,7 @@ export const multilevelPrediction: MagicModuleHandler<MultilevelConfig, Multilev
           step: 0,
           instruction: 'Pensa a un seme: Picche, Cuori, Quadri o Fiori.',
           nextStep: 1,
+          isLastStep: false,
         },
       };
     }
@@ -82,6 +84,7 @@ export const multilevelPrediction: MagicModuleHandler<MultilevelConfig, Multilev
             config.targetSeme +
             '. Ora pensa a un valore da Asso a Re.',
           nextStep: 2,
+          isLastStep: false,
         },
       };
     }
@@ -99,6 +102,7 @@ export const multilevelPrediction: MagicModuleHandler<MultilevelConfig, Multilev
           instruction:
             'Previsione 2 rivelata: ' + config.targetValore + '. Rosso o nero?',
           nextStep: 3,
+          isLastStep: false,
         },
       };
     }
@@ -118,6 +122,7 @@ export const multilevelPrediction: MagicModuleHandler<MultilevelConfig, Multilev
             config.targetColore +
             '. Ora scegli un numero da 1 a 52.',
           nextStep: 4,
+          isLastStep: false,
         },
       };
     }
@@ -150,6 +155,7 @@ export const multilevelPrediction: MagicModuleHandler<MultilevelConfig, Multilev
           chosenPosizione: input.chosenPosizione,
         },
         totalMatches,
+        isLastStep: true,
         message:
           'La previsione in quattro parti è completata.' +
           ' Ogni livello era già scritto prima delle vostre scelte.',

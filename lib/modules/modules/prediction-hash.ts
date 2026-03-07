@@ -23,6 +23,7 @@ export const predictionHash: MagicModuleHandler<PredictionHashConfig, Prediction
     difficulty: "avanzato",
     scope: "global",
     priority: 5,
+    magicianControlled: true,
   },
   ui: {
     fields: {

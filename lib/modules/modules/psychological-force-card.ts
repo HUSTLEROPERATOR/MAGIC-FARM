@@ -18,11 +18,13 @@ export const psychologicalForceCard: MagicModuleHandler<PsychForceConfig, PsychF
   key: 'PSYCHOLOGICAL_FORCE_CARD',
   meta: {
     name: 'Forzatura Psicologica Carta',
+    playerLabel: 'Leggi il Pensiero',
     description: 'Guida psicologica verso 7 di Cuori o Asso di Picche. Con uscite alternative integrate.',
     icon: 'Brain',
     difficulty: 'intermedio',
     scope: 'user',
     priority: 40,
+    magicianControlled: true,
   },
   ui: {
     fields: {
@@ -54,6 +56,7 @@ export const psychologicalForceCard: MagicModuleHandler<PsychForceConfig, PsychF
             'Hai la carta in mente?',
           ],
           nextStep: 1,
+          isLastStep: false,
         },
       };
     }
@@ -77,6 +80,7 @@ export const psychologicalForceCard: MagicModuleHandler<PsychForceConfig, PsychF
           success: true,
           matchLevel,
           reveal: true,
+          isLastStep: true,
           message: 'La previsione era esatta! Avevi pensato proprio questa carta!',
           chosenCard: chosen,
         },
@@ -93,6 +97,7 @@ export const psychologicalForceCard: MagicModuleHandler<PsychForceConfig, PsychF
           success: true,
           matchLevel,
           reveal: true,
+          isLastStep: true,
           message: 'La previsione era esatta! Avevi pensato proprio questa carta!',
           chosenCard: chosen,
         },
@@ -108,6 +113,7 @@ export const psychologicalForceCard: MagicModuleHandler<PsychForceConfig, PsychF
         success: true,
         matchLevel,
         reveal: true,
+        isLastStep: true,
         message: 'Interessante! Il mago aveva già preparato anche questa alternativa.',
         chosenCard: chosen,
         primaryTarget: config.primaryTarget,

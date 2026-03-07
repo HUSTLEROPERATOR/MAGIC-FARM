@@ -67,10 +67,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     },
   });
   if (existing) {
-    return NextResponse.json({
-      result: { success: true, data: existing.state, cached: true },
-      interaction: existing,
-    });
+    // Only serve cache if the state is truly final (isLastStep: true or reveal: true).
+    // Intermediate steps incorrectly marked COMPLETED (e.g. missing isLastStep) are allowed to re-run.
+    const cachedState = existing.state as Record<string, unknown> | null;
+    const isTrulyFinal = cachedState?.isLastStep === true || cachedState?.reveal === true;
+    if (isTrulyFinal) {
+      return NextResponse.json({
+        result: { success: true, data: cachedState, cached: true },
+        interaction: existing,
+      });
+    }
   }
 
   // Load config from EventModule

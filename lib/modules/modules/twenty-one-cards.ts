@@ -60,6 +60,7 @@ export const twentyOneCards: MagicModuleHandler<TwentyOneConfig, TwentyOneInput>
     difficulty: 'intermedio',
     scope: 'user',
     priority: 70,
+    magicianControlled: true,
   },
   ui: {
     fields: {
@@ -85,6 +86,7 @@ export const twentyOneCards: MagicModuleHandler<TwentyOneConfig, TwentyOneInput>
           columns,
           instruction: 'Pensa a una carta. In quale colonna si trova? (0=sinistra, 1=centro, 2=destra)',
           nextStep: 1,
+          isLastStep: false,
         },
       };
     }
@@ -106,6 +108,7 @@ export const twentyOneCards: MagicModuleHandler<TwentyOneConfig, TwentyOneInput>
           columns,
           instruction,
           nextStep: input.step + 1,
+          isLastStep: false,
         },
       };
     }
@@ -121,6 +124,7 @@ export const twentyOneCards: MagicModuleHandler<TwentyOneConfig, TwentyOneInput>
         step: 3,
         revealedCard,
         reveal: true,
+        isLastStep: true,
         message: 'La tua carta è sempre in posizione 11 (centro del mazzo)! La matematica non mente.',
       },
     };

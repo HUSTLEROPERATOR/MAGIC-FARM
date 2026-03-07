@@ -19,11 +19,13 @@ export const magiciansChoice4: MagicModuleHandler<MagiciansChoiceConfig, Magicia
   key: 'MAGICIANS_CHOICE_4',
   meta: {
     name: 'Equivoque a 4 Carte',
+    playerLabel: 'Scegli una Carta',
     description: "Magician's Choice digitale: qualunque scelta porta sempre alla carta prevista.",
     icon: 'Layers',
     difficulty: 'intermedio',
     scope: 'user',
     priority: 45,
+    magicianControlled: true,
   },
   ui: {
     fields: {
@@ -46,12 +48,12 @@ export const magiciansChoice4: MagicModuleHandler<MagiciansChoiceConfig, Magicia
           cards,
           instruction: 'Tocca mentalmente due carte qualsiasi tra le quattro.',
           nextStep: 1,
+          isLastStep: false,
         },
       };
     }
 
     if (step === 1) {
-      // chosen is number[] — the two indices touched by the user
       const chosenIndices = Array.isArray(chosen) ? chosen : [];
       const targetInChosen = chosenIndices.includes(TARGET_IDX);
 
@@ -62,7 +64,6 @@ export const magiciansChoice4: MagicModuleHandler<MagiciansChoiceConfig, Magicia
         remaining = chosenIndices;
         instruction = 'Teniamo queste due, eliminiamo le altre.';
       } else {
-        // keep the other 2 (those not chosen), which include the target
         remaining = [0, 1, 2, 3].filter((i) => !chosenIndices.includes(i));
         instruction = 'Eliminiamo queste, teniamo le altre.';
       }
@@ -74,21 +75,18 @@ export const magiciansChoice4: MagicModuleHandler<MagiciansChoiceConfig, Magicia
           remaining,
           instruction,
           nextStep: 2,
+          isLastStep: false,
         },
       };
     }
 
     if (step === 2) {
-      // chosen is a single number — index the user picks from the remaining 2
       const pickedIdx = typeof chosen === 'number' ? chosen : -1;
       const isTarget = pickedIdx === TARGET_IDX;
 
-      let message: string;
-      if (isTarget) {
-        message = 'Perfetto, questa è la tua carta!';
-      } else {
-        message = 'Eliminiamo questa, quindi la tua carta è...';
-      }
+      const message = isTarget
+        ? 'Perfetto, questa è la tua carta!'
+        : 'Eliminiamo questa, quindi la tua carta è...';
 
       return {
         success: true,
@@ -96,6 +94,7 @@ export const magiciansChoice4: MagicModuleHandler<MagiciansChoiceConfig, Magicia
           step: 2,
           finalCard: config.targetCard,
           reveal: true,
+          isLastStep: true,
           message: message + ' Qualunque scelta tu abbia fatto, la previsione era sempre questa.',
         },
       };
@@ -108,6 +107,7 @@ export const magiciansChoice4: MagicModuleHandler<MagiciansChoiceConfig, Magicia
         step: 3,
         finalCard: config.targetCard,
         reveal: true,
+        isLastStep: true,
         message: 'Qualunque scelta tu abbia fatto, la previsione era sempre questa.',
       },
     };
