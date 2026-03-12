@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { hashWithSalt, verifyHash, generateSecureToken } from '@/lib/security/crypto';
 import { createAuditLog } from '@/lib/audit/logger';
@@ -218,7 +219,7 @@ export const firmaSigillata: MagicModuleHandler<FirmaSigillatConfig, FirmaInput>
         moduleKey: FIRMA_SIGILLATA_KEY,
         actor: 'SYSTEM',
         status: 'COMPLETED',
-        state: state as unknown as Record<string, unknown>,
+        state: state as unknown as Prisma.InputJsonValue,
         completedAt: new Date(),
       },
     });
@@ -316,7 +317,7 @@ export const firmaSigillata: MagicModuleHandler<FirmaSigillatConfig, FirmaInput>
           await tx.moduleInteraction.update({
             where: { id: existing.id },
             data: {
-              state: state as unknown as Record<string, unknown>,
+              state: state as unknown as Prisma.InputJsonValue,
               updatedAt: new Date(),
             },
           });
@@ -330,7 +331,7 @@ export const firmaSigillata: MagicModuleHandler<FirmaSigillatConfig, FirmaInput>
               userId: ctx.userId,
               tableId: ctx.tableId ?? null,
               status: 'COMPLETED',
-              state: state as unknown as Record<string, unknown>,
+              state: state as unknown as Prisma.InputJsonValue,
               completedAt: new Date(),
             },
           });
