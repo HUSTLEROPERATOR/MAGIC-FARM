@@ -17,6 +17,7 @@ export const math1089Cards: MagicModuleHandler<Math1089Config, Math1089Input> = 
   key: "MATH_1089_CARDS",
   meta: {
     name: "1089 con Carte",
+    playerLabel: "Magia dei Numeri",
     description: "Trick matematico classico: qualsiasi numero a 3 cifre porta sempre a 1089 → 9 di Cuori.",
     icon: "Binary",
     difficulty: "base",

@@ -23,6 +23,7 @@ export const multilevelPrediction: MagicModuleHandler<MultilevelConfig, Multilev
   key: 'MULTILEVEL_PREDICTION',
   meta: {
     name: 'Previsione Multilivello',
+    playerLabel: 'Quattro Previsioni',
     description:
       '4 previsioni progressive: seme, valore, colore, posizione. Crescendo teatrale.',
     icon: 'Layers3',

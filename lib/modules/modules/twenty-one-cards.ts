@@ -55,6 +55,7 @@ export const twentyOneCards: MagicModuleHandler<TwentyOneConfig, TwentyOneInput>
   key: 'TWENTY_ONE_CARDS',
   meta: {
     name: 'Trick delle 21 Carte',
+    playerLabel: 'Gioco delle Carte',
     description: 'Principio matematico classico: dopo 3 round di selezione, la carta è sempre in posizione 11.',
     icon: 'Grid3x3',
     difficulty: 'intermedio',

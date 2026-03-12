@@ -16,6 +16,7 @@ export const syncedCardThought: MagicModuleHandler<SyncedCardConfig, SyncedCardI
   key: 'SYNCED_CARD_THOUGHT',
   meta: {
     name: 'Carta Pensata in Sincronia',
+    playerLabel: 'Telepatia Collettiva',
     description: 'Tutti i tavoli fanno le stesse operazioni matematiche e arrivano alla stessa carta.',
     icon: 'Zap',
     difficulty: 'base',
