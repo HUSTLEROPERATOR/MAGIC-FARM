@@ -3,6 +3,7 @@
  * Import ONLY from here in page components (via <Icon /> wrapper).
  */
 export {
+  Wand2,
   Wand2 as MagicWand,
   Sparkles,
   Sparkle,
