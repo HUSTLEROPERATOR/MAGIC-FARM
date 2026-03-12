@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import CryptoJS from 'crypto-js';
 
-const ENCRYPTION_KEY = (() => {
+function getEncryptionKey(): string {
   const key = process.env.ENCRYPTION_KEY;
   if (!key || key === 'default-key-change-in-production') {
     if (process.env.NODE_ENV === 'production') {
@@ -10,7 +10,7 @@ const ENCRYPTION_KEY = (() => {
     return 'default-key-change-in-production';
   }
   return key;
-})();
+}
 
 /**
  * Hash a value with salt using SHA-256
@@ -39,14 +39,14 @@ export function verifyHash(value: string, hash: string, salt: string): boolean {
  * Encrypt sensitive data (e.g., email addresses if needed)
  */
 export function encrypt(text: string): string {
-  return CryptoJS.AES.encrypt(text, ENCRYPTION_KEY).toString();
+  return CryptoJS.AES.encrypt(text, getEncryptionKey()).toString();
 }
 
 /**
  * Decrypt sensitive data
  */
 export function decrypt(ciphertext: string): string {
-  const bytes = CryptoJS.AES.decrypt(ciphertext, ENCRYPTION_KEY);
+  const bytes = CryptoJS.AES.decrypt(ciphertext, getEncryptionKey());
   return bytes.toString(CryptoJS.enc.Utf8);
 }
 
