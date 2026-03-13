@@ -4,70 +4,14 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-5.18-2D3748)](https://www.prisma.io/)
-[![Status](https://img.shields.io/badge/Status-Feature%20Complete-brightgreen)](./STATUS.md)
+[![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748)](https://www.prisma.io/)
+[![Status](https://img.shields.io/badge/Status-Active%20Development-yellow)](./STATUS.md)
 
 ---
 
-## 📋 Stato del Progetto
+## Panoramica
 
-**Progresso:** Feature-complete | [Stato Dettagliato](./STATUS.md) | [Versione Italiana](./STATUS.it.md)
-
-MAGIC-FARM è una piattaforma full-stack per serate di enigmi collaborativi a tema magico. I giocatori si uniscono a serate (eventi), entrano in tavoli, risolvono enigmi in round progressivi, richiedono suggerimenti, formano alleanze tra tavoli e scalano le classifiche — il tutto orchestrato da un pannello admin completo.
-
----
-
-## 🪄 Magic Modules (Incantesimi) — in sviluppo
-
-> **Branch:** `feat/magic-modules` — Tasks 1–12 completati su 13 (92%) · Verificato 2026-02-18
-
-Il sistema di **Incantesimi** è un layer di feature-flag per evento che permette all'admin di abilitare
-moduli di gioco opzionali su singole serate. Ogni modulo ha una logica autonoma (validazione input,
-disponibilità per round, esecuzione con scoring), può richiedere artefatti server-side all'attivazione
-(`onEnable`), ed è rate-limited lato player (3 esecuzioni / 10s / utente). Il catalogo è in-memory
-(registry), la configurazione per-evento è su DB (`EventModule`), le interazioni player sono tracciate
-su `ModuleInteraction`.
-
-### Dove vive il codice
-
-| Path | Contenuto |
-|------|-----------|
-| `lib/modules/types.ts` | Interfacce TypeScript (`MagicModuleHandler`, `ActiveModule`, `ModuleResult`) |
-| `lib/modules/registry.ts` | Registry in-memory: `registerModule`, `executeModule` |
-| `lib/modules/resolver.ts` | DB resolver con cache 15s: `getActiveModulesForRound` |
-| `lib/modules/modules/` | 3 moduli starter (card-prediction, equivoque, envelope) |
-| `lib/validations/schemas.ts` | Zod: `moduleToggleSchema`, `moduleConfigSchema`, `moduleExecuteSchema` |
-| `lib/security/rate-limit.ts` | `rateLimitModuleExecute` (3 esecuzioni / 10s / utente) |
-| `prisma/schema.prisma` | Modelli: `MagicModule`, `EventModule`, `ModuleInteraction` |
-| `__tests__/modules/` | ~34 test Vitest (validators, registry, 3 moduli, resolver) |
-
-### Come abilitare un modulo per un evento
-
-1. Admin → `/admin` → EventCard → sezione **Incantesimi** → SpellsPanel → toggle modulo
-2. API admin: `PATCH /api/admin/modules/[eventModuleId]` con `{ "enabled": true }`
-3. Player → `GET /api/serate/[eventId]/modules?roundId=X` per leggere i moduli attivi
-4. Player → `POST /api/serate/[eventId]/modules/[moduleKey]/execute` per eseguire
-
-### Test e build
-
-```bash
-npx vitest run __tests__/modules/   # test moduli (~34 test)
-npx vitest run                       # tutti i test
-npm run build                        # build Next.js
-```
-
-### DB: migrazione richiesta
-
-I modelli Prisma sono definiti, il codice è completo, ma **la migrazione NON è ancora stata applicata** (Task 13).
-Le tabelle `magic_modules`, `event_modules`, `module_interactions` non esistono nel DB.
-
-```bash
-# Applica la migrazione — unico step mancante
-npx prisma migrate dev --name add_magic_modules
-
-# Poi esegui il seed (crea i 3 MagicModule + EventModules per la serata di test)
-npm run db:seed
-```
+MAGIC-FARM è una piattaforma full-stack per serate di enigmi collaborativi a tema magico. I giocatori si uniscono a serate (eventi), entrano in tavoli, risolvono enigmi in round progressivi, richiedono suggerimenti, formano alleanze tra tavoli e scalano le classifiche. Il pannello admin offre controllo completo su eventi, round, enigmi e moduli opzionali. L'interfaccia è interamente in italiano; il codice e la documentazione tecnica sono in inglese/italiano misto.
 
 ---
 
@@ -80,38 +24,67 @@ npm run db:seed
 - Ruoli **USER** e **ADMIN** con RBAC su ogni route
 - Soft-delete: gli utenti cancellati non possono più accedere
 
-### Game Loop Completo
+### Game Loop
 - **Serate** (EventNight) con stati DRAFT → LIVE → ENDED
 - **Tavoli** con codici di ingresso hash-verificati; auto-assegnazione al tavolo meno pieno
 - **Round** (SINGLE_TABLE / MULTI_TABLE / INDIVIDUAL) con attivazione sequenziale
-- **Enigmi** con risposta hashata, scoring configurabile, tipi multipli (DIGITAL, PHYSICAL, OBSERVATION, LISTENING, HYBRID)
-- **Submissions** atomiche (`$transaction`): verifica risposta → calcolo punteggio → aggiornamento classifica in un'unica transazione
+- **Enigmi** con risposta hashata, scoring configurabile, 5 tipi (DIGITAL, PHYSICAL, OBSERVATION, LISTENING, HYBRID)
+- **Submissions** atomiche (`$transaction`): verifica risposta → calcolo punteggio → aggiornamento classifica
 - **Suggerimenti** progressivi con penalità punti, sbloccabili in ordine
-- **Answer normalizer** intelligente: rimozione articoli italiani, normalizzazione, fuzzy matching (Levenshtein con guardrail)
+- **Answer normalizer**: rimozione articoli italiani, normalizzazione, fuzzy matching (Levenshtein con guardrail)
 - **Anti-cheat**: detect velocità sospetta, tentativi rapidi, pattern perfetti
 
 ### Classifiche e Punteggi
-- **Scoring**: punti base + bonus tempo + penalità suggerimenti + penalità tentativi + bonus cross-table
-- **Classifica per serata**: ranking individuale e per tavolo
-- **Classifica locale**: per organizzazione / venue
-- **Classifica globale**: cross-organization, consent-filtered
-- **Classifica persistente**: LeaderboardEntry top-50 con medaglie
-- Ranking tie-aware (punti, poi tempo medio)
+- Scoring: punti base + bonus tempo + penalità suggerimenti + penalità tentativi + bonus cross-table
+- Classifica per serata: ranking individuale e per tavolo
+- Classifica locale per organizzazione/venue
+- Classifica globale cross-organization, consent-filtered
+- LeaderboardEntry persistente top-50 con ranking tie-aware
 
 ### Collaborazione e Social
-- **Clue Board**: messaggistica in tempo reale per tavolo (max 500 char, moderazione)
+- **Clue Board**: messaggistica per tavolo (max 500 char, moderazione)
 - **Alleanze cross-tavolo**: proposta, accettazione, effetti (HINT_SHARING, POINT_BONUS, POINT_PENALTY, COMMON_GOAL)
 - **Modalità spettatore**: segui la serata senza incidere sul ranking
 
+### 🪄 Magic Modules (Incantesimi)
+
+Sistema di feature-flag per evento che permette all'admin di abilitare moduli di gioco opzionali su singole serate. Ogni modulo ha logica autonoma (validazione input, disponibilità per round, esecuzione con scoring), può richiedere artefatti server-side all'attivazione (`onEnable`), ed è rate-limited lato player (3 esecuzioni / 10s / utente). Il catalogo è in-memory (registry); la configurazione per-evento è su DB (`EventModule`); le interazioni player sono tracciate su `ModuleInteraction`.
+
+**18 moduli implementati** in `lib/modules/modules/`:
+
+| Gruppo | Moduli |
+|--------|--------|
+| Predizione carte | card-prediction-binary, envelope-prediction, sealed-envelope-digital, acaan-dynamic |
+| Forza psicologica | equivoque-guided, magicians-choice-4, psychological-force-card, clock-force, birthday-card-force |
+| Matematica | mathematical-force-27, math-1089-cards |
+| Carte particolari | invisible-deck-digital, twenty-one-cards, shared-impossible-card |
+| Multilevel / Collettivo | multilevel-prediction, synced-card-thought |
+| Sigillato | firma-sigillata, prediction-hash |
+
+| Path | Contenuto |
+|------|-----------|
+| `lib/modules/types.ts` | Interfacce TypeScript (`MagicModuleHandler`, `ActiveModule`, `ModuleResult`) |
+| `lib/modules/registry.ts` | Registry in-memory: `registerModule`, `executeModule` |
+| `lib/modules/resolver.ts` | DB resolver con cache 15s: `getActiveModulesForRound` |
+| `lib/modules/modules/` | 18 moduli implementati |
+| `lib/validations/schemas.ts` | Zod: `moduleToggleSchema`, `moduleConfigSchema`, `moduleExecuteSchema` |
+| `lib/security/rate-limit.ts` | `rateLimitModuleExecute` (3 esecuzioni / 10s / utente) |
+| `prisma/schema.prisma` | Modelli: `MagicModule`, `EventModule`, `ModuleInteraction` |
+| `__tests__/modules/` | 7 file di test Vitest (validators, registry, resolver, 4 moduli) |
+
+> **Nota:** I modelli Prisma per i moduli (`MagicModule`, `EventModule`, `ModuleInteraction`) richiedono una migrazione dedicata prima del primo avvio. Vedi [Setup Database](#setup-database).
+
 ### Narrativa e Contenuti
 - **Ritual overlay**: narrative di apertura/chiusura e teaser prossimo evento
-- **Il Grimorio** (Libreria): contenuti educativi sulla magia, sbloccabili in base alle serate frequentate (ARTICLE, PUZZLE_EXPLAIN, HISTORY, CURIOSITY, TECHNIQUE, LOCKED)
-- **Badge / Achievements**: assegnazione automatica al raggiungimento di soglie (enigmi risolti, serate frequentate, alleanze formate)
+- **Il Grimorio** (Libreria): contenuti educativi sulla magia, sbloccabili in base alle serate frequentate
+- **Badge / Achievements**: assegnazione automatica al raggiungimento di soglie
 
 ### Pannello Admin
 - CRUD completo: serate, round, enigmi, suggerimenti, tavoli
 - Gestione stati evento (DRAFT → LIVE → ENDED) e attivazione round
-- Metriche evento aggregate e cachate (partecipanti, submissions, tempi, alleanze, stats per enigma)
+- Gestione moduli (Incantesimi) per evento: toggle e configurazione
+- Gestione Open Stage: candidature e approvazioni
+- Metriche evento aggregate e cachate
 
 ### Host & Privacy
 - **Host invite**: inviti email privacy-safe — la piattaforma invia per conto dell'host, solo a utenti con doppio consenso
@@ -127,7 +100,7 @@ npm run db:seed
 ### Sicurezza
 - **Zero password**: autenticazione via magic link one-time
 - **IP hashing**: SHA-256 prima dello storage (mai in chiaro)
-- **Rate limiting**: login (5/15min), submissions (5/30s), hints (3/5min), join (3/5min), clue board (20/min), host invite (5/10min)
+- **Rate limiting**: login (5/15min), submissions (5/30s), hints (3/5min), join (3/5min), clue board (20/min), host invite (5/10min), moduli (3/10s)
 - **Audit logging**: 25+ azioni tracciate (auth, consent, game, admin, host, privacy)
 - **Encryption**: AES per dati sensibili, SHA-256 con salt per hash
 - **Input validation**: Zod schemas su tutte le operazioni
@@ -142,21 +115,16 @@ npm run db:seed
 ### Prerequisiti
 - **Node.js** 18+
 - **PostgreSQL** 16+ (o usa il `docker-compose.yml` incluso)
-- **npm** (incluso con Node.js) — i comandi `pnpm` mostrati sotto funzionano anche con `npm run` / `npx`
-- **Account SMTP** per l'invio email (o servizio di testing)
+- **npm** (incluso con Node.js)
+- **Account SMTP** per l'invio email (o servizio di testing locale)
 
 ### Installazione
 
 ```bash
-# Clona il repository
 git clone https://github.com/HUSTLEROPERATOR/MAGIC-FARM.git
 cd MAGIC-FARM
-
-# Installa dipendenze
-pnpm install
-
-# Configura variabili d'ambiente
-cp .env.example .env
+npm install
+cp .env.example .env.local
 ```
 
 ### Database con Docker (opzionale)
@@ -171,49 +139,53 @@ docker compose up -d
 
 ### Variabili d'Ambiente
 
-Modifica `.env` con i tuoi valori:
+Modifica `.env.local` con i tuoi valori:
 
 | Variabile | Descrizione |
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string (es. `postgresql://postgres:postgres@localhost:5432/magic_farm`) |
 | `NEXTAUTH_SECRET` | Secret per JWT — genera con `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | URL dell'app (es. `http://localhost:3000`) |
+| `NEXTAUTH_URL` | URL dell'app (es. `http://localhost:3001`) |
 | `SMTP_HOST` | Hostname server SMTP |
 | `SMTP_PORT` | Porta SMTP (587 per TLS, 465 per SSL) |
 | `SMTP_USER` | Username SMTP |
 | `SMTP_PASSWORD` | Password SMTP |
 | `SMTP_FROM` | Mittente (es. `Magic Farm <noreply@example.com>`) |
-| `ENCRYPTION_KEY` | Chiave AES per crittografia dati sensibili |
+| `ADMIN_EMAILS` | Email admin separate da virgola |
+| `ENCRYPTION_KEY` | Chiave AES per crittografia dati sensibili — genera con `openssl rand -base64 32` |
 
 ### Setup Database
 
 ```bash
 # Genera client Prisma
-pnpm db:generate
+npm run db:generate
 
-# Push schema al DB (sviluppo — senza migration files)
-pnpm db:push
+# Crea le tabelle nel DB (sviluppo — senza migration files)
+npm run db:push
 
-# Oppure crea migrazioni formali (produzione)
-pnpm db:migrate
+# Oppure applica migrazioni formali (consigliato per ambienti non-dev)
+npm run db:migrate
 
-# Popola il DB con dati di test
-pnpm db:seed
+# Se stai usando i Magic Modules per la prima volta, applica la migrazione dedicata:
+npx prisma migrate dev --name add_magic_modules
+
+# Popola il DB con dati di test (admin, player, serata, enigmi)
+npm run db:seed
 ```
 
 ### Avvia il Server
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
-Visita [http://localhost:3000](http://localhost:3000)
+Visita [http://localhost:3001](http://localhost:3001)
 
 ---
 
 ## 🧪 Testare il Flusso Completo
 
-Dopo `pnpm db:seed`, il DB contiene:
+Dopo `npm run db:seed`, il DB contiene:
 
 | Risorsa | Valore |
 |---|---|
@@ -231,19 +203,17 @@ Dopo `pnpm db:seed`, il DB contiene:
 3. Imposta alias su `/setup-alias`
 4. Accetta consensi obbligatori su `/consents`
 5. Dalla dashboard, entra nella serata con codice `MAGIC1` (opzionale: codice tavolo `TBL001`)
-6. Vai a `/game` — risolvi enigmi (risposte: `9`, `il fiammifero`)
+6. Vai a `/serate/[id]` — risolvi enigmi (risposte di test: `9`, `il fiammifero`)
 7. Richiedi suggerimenti e osserva la penalità punti
-8. Prova la clue board per comunicare col tavolo
-9. Controlla classifica su `/leaderboard` (serata, locale, globale)
+8. Controlla classifica su `/leaderboard`
 
 ### Come admin
 
 1. Login con `admin@magic-farm.test`
 2. Vai a `/admin` (link visibile in dashboard)
 3. Crea nuova serata, aggiungi round, enigmi, tavoli
-4. Attiva la serata (DRAFT → LIVE)
-5. Attiva un round cliccando "Attiva"
-6. Monitora le metriche evento
+4. Attiva la serata (DRAFT → LIVE) e un round
+5. Abilita moduli (Incantesimi) dalla sezione SpellsPanel dell'evento
 
 ---
 
@@ -268,10 +238,8 @@ Landing (/)
                           └─► Consensi (/consents) — accetta privacy + termini
                                 └─► Dashboard (/dashboard)
                                       ├─► Serate (/serate) — elenco eventi
-                                      │     └─► Serata (/serate/[id]) — dettaglio con round, enigmi, clue board, classifica
-                                      ├─► Game (/game) — interfaccia di gioco live
-                                      ├─► Classifiche (/leaderboard) — serata, locale, globale
-                                      ├─► Classifica (/classifica) — top-50 persistente
+                                      │     └─► Serata (/serate/[id]) — round, enigmi, clue board, classifica, moduli
+                                      ├─► Classifiche (/leaderboard, /classifica)
                                       ├─► Il Grimorio (/libreria) — contenuti sbloccabili
                                       ├─► Profilo (/profilo) — dati + stato consensi
                                       └─► Admin (/admin) — solo ruolo ADMIN
@@ -279,9 +247,9 @@ Landing (/)
 
 ---
 
-## 🗄️ Database Schema
+## 🗄️ Schema Database
 
-21 modelli Prisma, 10 enum (incl. 3 modelli Magic Modules). Vedi [prisma/schema.prisma](./prisma/schema.prisma) per lo schema completo.
+25 modelli Prisma, 10 enum. Vedi [prisma/schema.prisma](./prisma/schema.prisma) per lo schema completo.
 
 | Modello | Scopo |
 |---|---|
@@ -302,13 +270,17 @@ Landing (/)
 | `LeaderboardEntry` | Punteggi persistenti aggregati |
 | `Badge` / `BadgeAward` | Achievement con trigger automatici |
 | `EventMetrics` | Analytics evento aggregate e cachate |
+| `MagicModule` | Catalogo moduli disponibili |
+| `EventModule` | Configurazione per-evento dei moduli |
+| `ModuleInteraction` | Esecuzioni moduli per player |
+| `OpenStageApplication` | Candidature Open Stage |
 
 ---
 
-## 🔌 API Routes (38 endpoint)
+## 🔌 API Routes (48 route)
 
 <details>
-<summary><strong>Auth & User</strong> (4 endpoint)</summary>
+<summary><strong>Auth & User</strong> (4 route)</summary>
 
 | Route | Metodo | Descrizione |
 |---|---|---|
@@ -320,24 +292,25 @@ Landing (/)
 </details>
 
 <details>
-<summary><strong>Consents</strong> (2 endpoint)</summary>
+<summary><strong>Consents</strong> (3 route)</summary>
 
 | Route | Metodo | Descrizione |
 |---|---|---|
 | `/api/consents` | GET | Stato consensi corrente |
 | `/api/consents` | POST | Crea/aggiorna consensi con evidence hash |
+| `/api/consents/revoke` | POST | Revoca consenso specifico |
 
 </details>
 
 <details>
-<summary><strong>Events & Serate</strong> (14 endpoint)</summary>
+<summary><strong>Events & Serate</strong> (16 route)</summary>
 
 | Route | Metodo | Descrizione |
 |---|---|---|
-| `/api/events` | GET | Lista eventi con round e tavoli |
+| `/api/events` | GET | Lista eventi |
 | `/api/events/active` | GET | Evento LIVE corrente |
 | `/api/events/join` | POST | Entra in serata (joinCode + tableCode opzionale) |
-| `/api/events/[eventId]` | GET | Dettaglio evento con stato submissions |
+| `/api/events/[eventId]` | GET | Dettaglio evento |
 | `/api/serate` | GET | Lista serate DRAFT + LIVE |
 | `/api/serate/[eventId]` | GET | Dettaglio serata completo |
 | `/api/serate/[eventId]/join` | POST | Entra in tavolo (hash-verificato) |
@@ -349,11 +322,13 @@ Landing (/)
 | `/api/serate/[eventId]/ritual` | GET | Narrative apertura/chiusura |
 | `/api/serate/[eventId]/metrics` | GET/POST | Metriche evento aggregate |
 | `/api/serate/[eventId]/alliance-effect` | POST | Effetti alleanza |
+| `/api/serate/[eventId]/modules` | GET | Moduli attivi per round |
+| `/api/serate/[eventId]/modules/[moduleKey]/execute` | POST | Esegui modulo (rate-limited) |
 
 </details>
 
 <details>
-<summary><strong>Game</strong> (4 endpoint)</summary>
+<summary><strong>Game</strong> (4 route)</summary>
 
 | Route | Metodo | Descrizione |
 |---|---|---|
@@ -365,7 +340,7 @@ Landing (/)
 </details>
 
 <details>
-<summary><strong>Classifiche</strong> (2 endpoint)</summary>
+<summary><strong>Classifiche</strong> (2 route)</summary>
 
 | Route | Metodo | Descrizione |
 |---|---|---|
@@ -375,7 +350,7 @@ Landing (/)
 </details>
 
 <details>
-<summary><strong>Host</strong> (2 endpoint)</summary>
+<summary><strong>Host</strong> (2 route)</summary>
 
 | Route | Metodo | Descrizione |
 |---|---|---|
@@ -385,7 +360,7 @@ Landing (/)
 </details>
 
 <details>
-<summary><strong>Profilo, Libreria, Badge</strong> (4 endpoint)</summary>
+<summary><strong>Profilo, Libreria, Badge</strong> (4 route)</summary>
 
 | Route | Metodo | Descrizione |
 |---|---|---|
@@ -397,7 +372,18 @@ Landing (/)
 </details>
 
 <details>
-<summary><strong>Admin</strong> (6 endpoint)</summary>
+<summary><strong>Open Stage</strong> (3 route)</summary>
+
+| Route | Metodo | Descrizione |
+|---|---|---|
+| `/api/open-stage/apply` | POST | Candidatura player a Open Stage |
+| `/api/admin/open-stage` | GET/PATCH | Lista candidature (admin) |
+| `/api/admin/open-stage/[id]` | GET/PATCH/DELETE | Gestione candidatura singola (admin) |
+
+</details>
+
+<details>
+<summary><strong>Admin</strong> (11 route)</summary>
 
 | Route | Metodo | Descrizione |
 |---|---|---|
@@ -407,6 +393,10 @@ Landing (/)
 | `/api/admin/puzzles` | POST | Crea enigma |
 | `/api/admin/hints` | POST | Crea suggerimento |
 | `/api/admin/tables` | POST | Crea tavolo |
+| `/api/admin/modules` | GET | Lista moduli per evento |
+| `/api/admin/modules/[eventModuleId]` | GET/PATCH | Dettaglio / toggle modulo |
+| `/api/admin/modules/[eventModuleId]/config` | POST | Configura modulo |
+| `/api/admin/modules/firma-sigillata/reveal` | POST | Reveal speciale Firma Sigillata |
 
 </details>
 
@@ -419,7 +409,7 @@ Landing (/)
 | Autenticazione | Magic link one-time, zero password |
 | Sessioni | JWT con NextAuth, 30 giorni, refresh automatico |
 | RBAC | `requireAuth()` e `requireAdmin()` su ogni route protetta |
-| Rate Limiting | 6 limiter configurabili (login, submissions, hints, join, clue board, host invite) |
+| Rate Limiting | 7 limiter configurabili (login, submissions, hints, join, clue board, host invite, moduli) |
 | Dati sensibili | IP hashati SHA-256, dati crittografati AES |
 | Audit | 25+ azioni tracciate con IP hashato, user agent, timestamp |
 | Validazione | Zod schemas su tutti gli input |
@@ -440,7 +430,7 @@ Vedi [SECURITY.md](./SECURITY.md) e [PRIVACY_IMPLEMENTATION.md](./PRIVACY_IMPLEM
 | Alias | Plaintext (unico, lowercase) | Display nelle classifiche |
 | Indirizzo IP | Solo hash SHA-256 | Audit trail, rate limiting |
 | Consensi | Evidence hash + versioni policy | Compliance GDPR |
-| Risposte enigmi | Hash SHA-256 | Verifica senza esporre la soluzione |
+| Risposte enigmi | Hash SHA-256 con salt | Verifica senza esporre la soluzione |
 | Dati di gioco | Punteggi, tempi, tentativi, flag | Meccaniche di competizione |
 
 ---
@@ -449,17 +439,18 @@ Vedi [SECURITY.md](./SECURITY.md) e [PRIVACY_IMPLEMENTATION.md](./PRIVACY_IMPLEM
 
 | Layer | Tecnologia |
 |---|---|
-| Framework | Next.js 14 (App Router) |
+| Framework | Next.js 14.2 (App Router) |
 | Linguaggio | TypeScript 5.5 |
-| UI | React 18, Tailwind CSS (tema custom: `magic-dark`, `magic-gold`, `magic-purple`) |
+| UI | React 18.3, Tailwind CSS (tema custom: `magic-dark`, `magic-gold`, `magic-purple`) |
+| Animazioni | Framer Motion 12 (card engine, motion presets, riduzione movimento) |
 | Font | Cinzel (headings) + Inter (body) |
-| Database | PostgreSQL 16 + Prisma ORM 5.18 (5 migrazioni applicate; +1 pending per magic modules) |
+| Database | PostgreSQL 16 + Prisma ORM 5.22 |
 | Auth | NextAuth 4.24 (Email provider, JWT, PrismaAdapter) |
 | Email | Nodemailer 7.0 (template HTML custom) |
 | Validazione | Zod 3.23 |
 | Sicurezza | bcrypt, crypto-js, rate-limiter-flexible |
-| Testing | Vitest (5 test suite: scoring, answer-normalizer, schemas, alias, env) |
-| Package Manager | pnpm |
+| Testing (unit) | Vitest 2.0 — 14 file di test |
+| Testing (E2E) | Playwright — 3 spec (home, login, verify-request) |
 | Containerizzazione | Docker Compose (PostgreSQL) |
 
 ---
@@ -467,46 +458,57 @@ Vedi [SECURITY.md](./SECURITY.md) e [PRIVACY_IMPLEMENTATION.md](./PRIVACY_IMPLEM
 ## 🧪 Testing
 
 ```bash
-# Esegui tutti i test
-pnpm test
+# Tutti i test unitari
+npm test
 
-# UI interattiva
-pnpm test:ui
+# UI interattiva Vitest
+npm run test:ui
+
+# Test E2E (richiede server attivo su porta 3001)
+npm run test:e2e
+npm run test:e2e:ui        # con UI Playwright
+npm run test:e2e:report    # visualizza report HTML
 ```
 
-Test coperti:
+Test unitari coperti (14 file):
 - `scoring.test.ts` — calcolo punteggio, bonus tempo, penalità, anti-cheat, ranking
 - `answer-normalizer.test.ts` — normalizzazione, Levenshtein, fuzzy matching, guardrail
-- `schemas.test.ts` — validazione schemas Zod (registrazione, alias)
+- `schemas.test.ts` — validazione schemas Zod
 - `alias-normalization.test.ts` — normalizzazione e validazione alias
 - `env-validation.test.ts` — validazione variabili d'ambiente
+- `harry-potter-quiz.test.ts` — normalizzazione risposte quiz
+- `host-invite-rate-limit.test.ts` — rate limiting inviti host
+- `__tests__/modules/` — 7 file per validators, registry, resolver e 4 moduli
 
 ---
 
 ## 📝 Scripts Disponibili
 
 ```bash
-pnpm dev          # Server di sviluppo
-pnpm build        # Build produzione
-pnpm start        # Avvia produzione
-pnpm lint         # Linting codice
-pnpm db:generate  # Genera client Prisma
-pnpm db:push      # Push schema a DB (sviluppo)
-pnpm db:migrate   # Migrazioni DB (produzione)
-pnpm db:seed      # Seed DB con dati di test
-pnpm test         # Esegui test
-pnpm test:ui      # Test con UI interattiva
+npm run dev           # Server di sviluppo (porta 3001)
+npm run build         # Build produzione
+npm run start         # Avvia produzione
+npm run lint          # Linting codice
+npm run db:generate   # Genera client Prisma
+npm run db:push       # Push schema a DB (sviluppo)
+npm run db:migrate    # Migrazioni DB
+npm run db:seed       # Seed DB con dati di test
+npm test              # Esegui test unitari
+npm run test:ui       # Test con UI interattiva
+npm run test:e2e      # Test E2E (Playwright)
 ```
 
 ---
 
 ## 📖 Documentazione
 
-- [Stato Dettagliato del Progetto](./STATUS.md)
-- [Stato (Italiano)](./STATUS.it.md)
 - [Security Model](./SECURITY.md)
 - [Privacy Implementation](./PRIVACY_IMPLEMENTATION.md)
 - [Schema Database](./prisma/schema.prisma)
+- [Magic Modules Design](./docs/plans/2026-02-16-magic-modules-design.md)
+- [Magician Controlled System](./docs/MAGICIAN_CONTROLLED_SYSTEM.md)
+
+> **Nota:** `STATUS.md` riflette lo stato del progetto a febbraio 2026 e non è aggiornato con le funzionalità aggiunte successivamente.
 
 ---
 
@@ -515,7 +517,7 @@ pnpm test:ui      # Test con UI interattiva
 <details>
 <summary><strong>Email magic link non arriva</strong></summary>
 
-- Verifica le variabili SMTP in `.env` (host, porta, user, password)
+- Verifica le variabili SMTP in `.env.local` (host, porta, user, password)
 - Usa Mailtrap/Mailhog per catturare le email in sviluppo
 - Controlla i log del server per errori di invio
 
@@ -524,7 +526,11 @@ pnpm test:ui      # Test con UI interattiva
 <details>
 <summary><strong>Errore "Relation does not exist"</strong></summary>
 
-- Esegui `pnpm db:push` o `pnpm db:migrate` per sincronizzare lo schema
+- Esegui `npm run db:push` o `npm run db:migrate` per sincronizzare lo schema
+- Se l'errore riguarda `magic_modules` / `event_modules` / `module_interactions`, applica la migrazione dedicata:
+  ```bash
+  npx prisma migrate dev --name add_magic_modules
+  ```
 - Verifica che `DATABASE_URL` sia corretto e il server PostgreSQL sia attivo
 
 </details>
@@ -533,14 +539,23 @@ pnpm test:ui      # Test con UI interattiva
 <summary><strong>Errore "NEXTAUTH_SECRET" mancante</strong></summary>
 
 - Genera un secret: `openssl rand -base64 32`
-- Aggiungilo a `.env` come `NEXTAUTH_SECRET=...`
+- Aggiungilo a `.env.local` come `NEXTAUTH_SECRET=...`
+
+</details>
+
+<details>
+<summary><strong>Errore "ENCRYPTION_KEY" mancante</strong></summary>
+
+- Genera una chiave: `openssl rand -base64 32`
+- Aggiungila a `.env.local` come `ENCRYPTION_KEY=...`
+- Questa variabile è obbligatoria — l'app non si avvia senza di essa
 
 </details>
 
 <details>
 <summary><strong>Seed fallisce</strong></summary>
 
-- Assicurati che lo schema sia stato pushato prima: `pnpm db:push && pnpm db:seed`
+- Assicurati che lo schema sia stato pushato prima: `npm run db:push && npm run db:seed`
 - Il seed è idempotente — può essere rieseguito senza problemi
 
 </details>
@@ -548,7 +563,7 @@ pnpm test:ui      # Test con UI interattiva
 <details>
 <summary><strong>Redirect loop su /consents</strong></summary>
 
-- I consensi (privacy + termini) sono obbligatori per accedere a `/game` e `/serate`
+- I consensi (privacy + termini) sono obbligatori per accedere a `/serate`
 - Vai a `/consents` e accetta entrambi, oppure usa `/profilo` per verificare lo stato
 
 </details>
@@ -558,19 +573,26 @@ pnpm test:ui      # Test con UI interattiva
 
 - Solo utenti con `role: ADMIN` vedono il link "Admin" in dashboard
 - Nel seed, `admin@magic-farm.test` ha ruolo ADMIN
+- Il ruolo va impostato tramite DB o tramite `ADMIN_EMAILS` in `.env.local`
 
 </details>
 
 ---
 
-## 🎯 Roadmap Futura
+## 🎯 Limitazioni Attuali e Roadmap
 
-- [ ] Ruolo `HOST` dedicato (attualmente si usa ADMIN per le operazioni host)
+**Limitazioni note:**
+- Nessun ruolo `HOST` dedicato — le operazioni host usano temporaneamente il ruolo ADMIN
+- Aggiornamenti real-time (classifica, clue board) tramite polling; WebSocket non ancora implementato
+- L'interfaccia è solo in italiano; nessun supporto i18n
+- Nessun Dockerfile per l'app Next.js — solo il DB è containerizzato
+
+**Roadmap:**
+- [ ] Ruolo `HOST` dedicato
+- [ ] WebSocket per aggiornamenti real-time
+- [ ] Dockerfile per deployment containerizzato completo
 - [ ] Classifiche stagionali
-- [ ] WebSocket per aggiornamenti real-time (classifica, clue board)
-- [ ] Internazionalizzazione (attualmente solo italiano)
-- [ ] Deployment containerizzato (Dockerfile per l'app Next.js)
-- [ ] Analytics dashboard avanzata
+- [ ] Internazionalizzazione
 
 ---
 
