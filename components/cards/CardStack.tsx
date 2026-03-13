@@ -2,6 +2,13 @@
 
 import { motion } from 'framer-motion';
 import type { CardData } from '@/types/card';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import {
+  CARD_PERSPECTIVE,
+  TRANSITION_FLIP,
+  TRANSITION_FLIP_INSTANT,
+  TRANSITION_STACK_SPRING,
+} from '@/lib/ui/tokens';
 
 type CardSize = 'sm' | 'md' | 'lg';
 
@@ -29,6 +36,7 @@ export function CardStack({
   size = 'md',
 }: CardStackProps) {
   const { width, height } = SIZE_MAP[size];
+  const reducedMotion = useReducedMotion();
 
   return (
     <div
@@ -37,7 +45,6 @@ export function CardStack({
     >
       {cards.map((card, i) => {
         const isFlipped = flipped[i] ?? false;
-        // Spread cards slightly so the stack is visible
         const offsetX = (i - (cards.length - 1) / 2) * 6;
         const offsetY = -i * 3;
 
@@ -46,9 +53,9 @@ export function CardStack({
             key={card.id}
             style={{ position: 'absolute', zIndex: i }}
             animate={{ x: offsetX, y: offsetY }}
-            transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+            transition={TRANSITION_STACK_SPRING}
           >
-            <div style={{ perspective: 1000, width, height }}>
+            <div style={{ perspective: CARD_PERSPECTIVE, width, height }}>
               <motion.div
                 style={{
                   width: '100%',
@@ -57,7 +64,9 @@ export function CardStack({
                   position: 'relative',
                 }}
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
-                transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                transition={
+                  reducedMotion ? TRANSITION_FLIP_INSTANT : TRANSITION_FLIP
+                }
               >
                 {/* Back face */}
                 <div

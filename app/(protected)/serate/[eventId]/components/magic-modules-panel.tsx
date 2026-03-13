@@ -9,6 +9,18 @@ import { CardFanHand } from '@/components/cards/CardFanHand';
 import { InteractiveCard } from '@/components/cards/InteractiveCard';
 import { CardStack } from '@/components/cards/CardStack';
 import type { CardData } from '@/types/card';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { hapticRevealStart, hapticRevealComplete } from '@/lib/feedback/haptics';
+import { playSound } from '@/lib/feedback/sound';
+import { trackUxEvent } from '@/lib/telemetry/ux-events';
+import { useAdaptiveConfig } from '@/lib/performance/adaptive';
+import {
+  DELAY_REVEAL_CONTAINER_S,
+  DELAY_REVEAL_TEXT_S,
+  DELAY_REVEAL_SCORE_S,
+  TRANSITION_FLIP,
+  TRANSITION_FLIP_INSTANT,
+} from '@/lib/ui/tokens';
 
 interface ActiveModule {
   key: string;
@@ -989,6 +1001,40 @@ function FinalRevealUI({
   revealMessage?: string;
   scoreDelta?: number;
 }) {
+  const reducedMotion = useReducedMotion();
+  const { shortenTimings } = useAdaptiveConfig();
+  const [skipped, setSkipped] = useState(false);
+
+  // Collapse all delays when reduced motion is set, user skipped, or the
+  // device is in a constrained performance mode.
+  const instant = reducedMotion || skipped || shortenTimings;
+
+  const containerDelay = instant ? 0 : DELAY_REVEAL_CONTAINER_S;
+  const textDelay = instant ? 0 : DELAY_REVEAL_TEXT_S;
+  const scoreDelay = instant ? 0 : DELAY_REVEAL_SCORE_S;
+  const flipTransition = instant ? TRANSITION_FLIP_INSTANT : TRANSITION_FLIP;
+
+  // Fire reveal-started telemetry + haptic once on mount.
+  useEffect(() => {
+    hapticRevealStart();
+    void playSound('reveal_start');
+    trackUxEvent('reveal_started', { cardId: revealedCard });
+  // Intentional: this effect must fire exactly once on mount regardless of
+  // revealedCard changes (the value is stable for the lifetime of FinalRevealUI).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleSkip() {
+    setSkipped(true);
+    trackUxEvent('reveal_skipped', { cardId: revealedCard });
+  }
+
+  function handleRevealComplete() {
+    hapticRevealComplete();
+    void playSound('reveal_complete');
+    trackUxEvent('reveal_completed', { cardId: revealedCard });
+  }
+
   const revealCardData: CardData = {
     id: 'final-reveal',
     backContent: <span className="text-3xl">🃏</span>,
@@ -1007,19 +1053,27 @@ function FinalRevealUI({
       className="bg-magic-gold/10 border border-magic-gold/30 rounded-xl p-4 text-center space-y-3"
       initial={{ opacity: 0, scale: 0.88, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.2 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 18, delay: containerDelay }}
     >
       <div className="flex justify-center">
-        <InteractiveCard
-          card={revealCardData}
-          isFlipped
-          size="md"
-        />
+        {/* Pass reduced/skip transition to the card via a wrapper animate */}
+        <motion.div
+          animate={{ rotateY: 180 }}
+          transition={flipTransition}
+          onAnimationComplete={handleRevealComplete}
+          style={{ perspective: 1000 }}
+        >
+          <InteractiveCard
+            card={revealCardData}
+            isFlipped
+            size="md"
+          />
+        </motion.div>
       </div>
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.85 }}
+        transition={{ delay: textDelay }}
         className="space-y-1"
       >
         {revealedNumber !== undefined && (
@@ -1034,10 +1088,20 @@ function FinalRevealUI({
             className="text-magic-gold text-xs font-bold"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.1, type: 'spring' }}
+            transition={{ delay: scoreDelay, type: 'spring' }}
           >
             +{scoreDelta} pts
           </motion.p>
+        )}
+        {/* Skip button: shown only while delays are in effect */}
+        {!instant && (
+          <button
+            onClick={handleSkip}
+            className="text-white/30 text-xs hover:text-white/60 transition-colors mt-1 block mx-auto"
+            aria-label="Salta animazione"
+          >
+            Salta →
+          </button>
         )}
       </motion.div>
     </motion.div>
