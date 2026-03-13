@@ -1,17 +1,17 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { CardData } from '@/types/card';
 import { CardBack } from './CardBack';
 import { CardFrame } from './CardFrame';
-
-type CardSize = 'sm' | 'md' | 'lg';
-
-const SIZE_MAP: Record<CardSize, { width: number; height: number }> = {
-  sm: { width: 56, height: 80 },
-  md: { width: 80, height: 112 },
-  lg: { width: 112, height: 160 },
-};
+import {
+  CARD_SIZES,
+  CARD_ASPECT_RATIO,
+  CARD_PERSPECTIVE,
+  CARD_REVEAL_SCALE,
+  type CardSize,
+} from '@/lib/ui/tokens';
+import { SPRING_STACK, TIMING_DRAMATIC, INSTANT } from '@/lib/motion/presets';
 
 interface CardStackProps {
   cards: CardData[];
@@ -31,7 +31,8 @@ export function CardStack({
   flipped = [],
   size = 'md',
 }: CardStackProps) {
-  const { width, height } = SIZE_MAP[size];
+  const reduced = useReducedMotion();
+  const { width, height } = CARD_SIZES[size];
 
   return (
     <div
@@ -47,16 +48,20 @@ export function CardStack({
         return (
           <motion.div
             key={card.id}
-            style={{ position: 'absolute', zIndex: i }}
+            style={{
+              position: 'absolute',
+              zIndex: i,
+              willChange: 'transform',
+            }}
             animate={{ x: offsetX, y: offsetY }}
-            transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+            transition={reduced ? INSTANT : SPRING_STACK}
           >
             <div
               style={{
-                perspective: 1000,
+                perspective: CARD_PERSPECTIVE,
                 width,
                 height,
-                aspectRatio: '2 / 3',
+                aspectRatio: CARD_ASPECT_RATIO,
                 position: 'relative',
               }}
             >
@@ -69,12 +74,13 @@ export function CardStack({
                   height: '100%',
                   transformStyle: 'preserve-3d',
                   position: 'relative',
+                  willChange: 'transform',
                 }}
                 animate={{
                   rotateY: isFlipped ? 180 : 0,
-                  scale: isFlipped ? 1.05 : 1,
+                  scale: isFlipped ? CARD_REVEAL_SCALE : 1,
                 }}
-                transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                transition={reduced ? INSTANT : TIMING_DRAMATIC}
               >
                 {/* Back face */}
                 <div
