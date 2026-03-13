@@ -1,18 +1,20 @@
 'use client';
 
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { CardData } from '@/types/card';
 import { CardBack } from './CardBack';
 import { CardFrame } from './CardFrame';
-
-type CardSize = 'sm' | 'md' | 'lg';
-
-const SIZE_MAP: Record<CardSize, { width: number; height: number }> = {
-  sm: { width: 56, height: 80 },
-  md: { width: 80, height: 112 },
-  lg: { width: 112, height: 160 },
-};
+import {
+  CARD_SIZES,
+  CARD_ASPECT_RATIO,
+  CARD_PERSPECTIVE,
+  CARD_HOVER_LIFT_PX,
+  CARD_REVEAL_SCALE,
+  CARD_ELIMINATED_OPACITY,
+  type CardSize,
+} from '@/lib/ui/tokens';
+import { SPRING_HOVER, FLIP_NORMAL, TIMING_FAST, INSTANT } from '@/lib/motion/presets';
 
 export interface InteractiveCardProps {
   card: CardData;
@@ -45,7 +47,8 @@ export function InteractiveCard({
   size = 'md',
   disabled = false,
 }: InteractiveCardProps) {
-  const { width, height } = SIZE_MAP[size];
+  const reduced = useReducedMotion();
+  const { width, height } = CARD_SIZES[size];
   const isClickable = !disabled && !isEliminated && !!onClick;
   // Gold final reveal when the card is face-up and selected
   const isGoldReveal = isFlipped && isSelected;
@@ -55,19 +58,20 @@ export function InteractiveCard({
     <motion.div
       className={className}
       style={{
-        perspective: 1000,
+        perspective: CARD_PERSPECTIVE,
         width,
         height,
-        aspectRatio: '2 / 3',
+        aspectRatio: CARD_ASPECT_RATIO,
         cursor: isClickable ? 'pointer' : 'default',
         position: 'relative',
+        willChange: isClickable ? 'transform' : 'auto',
       }}
       animate={{
-        opacity: isEliminated ? 0.35 : 1,
-        scale: isGoldReveal ? 1.05 : 1,
+        opacity: isEliminated ? CARD_ELIMINATED_OPACITY : 1,
+        scale: isGoldReveal ? CARD_REVEAL_SCALE : 1,
       }}
-      whileHover={isClickable ? { y: -8 } : undefined}
-      transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+      whileHover={isClickable ? { y: CARD_HOVER_LIFT_PX } : undefined}
+      transition={reduced ? INSTANT : SPRING_HOVER}
       onClick={isClickable ? onClick : undefined}
     >
       {/* Gold selection ring */}
@@ -77,7 +81,7 @@ export function InteractiveCard({
           style={{ zIndex: 10 }}
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.2 }}
+          transition={reduced ? INSTANT : TIMING_FAST}
         />
       )}
 
@@ -91,9 +95,10 @@ export function InteractiveCard({
           height: '100%',
           transformStyle: 'preserve-3d',
           position: 'relative',
+          willChange: 'transform',
         }}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        transition={{ type: 'tween', duration: 0.55, ease: [0.4, 0, 0.2, 1] }}
+        transition={reduced ? INSTANT : FLIP_NORMAL}
       >
         {/* Back face */}
         <div
