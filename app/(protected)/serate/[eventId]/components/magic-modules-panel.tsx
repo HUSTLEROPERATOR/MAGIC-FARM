@@ -1,9 +1,26 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { Sparkles, MagicWand, ScrollText, FileText, Check, X, RefreshCw } from '@/lib/ui/icons';
 import type { LucideIcon } from '@/lib/ui/icons';
 import { MagicianControlPanel } from '@/components/modules/MagicianControlPanel';
+import { CardFanHand } from '@/components/cards/CardFanHand';
+import { InteractiveCard } from '@/components/cards/InteractiveCard';
+import { CardStack } from '@/components/cards/CardStack';
+import type { CardData } from '@/types/card';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { hapticRevealStart, hapticRevealComplete } from '@/lib/feedback/haptics';
+import { playSound } from '@/lib/feedback/sound';
+import { trackUxEvent } from '@/lib/telemetry/ux-events';
+import { useAdaptiveConfig } from '@/lib/performance/adaptive';
+import {
+  DELAY_REVEAL_CONTAINER_S,
+  DELAY_REVEAL_TEXT_S,
+  DELAY_REVEAL_SCORE_S,
+  TRANSITION_FLIP,
+  TRANSITION_FLIP_INSTANT,
+} from '@/lib/ui/tokens';
 
 interface ActiveModule {
   key: string;
@@ -466,22 +483,31 @@ function MagiciansChoice4UI({
     );
   }
 
-  // step === 1: show 4 cards, select 2
+  // step === 1: show 4 cards in a fan, select 2
   if (step === 1) {
+    const fanCards: CardData[] = cards.map((name, i) => ({
+      id: `mc4-${i}`,
+      backContent: <span className="text-2xl">🃏</span>,
+      faceContent: (
+        <span className="text-[10px] font-medium text-white text-center leading-tight px-1">
+          {name}
+        </span>
+      ),
+      value: name,
+    }));
+    const allFlipped = cards.map(() => true);
     return (
       <div className="space-y-3">
-        <div className="bg-white/5 rounded-lg p-3">
-          <p className="text-white/50 text-xs mb-2">{instruction}</p>
-          <p className="text-white/70 text-xs mb-2">Segna le due carte scelte mentalmente:</p>
-          <div className="grid grid-cols-2 gap-2">
-            {cards.map((card, i) => (
-              <button key={i} onClick={() => toggleCard(i)} disabled={loading}
-                className={`py-2 px-3 rounded-lg text-xs font-medium transition-colors ${selected.includes(i) ? 'bg-magic-purple/60 text-white border border-magic-purple' : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'}`}>
-                🃏 {card}
-              </button>
-            ))}
-          </div>
-        </div>
+        <p className="text-white/50 text-xs text-center">{instruction}</p>
+        <p className="text-white/70 text-xs text-center">Seleziona 2 carte mentalmente:</p>
+        <CardFanHand
+          cards={fanCards}
+          flipped={allFlipped}
+          selected={selected}
+          onCardClick={toggleCard}
+          disabled={loading}
+          size="sm"
+        />
         <button onClick={() => callAPI({ step: 1, chosen: selected })} disabled={loading || selected.length !== 2}
           className="w-full py-2 rounded-lg bg-magic-purple/20 text-magic-mystic hover:bg-magic-purple/40 text-sm font-medium disabled:opacity-40 transition-colors">
           {loading ? <SpinIcon className="w-4 h-4 inline animate-spin" /> : `Conferma (${selected.length}/2 selezionate)`}
@@ -492,21 +518,31 @@ function MagiciansChoice4UI({
 
   // step === 2: show 2 remaining cards, tap one to eliminate
   if (step === 2) {
-    const remainingCards = remaining.map((i) => ({ idx: i, card: cards[i] ?? '?' }));
+    const remainingCards = remaining.map((origIdx) => ({
+      origIdx,
+      name: cards[origIdx] ?? '?',
+    }));
+    const fanCards: CardData[] = remainingCards.map(({ origIdx, name }) => ({
+      id: `mc4-elim-${origIdx}`,
+      backContent: <span className="text-2xl">🃏</span>,
+      faceContent: (
+        <span className="text-[10px] font-medium text-white text-center leading-tight px-1">
+          {name}
+        </span>
+      ),
+      value: name,
+    }));
     return (
       <div className="space-y-3">
-        <div className="bg-white/5 rounded-lg p-3">
-          <p className="text-white/50 text-xs mb-2">{instruction}</p>
-          <p className="text-white/70 text-xs mb-2">Tocca la carta da eliminare:</p>
-          <div className="flex gap-2">
-            {remainingCards.map(({ idx, card }) => (
-              <button key={idx} onClick={() => callAPI({ step: 2, chosen: idx })} disabled={loading}
-                className="flex-1 py-2 px-3 rounded-lg text-xs font-medium bg-red-500/15 text-red-300 hover:bg-red-500/25 border border-red-500/20 transition-colors disabled:opacity-40">
-                ✕ {card}
-              </button>
-            ))}
-          </div>
-        </div>
+        <p className="text-white/50 text-xs text-center">{instruction}</p>
+        <p className="text-white/70 text-xs text-center">Tocca la carta da eliminare:</p>
+        <CardFanHand
+          cards={fanCards}
+          flipped={fanCards.map(() => true)}
+          onCardClick={(fanIdx) => callAPI({ step: 2, chosen: remainingCards[fanIdx]?.origIdx })}
+          disabled={loading}
+          size="sm"
+        />
       </div>
     );
   }
@@ -583,12 +619,25 @@ function PsychForceCardUI({
   if (stage === 'phrases') {
     const safePhraseIdx = Math.min(phraseIdx, phrases.length - 1);
     const isLast = safePhraseIdx >= phrases.length - 1;
+    const phraseCard: CardData = {
+      id: `psych-phrase-${safePhraseIdx}`,
+      backContent: <span className="text-3xl">🧠</span>,
+      faceContent: (
+        <p className="text-white/90 text-xs italic text-center leading-relaxed px-2">
+          &quot;{phrases[safePhraseIdx]}&quot;
+        </p>
+      ),
+    };
     return (
       <div className="space-y-3">
-        <div className="bg-white/5 rounded-lg p-4 min-h-[60px] flex items-center justify-center">
-          <p className="text-white text-sm text-center italic">&quot;{phrases[safePhraseIdx]}&quot;</p>
+        <div className="flex justify-center py-2">
+          <InteractiveCard
+            card={phraseCard}
+            isFlipped
+            size="lg"
+          />
         </div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-1">
           <span className="text-white/30 text-xs">{safePhraseIdx + 1}/{phrases.length}</span>
           <button onClick={() => isLast ? setStage('input') : setPhraseIdx((i) => i + 1)} disabled={loading}
             className="px-4 py-1.5 rounded-lg bg-magic-purple/20 text-magic-mystic hover:bg-magic-purple/40 text-sm font-medium transition-colors">
@@ -636,7 +685,6 @@ function MultilevelPredictionUI({
   const [step, setStep] = useState(-1);
   const [instruction, setInstruction] = useState('');
   const [predictions, setPredictions] = useState<Array<{ label: string; match: boolean }>>([]);
-  const [currentInput, setCurrentInput] = useState('');
   const [posInput, setPosInput] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -667,7 +715,6 @@ function MultilevelPredictionUI({
       } else if (d.prediction3) {
         setPredictions((p) => [...p.slice(0, 2), { label: d.prediction3 as string, match: !!(d.match3) }]);
       }
-      setCurrentInput('');
       setPosInput('');
       setStep(d.nextStep as number);
     } catch {
@@ -678,29 +725,48 @@ function MultilevelPredictionUI({
   }
 
   if (step === -1) {
+    // Build 4 sealed prediction cards for the visual deck
+    const deckCards: CardData[] = ['Seme', 'Valore', 'Colore', 'Posizione'].map((label, i) => ({
+      id: `ml-pred-${i}`,
+      backContent: <span className="text-xl">🔮</span>,
+      faceContent: <span className="text-[10px] font-semibold text-magic-gold text-center">{label}</span>,
+    }));
     return (
-      <button onClick={() => callStep(0)} disabled={loading}
-        className="w-full py-2 rounded-lg bg-magic-purple/20 text-magic-mystic hover:bg-magic-purple/40 text-sm font-medium disabled:opacity-40 transition-colors">
-        {loading ? <SpinIcon className="w-4 h-4 inline animate-spin" /> : '🔮 Inizia Previsione'}
-      </button>
+      <div className="space-y-3">
+        <CardStack cards={deckCards} size="sm" />
+        <button onClick={() => callStep(0)} disabled={loading}
+          className="w-full py-2 rounded-lg bg-magic-purple/20 text-magic-mystic hover:bg-magic-purple/40 text-sm font-medium disabled:opacity-40 transition-colors">
+          {loading ? <SpinIcon className="w-4 h-4 inline animate-spin" /> : '🔮 Inizia Previsione'}
+        </button>
+      </div>
     );
   }
 
   const inputType = inputTypeByStep[step];
 
+  // Build prediction deck: cards 0–3 for seme/valore/colore/posizione
+  // Flip the ones already revealed (predictions[0], [1], [2])
+  const predLabels = ['Seme', 'Valore', 'Colore', 'Posizione'];
+  const stackCards: CardData[] = predLabels.map((label, i) => ({
+    id: `ml-pred-${i}`,
+    backContent: <span className="text-xl">🔮</span>,
+    faceContent: predictions[i] ? (
+      <div className="text-center p-1">
+        <p className="text-[9px] text-white/50 mb-0.5">{label}</p>
+        <p className={`text-[10px] font-bold leading-tight ${predictions[i].match ? 'text-green-300' : 'text-magic-gold'}`}>
+          {predictions[i].label}
+        </p>
+      </div>
+    ) : (
+      <span className="text-[10px] font-semibold text-magic-gold text-center">{label}</span>
+    ),
+  }));
+  const stackFlipped = predLabels.map((_, i) => i < predictions.length);
+
   return (
     <div className="space-y-3">
-      {/* Show accumulated predictions */}
-      {predictions.length > 0 && (
-        <div className="space-y-1">
-          {predictions.map((p, i) => (
-            <div key={i} className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs ${p.match ? 'bg-green-500/10 text-green-300' : 'bg-magic-gold/10 text-magic-gold'}`}>
-              <span>{p.match ? '✓' : '★'}</span>
-              <span>{p.label}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Prediction deck showing revealed cards */}
+      <CardStack cards={stackCards} flipped={stackFlipped} size="sm" />
       {/* Current instruction */}
       <div className="bg-white/5 rounded-lg p-3">
         <p className="text-white/50 text-xs mb-2">Passo {step}/4</p>
@@ -923,6 +989,125 @@ function GenericModuleUI({
   );
 }
 
+// --- Final Reveal card with gold highlight and dramatic delay ---
+function FinalRevealUI({
+  revealedCard,
+  revealedNumber,
+  revealMessage,
+  scoreDelta,
+}: {
+  revealedCard: string;
+  revealedNumber?: number;
+  revealMessage?: string;
+  scoreDelta?: number;
+}) {
+  const reducedMotion = useReducedMotion();
+  const { shortenTimings } = useAdaptiveConfig();
+  const [skipped, setSkipped] = useState(false);
+
+  // Collapse all delays when reduced motion is set, user skipped, or the
+  // device is in a constrained performance mode.
+  const instant = reducedMotion || skipped || shortenTimings;
+
+  const containerDelay = instant ? 0 : DELAY_REVEAL_CONTAINER_S;
+  const textDelay = instant ? 0 : DELAY_REVEAL_TEXT_S;
+  const scoreDelay = instant ? 0 : DELAY_REVEAL_SCORE_S;
+  const flipTransition = instant ? TRANSITION_FLIP_INSTANT : TRANSITION_FLIP;
+
+  // Fire reveal-started telemetry + haptic once on mount.
+  useEffect(() => {
+    hapticRevealStart();
+    void playSound('reveal_start');
+    trackUxEvent('reveal_started', { cardId: revealedCard });
+  // Intentional: this effect must fire exactly once on mount regardless of
+  // revealedCard changes (the value is stable for the lifetime of FinalRevealUI).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function handleSkip() {
+    setSkipped(true);
+    trackUxEvent('reveal_skipped', { cardId: revealedCard });
+  }
+
+  function handleRevealComplete() {
+    hapticRevealComplete();
+    void playSound('reveal_complete');
+    trackUxEvent('reveal_completed', { cardId: revealedCard });
+  }
+
+  const revealCardData: CardData = {
+    id: 'final-reveal',
+    backContent: <span className="text-3xl">🃏</span>,
+    faceContent: (
+      <div className="text-center p-2 space-y-1">
+        {revealedNumber !== undefined && (
+          <p className="text-magic-gold font-bold text-[10px]">= {revealedNumber}</p>
+        )}
+        <p className="text-white/90 text-xs font-semibold leading-tight">{revealedCard}</p>
+      </div>
+    ),
+  };
+
+  return (
+    <motion.div
+      className="bg-magic-gold/10 border border-magic-gold/30 rounded-xl p-4 text-center space-y-3"
+      initial={{ opacity: 0, scale: 0.88, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 18, delay: containerDelay }}
+    >
+      <div className="flex justify-center">
+        {/* Pass reduced/skip transition to the card via a wrapper animate */}
+        <motion.div
+          animate={{ rotateY: 180 }}
+          transition={flipTransition}
+          onAnimationComplete={handleRevealComplete}
+          style={{ perspective: 1000 }}
+        >
+          <InteractiveCard
+            card={revealCardData}
+            isFlipped
+            size="md"
+          />
+        </motion.div>
+      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: textDelay }}
+        className="space-y-1"
+      >
+        {revealedNumber !== undefined && (
+          <p className="text-magic-gold font-bold text-sm">Il risultato è {revealedNumber}!</p>
+        )}
+        <p className="text-white/80 text-sm font-semibold">La tua carta è: {revealedCard}</p>
+        {revealMessage && (
+          <p className="text-white/50 text-xs italic">{revealMessage}</p>
+        )}
+        {(scoreDelta ?? 0) > 0 && (
+          <motion.p
+            className="text-magic-gold text-xs font-bold"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: scoreDelay, type: 'spring' }}
+          >
+            +{scoreDelta} pts
+          </motion.p>
+        )}
+        {/* Skip button: shown only while delays are in effect */}
+        {!instant && (
+          <button
+            onClick={handleSkip}
+            className="text-white/30 text-xs hover:text-white/60 transition-colors mt-1 block mx-auto"
+            aria-label="Salta animazione"
+          >
+            Salta →
+          </button>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // --- Result display ---
 function ResultDisplay({ result }: { result: ExecuteResult }) {
   if (!result.success) {
@@ -975,19 +1160,12 @@ function ResultDisplay({ result }: { result: ExecuteResult }) {
 
   if (isReveal && revealedCard) {
     return (
-      <div className="bg-magic-gold/10 border border-magic-gold/30 rounded-xl p-4 text-center space-y-2">
-        <div className="text-3xl">🃏</div>
-        {revealedNumber !== undefined && (
-          <p className="text-magic-gold font-bold text-sm">Il risultato è {revealedNumber}!</p>
-        )}
-        <p className="text-white/80 text-sm font-semibold">La tua carta è: {revealedCard}</p>
-        {revealMessage && (
-          <p className="text-white/50 text-xs italic">{revealMessage}</p>
-        )}
-        {scoreDelta > 0 && (
-          <p className="text-magic-gold text-xs font-bold">+{scoreDelta} pts</p>
-        )}
-      </div>
+      <FinalRevealUI
+        revealedCard={revealedCard}
+        revealedNumber={revealedNumber}
+        revealMessage={revealMessage}
+        scoreDelta={scoreDelta}
+      />
     );
   }
 
