@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300">
+  <defs>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2d1b69"/>
+      <stop offset="50%" stop-color="#1e0f4d"/>
+      <stop offset="100%" stop-color="#1a0a3e"/>
+    </linearGradient>
+    <pattern id="dotPattern" patternUnits="userSpaceOnUse" width="24" height="24">
+      <circle cx="12" cy="12" r="1" fill="#c9a84c" opacity="0.12"/>
+    </pattern>
+    <pattern id="diamondPattern" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="rotate(45)">
+      <rect x="18" y="18" width="4" height="4" fill="none" stroke="#c9a84c" stroke-width="0.4" opacity="0.1"/>
+    </pattern>
+    <radialGradient id="centerGlow" cx="50%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#c9a84c" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Card background -->
+  <rect width="200" height="300" rx="12" fill="url(#cardBg)"/>
+
+  <!-- Subtle patterns -->
+  <rect width="200" height="300" rx="12" fill="url(#dotPattern)"/>
+  <rect width="200" height="300" rx="12" fill="url(#diamondPattern)"/>
+
+  <!-- Center glow -->
+  <ellipse cx="100" cy="150" rx="65" ry="85" fill="url(#centerGlow)"/>
+
+  <!-- Outer gold border -->
+  <rect x="6" y="6" width="188" height="288" rx="10" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Inner gold border -->
+  <rect x="14" y="14" width="172" height="272" rx="7" fill="none" stroke="#c9a84c" stroke-width="0.5" opacity="0.25"/>
+
+  <!-- Corner ornaments -->
+  <circle cx="24" cy="24" r="3" fill="none" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+  <circle cx="176" cy="24" r="3" fill="none" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+  <circle cx="24" cy="276" r="3" fill="none" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+  <circle cx="176" cy="276" r="3" fill="none" stroke="#c9a84c" stroke-width="0.6" opacity="0.4"/>
+
+  <!-- Center symbol -->
+  <text x="100" y="140" text-anchor="middle" font-family="serif" font-size="22" fill="#c9a84c" opacity="0.7">✦</text>
+
+  <!-- Brand text -->
+  <text x="100" y="162" text-anchor="middle" font-family="serif" font-size="12" fill="#c9a84c" opacity="0.6" letter-spacing="4">MAGIC</text>
+  <text x="100" y="178" text-anchor="middle" font-family="serif" font-size="9" fill="#c9a84c" opacity="0.4" letter-spacing="5">FARM</text>
+
+  <!-- Decorative lines -->
+  <line x1="60" y1="130" x2="140" y2="130" stroke="#c9a84c" stroke-width="0.5" opacity="0.25"/>
+  <line x1="60" y1="185" x2="140" y2="185" stroke="#c9a84c" stroke-width="0.5" opacity="0.25"/>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300">
+  <defs>
+    <linearGradient id="frontBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <radialGradient id="frontGlow" cx="50%" cy="45%" r="35%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Card background -->
+  <rect width="200" height="300" rx="12" fill="url(#frontBg)"/>
+
+  <!-- Subtle glow -->
+  <ellipse cx="100" cy="135" rx="55" ry="70" fill="url(#frontGlow)"/>
+
+  <!-- Card frame border -->
+  <rect x="8" y="8" width="184" height="284" rx="8" fill="none"
+        stroke="white" stroke-width="0.5" opacity="0.15"/>
+
+  <!-- Placeholder symbol -->
+  <text x="100" y="155" text-anchor="middle" font-family="serif"
+        font-size="28" fill="white" opacity="0.2">?</text>
+
+  <!-- Bottom text -->
+  <text x="100" y="270" text-anchor="middle" font-family="sans-serif"
+        font-size="7" fill="white" opacity="0.15" letter-spacing="2">MAGIC FARM</text>
+</svg>

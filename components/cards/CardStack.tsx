@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import type { CardData } from '@/types/card';
+import { CardFrame } from './CardFrame';
 
 type CardSize = 'sm' | 'md' | 'lg';
 
@@ -21,6 +22,7 @@ interface CardStackProps {
 /**
  * Renders a deck-like stack of cards with slight offsets.
  * Individual cards can be flipped face-up via the `flipped` prop.
+ * Flipped cards show a gold CardFrame overlay for reveal emphasis.
  * Designed for revealing predictions one by one.
  */
 export function CardStack({
@@ -48,7 +50,18 @@ export function CardStack({
             animate={{ x: offsetX, y: offsetY }}
             transition={{ type: 'spring', stiffness: 300, damping: 26 }}
           >
-            <div style={{ perspective: 1000, width, height }}>
+            <div
+              style={{
+                perspective: 1000,
+                width,
+                height,
+                aspectRatio: '2 / 3',
+                position: 'relative',
+              }}
+            >
+              {/* Gold frame overlay on revealed cards */}
+              <CardFrame variant={isFlipped ? 'gold' : 'none'} />
+
               <motion.div
                 style={{
                   width: '100%',
@@ -56,7 +69,10 @@ export function CardStack({
                   transformStyle: 'preserve-3d',
                   position: 'relative',
                 }}
-                animate={{ rotateY: isFlipped ? 180 : 0 }}
+                animate={{
+                  rotateY: isFlipped ? 180 : 0,
+                  scale: isFlipped ? 1.05 : 1,
+                }}
                 transition={{ type: 'tween', duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
               >
                 {/* Back face */}

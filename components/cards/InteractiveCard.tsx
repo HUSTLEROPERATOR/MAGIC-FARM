@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import type { CardData } from '@/types/card';
+import { CardFrame } from './CardFrame';
 
 type CardSize = 'sm' | 'md' | 'lg';
 
@@ -30,6 +31,7 @@ export interface InteractiveCardProps {
  * - Framer Motion spring hover lift
  * - Framer Motion tween rotateY flip animation
  * - Gold glow ring when selected
+ * - CardFrame overlay: gold frame on final reveal (flipped + selected), selected frame otherwise
  */
 export function InteractiveCard({
   card,
@@ -43,6 +45,9 @@ export function InteractiveCard({
 }: InteractiveCardProps) {
   const { width, height } = SIZE_MAP[size];
   const isClickable = !disabled && !isEliminated && !!onClick;
+  // Gold final reveal when the card is face-up and selected
+  const isGoldReveal = isFlipped && isSelected;
+  const frameVariant = isGoldReveal ? 'gold' : isSelected ? 'selected' : 'none';
 
   return (
     <motion.div
@@ -51,10 +56,14 @@ export function InteractiveCard({
         perspective: 1000,
         width,
         height,
+        aspectRatio: '2 / 3',
         cursor: isClickable ? 'pointer' : 'default',
         position: 'relative',
       }}
-      animate={{ opacity: isEliminated ? 0.35 : 1 }}
+      animate={{
+        opacity: isEliminated ? 0.35 : 1,
+        scale: isGoldReveal ? 1.05 : 1,
+      }}
       whileHover={isClickable ? { y: -8 } : undefined}
       transition={{ type: 'spring', stiffness: 320, damping: 22 }}
       onClick={isClickable ? onClick : undefined}
@@ -69,6 +78,9 @@ export function InteractiveCard({
           transition={{ duration: 0.2 }}
         />
       )}
+
+      {/* Frame overlay (selected or gold reveal) */}
+      <CardFrame variant={frameVariant} />
 
       {/* Card flip container */}
       <motion.div
