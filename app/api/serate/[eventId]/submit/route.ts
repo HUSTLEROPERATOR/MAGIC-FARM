@@ -3,7 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
 import { verifyHash } from '@/lib/security/crypto';
-import { calculateScore } from '@/lib/game/scoring';
+import { calculateScore, detectSuspiciousActivity } from '@/lib/game/scoring';
+import { rateLimitSubmission } from '@/lib/security/rate-limit';
+import { createAuditLog, AUDIT_ACTIONS } from '@/lib/audit/logger';
 
 // POST /api/serate/[eventId]/submit — Invia risposta a un enigma
 export async function POST(
@@ -13,6 +15,12 @@ export async function POST(
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Rate limit: 5 submissions per 30 seconds per user
+  const allowed = await rateLimitSubmission(session.user.id);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Troppe richieste. Riprova tra poco.' }, { status: 429 });
   }
 
   let body: Record<string, unknown>;
@@ -141,6 +149,30 @@ export async function POST(
         riddles: 1,
         events: 0,
       },
+    });
+  }
+
+  // Anti-cheat: check recent submission patterns and log if suspicious
+  const recentSubmissions = await prisma.submission.findMany({
+    where: { userId: session.user.id },
+    orderBy: { submittedAt: 'desc' },
+    take: 20,
+    select: { submittedAt: true, timeToSolveMs: true, isCorrect: true },
+  });
+
+  const suspiciousReason = detectSuspiciousActivity(
+    recentSubmissions.map((s) => ({
+      submittedAt: s.submittedAt,
+      timeToSolveMs: Number(s.timeToSolveMs ?? 0),
+      isCorrect: s.isCorrect,
+    }))
+  );
+
+  if (suspiciousReason) {
+    await createAuditLog({
+      action: AUDIT_ACTIONS.SUSPICIOUS_ACTIVITY_DETECTED,
+      actorUserId: session.user.id,
+      metadata: { reason: suspiciousReason, submissionId: submission.id, puzzleId },
     });
   }
 

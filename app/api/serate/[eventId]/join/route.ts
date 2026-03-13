@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
 import { verifyHash } from '@/lib/security/crypto';
+import { rateLimitGameJoin } from '@/lib/security/rate-limit';
 
 // POST /api/serate/[eventId]/join — Unisciti a un tavolo con codice
 export async function POST(
@@ -12,6 +13,12 @@ export async function POST(
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Rate limit: 3 join attempts per 5 minutes per user
+  const allowed = await rateLimitGameJoin(session.user.id);
+  if (!allowed) {
+    return NextResponse.json({ error: 'Troppe richieste. Riprova tra poco.' }, { status: 429 });
   }
 
   let body: Record<string, unknown>;
