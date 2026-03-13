@@ -42,6 +42,7 @@ export function CardFrame({ variant, className = '' }: CardFrameProps) {
       <Image
         src={src}
         alt=""
+        role="presentation"
         fill
         sizes="(max-width: 768px) 56px, 112px"
         className="rounded-xl object-cover"

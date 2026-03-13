@@ -28,7 +28,7 @@ export function CardBack({ className = '' }: CardBackProps) {
     >
       <Image
         src="/cards/back.svg"
-        alt="Card back"
+        alt="Retro della carta"
         fill
         sizes="(max-width: 768px) 56px, 112px"
         priority

@@ -42,9 +42,9 @@
   <!-- Center symbol -->
   <text x="100" y="140" text-anchor="middle" font-family="serif" font-size="22" fill="#c9a84c" opacity="0.7">✦</text>
 
-  <!-- Brand text -->
-  <text x="100" y="162" text-anchor="middle" font-family="serif" font-size="12" fill="#c9a84c" opacity="0.6" letter-spacing="4">MAGIC</text>
-  <text x="100" y="178" text-anchor="middle" font-family="serif" font-size="9" fill="#c9a84c" opacity="0.4" letter-spacing="5">FARM</text>
+  <!-- Brand text (decorative) -->
+  <text x="100" y="162" text-anchor="middle" font-family="serif" font-size="12" fill="#c9a84c" opacity="0.6" letter-spacing="4" aria-hidden="true">MAGIC</text>
+  <text x="100" y="178" text-anchor="middle" font-family="serif" font-size="9" fill="#c9a84c" opacity="0.4" letter-spacing="5" aria-hidden="true">FARM</text>
 
   <!-- Decorative lines -->
   <line x1="60" y1="130" x2="140" y2="130" stroke="#c9a84c" stroke-width="0.5" opacity="0.25"/>
