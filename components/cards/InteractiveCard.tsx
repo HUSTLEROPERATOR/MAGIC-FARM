@@ -1,7 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import type { CardData } from '@/types/card';
+import { CardBack } from './CardBack';
 import { CardFrame } from './CardFrame';
 
 type CardSize = 'sm' | 'md' | 'lg';
@@ -100,7 +102,7 @@ export function InteractiveCard({
             ${isSelected ? 'border border-magic-gold/50' : 'border border-white/10'}`}
           style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
         >
-          {card.backContent}
+          {card.backContent ?? <CardBack />}
         </div>
 
         {/* Front face */}
@@ -114,7 +116,19 @@ export function InteractiveCard({
             transform: 'rotateY(180deg)',
           }}
         >
-          {card.faceContent}
+          {card.faceContent ?? (
+            <div className="relative w-full h-full">
+              <Image
+                src="/cards/face-placeholder.svg"
+                alt="Contenuto carta"
+                fill
+                sizes="(max-width: 768px) 56px, 112px"
+                loading="lazy"
+                className="rounded-xl object-cover"
+                draggable={false}
+              />
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>

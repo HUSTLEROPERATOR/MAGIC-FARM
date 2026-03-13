@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 300" width="200" height="300">
+  <defs>
+    <linearGradient id="faceBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+    <radialGradient id="faceGlow" cx="50%" cy="45%" r="35%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Card background -->
+  <rect width="200" height="300" rx="12" fill="url(#faceBg)"/>
+
+  <!-- Subtle glow -->
+  <ellipse cx="100" cy="135" rx="55" ry="70" fill="url(#faceGlow)"/>
+
+  <!-- Card frame border -->
+  <rect x="8" y="8" width="184" height="284" rx="8" fill="none"
+        stroke="#c9a84c" stroke-width="0.5" opacity="0.2"/>
+
+  <!-- Placeholder symbol -->
+  <text x="100" y="160" text-anchor="middle" font-family="serif"
+        font-size="36" fill="#c9a84c" opacity="0.2">?</text>
+</svg>
