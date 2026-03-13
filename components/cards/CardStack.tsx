@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import type { CardData } from '@/types/card';
+import { CardBack } from './CardBack';
 import { CardFrame } from './CardFrame';
 
 type CardSize = 'sm' | 'md' | 'lg';
@@ -80,7 +81,7 @@ export function CardStack({
                   className="absolute inset-0 rounded-xl bg-gradient-to-br from-magic-purple/40 to-indigo-900/50 border border-white/10 flex items-center justify-center overflow-hidden"
                   style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                 >
-                  {card.backContent}
+                  {card.backContent ?? <CardBack />}
                 </div>
 
                 {/* Front face */}

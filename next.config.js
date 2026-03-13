@@ -9,6 +9,20 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Preload core card assets only on game/event pages where they are used
+        source: '/serate/:path*',
+        headers: [
+          {
+            key: 'Link',
+            value: [
+              '</cards/back.svg>; rel=preload; as=image',
+              '</cards/frame-gold.svg>; rel=preload; as=image',
+              '</cards/frame-selected.svg>; rel=preload; as=image',
+            ].join(', '),
+          },
+        ],
+      },
+      {
         source: '/:path*',
         headers: [
           {
